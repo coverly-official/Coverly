@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --canvas-start: #ffffff;
+    --canvas-end: #eef0f7;
+    --surface: #ffffff;
+    --surface-muted: #f4f5fa;
+    --surface-pink: #fef1e6;
+    --text-primary: #2d3250;
+    --text-secondary: #676f9d;
+    --btn-primary: #2d3250;
+    --accent: #f9b17a;
+    --border-color: rgba(45, 50, 80, 0.1);
+    --verified: #25D366;
+    --whatsapp: #25D366;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+  }
+
+  html {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(to bottom, var(--canvas-start), var(--canvas-end));
+    color: var(--text-primary);
+  }
+
+  body {
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
