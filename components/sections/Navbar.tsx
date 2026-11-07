@@ -7,11 +7,11 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "AI Parser", href: "#ai-parser" },
-  { label: "Live Demo", href: "#live-demo" },
-  { label: "Trust", href: "#trust" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "#" },
+  { label: "Products", href: "#" },
+  { label: "Wholesalers", href: "#" },
+  { label: "Manufacturers", href: "#" },
+  { label: "About", href: "#" },
 ];
 
 export function Navbar() {
@@ -68,17 +68,9 @@ export function Navbar() {
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <a
-            href="#contact"
-            className="text-sm font-medium text-ink-secondary hover:text-ink transition-colors px-2 py-1"
-          >
-            Log in
-          </a>
-          <a href="#live-demo">
-            <Button variant="coral" size="sm">
-              Get Verified Quotes
-            </Button>
-          </a>
+          <Button variant="coral" size="sm">
+            Login
+          </Button>
         </div>
 
         {/* Mobile Menu Button */}
