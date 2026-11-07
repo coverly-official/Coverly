@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/Button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// TODO: wholesalers, manufacturers and about sections do not exist yet.
 const navLinks = [
   { label: "Home", href: "#" },
-  { label: "Products", href: "#" },
-  { label: "Wholesalers", href: "#" },
-  { label: "Manufacturers", href: "#" },
-  { label: "About", href: "#" },
+  { label: "Products", href: "#products" },
+  { label: "Wholesalers", href: "#wholesalers" },
+  { label: "Manufacturers", href: "#manufacturers" },
+  { label: "About", href: "#about" },
 ];
 
 export function Navbar() {
@@ -68,9 +69,11 @@ export function Navbar() {
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <Button variant="coral" size="sm">
-            Login
-          </Button>
+          <a href="#contact">
+            <Button variant="coral" size="sm">
+              Login
+            </Button>
+          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -111,17 +114,10 @@ export function Navbar() {
               <a
                 href="#contact"
                 onClick={() => setMobileOpen(false)}
-                className="text-center text-sm font-medium text-ink-secondary hover:text-ink py-2"
-              >
-                Log in
-              </a>
-              <a
-                href="#live-demo"
-                onClick={() => setMobileOpen(false)}
                 className="w-full"
               >
-                <Button variant="coral" size="md" className="w-full">
-                  Get Verified Quotes
+                <Button variant="coral" size="md">
+                  Login
                 </Button>
               </a>
             </div>
