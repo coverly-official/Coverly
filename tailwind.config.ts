@@ -27,8 +27,8 @@ const config: Config = {
         whatsapp: "var(--whatsapp)",
       },
       fontFamily: {
-        heading: ["var(--font-jakarta)", "sans-serif"],
-        body: ["var(--font-inter)", "sans-serif"],
+        heading: ["var(--font-raleway)", "sans-serif"],
+        body: ["var(--font-raleway)", "sans-serif"],
         mono: ["var(--font-jetbrains)", "monospace"],
       },
       borderRadius: {

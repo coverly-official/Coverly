@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
+import { Raleway, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
+const raleway = Raleway({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-raleway",
   display: "swap",
-  weight: ["500", "600", "700"],
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-  weight: ["400", "500", "600"],
+  weight: ["400", "600"],
 });
 
 const jetbrains = JetBrains_Mono({
@@ -44,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jakarta.variable} ${inter.variable} ${jetbrains.variable}`}
+      className={`${raleway.variable} ${jetbrains.variable}`}
     >
       <body className="min-h-[100dvh] font-body text-ink antialiased selection:bg-coral selection:text-white">
         {children}
