@@ -1,9 +1,3 @@
-"use client";
-
-import { cn } from "@/lib/utils";
-import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-
 interface CountUpProps {
   value: string;
   className?: string;
@@ -18,18 +12,6 @@ export function CountUp({ value, className }: CountUpProps) {
   const numericMatch = value.match(/^([\d,.]+)(.*)$/);
   const targetNum = numericMatch ? parseFloat(numericMatch[1].replace(/,/g, "")) : null;
   const suffix = numericMatch ? numericMatch[2] : "";
-
-  useEffect(() => {
-    if (!ref.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setInView(true);
-      },
-      { threshold: 0.3 }
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (!inView || reduce || targetNum === null) {
@@ -54,20 +36,22 @@ export function CountUp({ value, className }: CountUpProps) {
 
       if (progress < 1) {
         requestAnimationFrame(tick);
-      } else {
-        setDisplay(value);
       }
     }
 
     requestAnimationFrame(tick);
-  }, [inView, reduce, targetNum, suffix, value]);
+
+    return () => {
+      // cleanup
+    };
+  }, [inView, reduce, targetNum, suffix]);
 
   return (
-    <motion.span
+    <span
       ref={ref}
-      className={cn("font-mono tabular-nums", className)}
+      className={cn("text-3xl font-heading font-bold text-ink", className)}
     >
       {display}
-    </motion.span>
+    </span>
   );
 }

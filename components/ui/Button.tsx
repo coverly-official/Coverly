@@ -1,10 +1,9 @@
-import { cn } from "@/lib/utils";
-import { ButtonHTMLAttributes, ReactNode } from "react";
-
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "ghost" | "coral" | "whatsapp";
   size?: "sm" | "md" | "lg";
   children: ReactNode;
+  className?: string;
+  ...props: any;
 }
 
 export function Button({
@@ -17,8 +16,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-full font-heading font-semibold transition-all duration-200",
-        "active:scale-[0.98] active:translate-y-[1px]",
+        "inline-flex items-center justify-center gap-2 rounded-full font-heading font-semibold transition-colors active:scale-[0.98] active:translate-y-[1px]",
         /* Primary: navy bg, white text */
         variant === "primary" &&
           "bg-navy text-white hover:bg-[#424769] shadow-soft hover:shadow-card",
@@ -27,14 +25,10 @@ export function Button({
           "border border-[rgba(45,50,80,0.2)] text-ink hover:bg-surface-muted",
         /* Coral pill (nav CTA) */
         variant === "coral" &&
-          "bg-coral text-navy hover:brightness-95 shadow-soft hover:shadow-card",
+          "bg-coral text-white hover:bg-[#e8a06a] shadow-soft hover:shadow-card",
         /* WhatsApp */
         variant === "whatsapp" &&
-          "bg-whatsapp text-white hover:bg-[#20bd5a] shadow-soft",
-        /* Sizes */
-        size === "sm" && "px-4 py-2 text-sm",
-        size === "md" && "px-6 py-2.5 text-sm",
-        size === "lg" && "px-8 py-3 text-base",
+          "bg-whatsapp text-white hover:bg-[#424769] shadow-soft hover:shadow-card",
         className
       )}
       {...props}
