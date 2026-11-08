@@ -4,18 +4,18 @@
 
 @layer base {
   :root {
-    --canvas-start: #f9dcd8;
-    --canvas-end: #f5eae6;
+    --canvas-start: #ffffff;
+    --canvas-end: #eef0f7;
     --surface: #ffffff;
-    --surface-muted: #f6f7f9;
-    --surface-pink: #fdeceb;
-    --text-primary: #22252a;
-    --text-secondary: #7a7f87;
-    --btn-primary: #1d2235;
-    --accent: #f16a5a;
+    --surface-muted: #f4f5fa;
+    --surface-pink: #fef1e6;
+    --text-primary: #2d3250;
+    --text-secondary: #676f9d;
+    --btn-primary: #2d3250;
+    --accent: #f9b17a;
     --verified: #1f9d6b;
     --whatsapp: #25d366;
-    --border-color: rgba(34, 37, 42, 0.06);
+    --border-color: rgba(45, 50, 80, 0.1);
     --radius-lg: 24px;
     --radius-xl: 32px;
   }
@@ -78,3 +78,6 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 5rem; }
