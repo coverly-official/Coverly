@@ -1,35 +1,51 @@
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
+import { Products } from "@/components/sections/Products";
+import { WhyCoverly } from "@/components/sections/WhyCoverly";
+import { Comparison } from "@/components/sections/Comparison";
+import { Trust } from "@/components/sections/Trust";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { AiParser } from "@/components/sections/AiParser";
 import { LiveDemo } from "@/components/sections/LiveDemo";
-import { Trust } from "@/components/sections/Trust";
 import { Footer } from "@/components/sections/Footer";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-[100dvh]">
-      {/* 1. Sticky Navigation */}
+      {/* 1. Loading Screen */}
+      <LoadingScreen />
+
+      {/* 2. Sticky Navigation */}
       <Navbar />
 
       <main className="flex-1">
-        {/* 2. Hero Section (Split Asymmetric Layout with Mockup Stats & Overlapping Cards) */}
+        {/* 3. Hero Section (Split Asymmetric Layout with Mockup Stats & Overlapping Cards) */}
         <Hero />
 
-        {/* 3. How It Works (Connect -> Compare -> Manage) */}
+        {/* 4. Products Section */}
+        <Products />
+
+        {/* 5. Why Coverly Section */}
+        <WhyCoverly />
+
+        {/* 6. Comparison Section */}
+        <Comparison />
+
+        {/* 7. Trust & Verification Network */}
+        <Trust />
+
+        {/* 8. How It Works (Connect -> Compare -> Manage) */}
         <HowItWorks />
 
-        {/* 4. AI Feature: WhatsApp-to-Table Parser */}
+        {/* 9. AI Feature: WhatsApp-to-Table Parser */}
         <AiParser />
 
-        {/* 5. Interactive Demo / Live Quote Preview */}
+        {/* 10. Interactive Demo / Live Quote Preview */}
         <LiveDemo />
-
-        {/* 6. Trust & Verification Network */}
-        <Trust />
       </main>
 
-      {/* 7. Footer / Sourcing Concierge Lead Form */}
+      {/* 11. Footer / Sourcing Concierge Lead Form */}
       <Footer />
     </div>
   );
