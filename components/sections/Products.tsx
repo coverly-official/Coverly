@@ -1,6 +1,7 @@
 "use client";
 
 import { productCategories } from "@/data/productCategories";
+import { sampleProducts } from "@/data/products";
 import { Search, Layers, Package, ShoppingBasket, Utensils, Shirt, Cpu, Building2, Leaf, Settings } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,19 @@ export default function Products({ className }: ProductsProps) {
     const matchesSearch = category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       category.tagline.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
+  });
+
+  // Filter products by search query and selected category
+  const filteredProducts = sampleProducts.filter((product) => {
+    const productLowerName = product.name.toLowerCase();
+    const categoryLowerName = productCategories.find(c => c.id === product.categoryId)?.name.toLowerCase() || "";
+    
+    const matchesSearch = productLowerName.includes(searchQuery.toLowerCase()) ||
+      categoryLowerName.includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = selectedCategory ? product.categoryId === selectedCategory : true;
+    
+    return matchesSearch && matchesCategory;
   });
 
   return (
@@ -123,12 +137,56 @@ export default function Products({ className }: ProductsProps) {
           })}
         </div>
 
-        {/* Empty State */}
-        {filteredCategories.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-surface-muted">No categories found matching "{searchQuery}"</p>
+        {/* Featured Listings */}
+        <div className="mt-16">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="inline-flex items-center rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold text-coral">
+              Sample preview
+            </span>
+            <h2 className="text-2xl md:text-3xl font-heading font-bold text-ink">
+              Featured listings
+            </h2>
           </div>
-        )}
+
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-surface-muted">No matching products yet.</p>
+            </div>
+          ) : (
+            <div className={cn(
+              "grid gap-4",
+              "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+            )}>
+              {filteredProducts.map((product) => {
+                const category = productCategories.find(c => c.id === product.categoryId);
+                return (
+                  <div
+                    key={product.id}
+                    className="flex flex-col rounded-2xl bg-surface border border-surface-muted/50 p-6 hover:-translate-y-1 transition-all duration-300"
+                  >
+                    <h3 className="text-base font-heading font-semibold text-ink mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-sm text-surface-muted mb-3">
+                      {category?.name || "Unknown Category"}
+                    </p>
+                    <p className="text-sm text-surface-muted mb-4">
+                      {product.priceRange}
+                    </p>
+                    <span className={cn(
+                      "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
+                      product.supplierType === "Manufacturer" 
+                        ? "bg-navy/10 text-navy" 
+                        : "bg-coral/10 text-coral"
+                    )}>
+                      {product.supplierType}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
