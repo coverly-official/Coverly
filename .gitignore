@@ -54,3 +54,4 @@ skills-lock.json
 *.zip
 *.tar.gz
 .env*
+.aider*
