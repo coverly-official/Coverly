@@ -17,17 +17,17 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-full font-heading font-medium transition-all duration-200",
+        "inline-flex items-center justify-center gap-2 rounded-full font-heading font-semibold transition-all duration-200",
         "active:scale-[0.98] active:translate-y-[1px]",
         /* Primary: navy bg, white text */
         variant === "primary" &&
-          "bg-navy text-white hover:bg-[#2a3048] shadow-soft hover:shadow-card",
+          "bg-navy text-white hover:bg-[#424769] shadow-soft hover:shadow-card",
         /* Ghost: transparent, navy border */
         variant === "ghost" &&
-          "border border-[rgba(34,37,42,0.15)] text-ink hover:bg-surface-muted",
+          "border border-[rgba(45,50,80,0.2)] text-ink hover:bg-surface-muted",
         /* Coral pill (nav CTA) */
         variant === "coral" &&
-          "bg-coral text-white hover:bg-[#e55d4d] shadow-soft hover:shadow-card",
+          "bg-coral text-navy hover:brightness-95 shadow-soft hover:shadow-card",
         /* WhatsApp */
         variant === "whatsapp" &&
           "bg-whatsapp text-white hover:bg-[#20bd5a] shadow-soft",
