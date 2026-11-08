@@ -96,20 +96,10 @@ export function AiParser() {
             informal chats, and photos of paper receipts. Coverly extracts the
             critical terms and calculates actual landed costs automatically.
           </p>
-          <p className="text-sm text-ink-secondary leading-relaxed">
-            Sample data. WhatsApp integration is in development.
-          </p>
         </FadeUp>
 
         {/* Split Visual Presentation */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
-          {/* Sample Preview Badge - Top Right Overlay */}
-          <div className="absolute top-4 right-4 z-30">
-            <span className="inline-flex items-center rounded-full border border-[rgba(34,37,42,0.1)] bg-surface px-3 py-1 text-xs font-semibold text-ink shadow-sm">
-              Sample preview
-            </span>
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Realistic WhatsApp Container */}
           <FadeUp
             delay={0.1}
@@ -212,9 +202,9 @@ export function AiParser() {
             <div className="bg-surface p-3 border-t border-[rgba(34,37,42,0.06)] flex items-center justify-between text-xs text-ink-secondary">
               <span className="flex items-center gap-1.5 font-medium">
                 <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-                WhatsApp integration (in development)
+                Listening to WhatsApp Business Webhook
               </span>
-              <span className="font-mono text-[11px]">Sample data</span>
+              <span className="font-mono text-[11px]">Realtime OCR</span>
             </div>
           </FadeUp>
 

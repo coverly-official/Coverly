@@ -1,79 +1,159 @@
+"use client";
+
+import { FadeUp } from "@/components/ui/FadeUp";
 import { CountUp } from "@/components/ui/CountUp";
-import { cn } from "@/lib/utils";
+import { VerifiedBadge } from "@/components/ui/Badge";
+import { PLACEHOLDERS } from "@/data/placeholders";
+import {
+  ShieldCheck,
+  Building2,
+  FileCheck2,
+  Scale,
+  Award,
+  CheckCircle2,
+} from "lucide-react";
 
-export default function Trust() {
+const verificationSteps = [
+  {
+    icon: Building2,
+    title: "Premise & GSTIN Audit",
+    description:
+      "Physical verification of the manufacturing unit or warehouse, cross-referenced with active GST filings and dispatch logs.",
+  },
+  {
+    icon: Scale,
+    title: "Capacity & MOQ Validation",
+    description:
+      "Independent inspection of installed machinery and production output to guarantee genuine minimum order capacity.",
+  },
+  {
+    icon: FileCheck2,
+    title: "Locked Freight Tariffs",
+    description:
+      "Prior agreement on lane freight charges so buyers never face unexpected transport surcharges upon delivery.",
+  },
+  {
+    icon: Award,
+    title: "Quality Consistency Check",
+    description:
+      "Batch sample evaluation before granting the verified status mark on the Coverly network.",
+  },
+];
+
+export function Trust() {
   return (
-    <section id="trust" className="py-20 bg-surface">
-      <div className="container mx-auto px-4 max-w-5xl">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(45,50,80,0.1)] bg-surface-muted/30 px-4 py-2 text-sm font-semibold text-navy mb-6">
-          <span className="h-2 w-2 rounded-full bg-coral" />
-          Associated with Rungta University Business Incubator, Bhilai
+    <section id="trust" className="py-20 md:py-28 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Top Incubator Badge */}
+        <FadeUp className="flex justify-center mb-6">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-surface border border-[rgba(34,37,42,0.08)] shadow-soft text-xs font-heading font-semibold text-ink">
+            <span className="w-2.5 h-2.5 rounded-full bg-verified" />
+            Incubated at Rungta University Business Incubator, Bhilai
+          </div>
+        </FadeUp>
+
+        {/* Section Headline */}
+        <FadeUp className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl sm:text-4xl font-heading font-bold text-ink tracking-tight mb-4">
+            Ground-Truth Verification to Smash the Trust Deficit
+          </h2>
+          <p className="text-base text-ink-secondary leading-relaxed">
+            Wholesale sourcing fails when suppliers misrepresent capacity or hit
+            buyers with freight markups. We audit on the ground before any vendor
+            earns a verified badge.
+          </p>
+        </FadeUp>
+
+        {/* 4-Step Verification Process Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          {verificationSteps.map((step, idx) => {
+            const Icon = step.icon;
+            return (
+              <FadeUp
+                key={step.title}
+                delay={idx * 0.1}
+                className="bg-surface rounded-card p-6 border border-[rgba(34,37,42,0.06)] shadow-soft hover:shadow-card transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-10 h-10 rounded-2xl bg-surface-pink text-coral flex items-center justify-center mb-5 shadow-sm">
+                    <Icon size={20} />
+                  </div>
+                  <h3 className="font-heading font-semibold text-base text-ink mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-ink-secondary leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+                <div className="pt-4 mt-4 border-t border-[rgba(34,37,42,0.06)] flex items-center gap-1.5 text-[11px] font-semibold text-verified">
+                  <CheckCircle2 size={13} />
+                  Field Verified
+                </div>
+              </FadeUp>
+            );
+          })}
         </div>
 
-        {/* Trust Stats Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-          {/* Single number stats - use CountUp */}
-          <div className="text-center">
-            <CountUp value="78%" />
-            <p className="mt-2 text-sm font-medium text-navy">Satisfied Clients</p>
-          </div>
-
-          <div className="text-center">
-            <CountUp value="95%" />
-            <p className="mt-2 text-sm font-medium text-navy">On-Time Delivery</p>
-          </div>
-
-          {/* Range stats - plain text */}
-          <div className="text-center">
-            <span className="text-3xl font-heading font-bold text-ink">8-12</span>
-            <p className="mt-2 text-sm font-medium text-navy">Years Experience</p>
-          </div>
-
-          <div className="text-center">
-            <span className="text-3xl font-heading font-bold text-ink">15-40%</span>
-            <p className="mt-2 text-sm font-medium text-navy">Cost Savings</p>
-          </div>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-muted/30 border border-[rgba(45,50,80,0.06)]">
-            <div className="h-12 w-12 flex-shrink-0 rounded-full bg-navy/10 flex items-center justify-center">
-              <svg className="h-6 w-6 text-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.818a5.5 5.5 0 00-7.778-7.778m5.778 7.778V17.5M9 12l-3-3" />
-              </svg>
-            </div>
-            <div>
-              <p className="font-semibold text-navy">Verified Suppliers</p>
-              <p className="text-sm text-ink opacity-70">All partners vetted and approved</p>
+        {/* Trust Gap Stat Strip from PLACEHOLDERS */}
+        <FadeUp
+          delay={0.2}
+          className="bg-surface rounded-card-lg p-6 sm:p-8 border border-[rgba(34,37,42,0.06)] shadow-soft mb-16"
+        >
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <span className="text-xs font-heading font-bold text-coral uppercase tracking-wider">
+              The Reality of Indian B2B Procurement
+            </span>
+            <div className="text-lg font-heading font-semibold text-ink mt-1">
+              Why Transparent Sourcing Matters
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-muted/30 border border-[rgba(45,50,80,0.06)]">
-            <div className="h-12 w-12 flex-shrink-0 rounded-full bg-navy/10 flex items-center justify-center">
-              <svg className="h-6 w-6 text-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6.43-12.57a10 10 0 0113.87 0M12 19V5" />
-              </svg>
-            </div>
-            <div>
-              <p className="font-semibold text-navy">Transparent Pricing</p>
-              <p className="text-sm text-ink opacity-70">No hidden fees or surprises</p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            {PLACEHOLDERS.trustStats.map((stat, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-2xl bg-surface-muted/60 border border-[rgba(34,37,42,0.04)]"
+              >
+                <div className="text-2xl sm:text-3xl font-heading font-bold text-ink mb-1.5">
+                  <CountUp value={stat.value} />
+                </div>
+                <div className="text-xs text-ink-secondary leading-snug">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-muted/30 border border-[rgba(45,50,80,0.06)]">
-            <div className="h-12 w-12 flex-shrink-0 rounded-full bg-navy/10 flex items-center justify-center">
-              <svg className="h-6 w-6 text-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636a9 9 0 010 12.728m0 0L12 21m0 0l-3.364-3.364m3.364 3.364L21 12" />
-              </svg>
+          <div className="text-center text-[11px] text-ink-secondary/70 mt-4 font-mono">
+            * Estimated baseline metrics for informal B2B purchasing workflows
+          </div>
+        </FadeUp>
+
+        {/* Partner / Incubation Strip styled like mockup */}
+        <FadeUp delay={0.3} className="text-center">
+          <div className="text-xs font-heading font-semibold uppercase tracking-wider text-ink-secondary mb-6">
+            Ecosystem Associations & Regional Focus
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 py-4 px-6 rounded-2xl bg-surface/60 border border-[rgba(34,37,42,0.06)]">
+            <div className="flex items-center gap-2 font-heading font-bold text-sm text-ink tracking-tight">
+              <span className="w-2 h-2 rounded-full bg-coral" />
+              Rungta Incubation Centre
             </div>
-            <div>
-              <p className="font-semibold text-navy">Quality Assurance</p>
-              <p className="text-sm text-ink opacity-70">Every order inspected before shipping</p>
+            <div className="h-4 w-px bg-[rgba(34,37,42,0.1)] hidden sm:block" />
+            <div className="flex items-center gap-2 font-heading font-semibold text-sm text-ink-secondary">
+              Bhilai Industrial Zone
+            </div>
+            <div className="h-4 w-px bg-[rgba(34,37,42,0.1)] hidden sm:block" />
+            <div className="flex items-center gap-2 font-heading font-semibold text-sm text-ink-secondary">
+              Raipur Logistics Cluster
+            </div>
+            <div className="h-4 w-px bg-[rgba(34,37,42,0.1)] hidden sm:block" />
+            <div className="flex items-center gap-2 font-heading font-semibold text-sm text-ink-secondary">
+              Chhattisgarh MSME Network
             </div>
           </div>
-        </div>
+        </FadeUp>
       </div>
     </section>
   );

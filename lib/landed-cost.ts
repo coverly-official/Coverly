@@ -12,6 +12,10 @@ export type LandedCostResult = {
   freightPerUnit: number;
 };
 
+/**
+ * Calculate the true landed cost per unit.
+ * landed_per_unit = (unit_price * qty * (1 + gst) + freight) / qty
+ */
 export function calculateLandedCost(input: LandedCostInput): LandedCostResult {
   const { unitPrice, quantity, gstRate, freight } = input;
 
@@ -22,9 +26,9 @@ export function calculateLandedCost(input: LandedCostInput): LandedCostResult {
   const freightPerUnit = freight / quantity;
 
   return {
-    landedPerUnit,
-    totalCost,
-    gstAmount,
-    freightPerUnit
+    landedPerUnit: Math.round(landedPerUnit * 100) / 100,
+    totalCost: Math.round(totalCost * 100) / 100,
+    gstAmount: Math.round(gstAmount * 100) / 100,
+    freightPerUnit: Math.round(freightPerUnit * 100) / 100,
   };
 }
