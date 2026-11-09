@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { AccountDialog } from "@/components/ui/AccountDialog";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,6 +18,7 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-surface/90 backdrop-blur-md border-b border-[rgba(45,50,80,0.06)] transition-colors">
@@ -64,16 +66,15 @@ export function Navbar() {
             >
               {link.label}
             </a>
+  
           ))}
         </nav>
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <a href="/#contact">
-            <Button variant="coral" size="sm">
-              Login
-            </Button>
-          </a>
+          <Button variant="coral" size="sm" onClick={() => setAccountOpen(true)}>
+            Login
+          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -111,19 +112,22 @@ export function Navbar() {
               ))}
             </nav>
             <div className="pt-4 border-t border-[rgba(45,50,80,0.06)] flex flex-col gap-3">
-              <a
-                href="/#contact"
-                onClick={() => setMobileOpen(false)}
+              <Button
+                variant="coral"
+                size="md"
+                onClick={() => {
+                  setMobileOpen(false);
+                  setAccountOpen(true);
+                }}
                 className="w-full"
               >
-                <Button variant="coral" size="md">
-                  Login
-                </Button>
-              </a>
+                Login
+              </Button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+      <AccountDialog isOpen={accountOpen} onClose={() => setAccountOpen(false)} />
     </header>
   );
 }

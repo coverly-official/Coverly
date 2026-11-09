@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { AccountDialog } from "@/components/ui/AccountDialog";
 import { FadeUp } from "@/components/ui/FadeUp";
 
 export function Hero() {
+  const [accountOpen, setAccountOpen] = useState(false);
+
   return (
     <section
       id="hero"
@@ -24,14 +28,17 @@ export function Hero() {
                 Browse Products
               </Button>
             </a>
-            <a href="#contact">
-              <Button variant="ghost" size="lg">
-                Login
-              </Button>
-            </a>
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={() => setAccountOpen(true)}
+            >
+              Login
+            </Button>
           </div>
         </FadeUp>
       </div>
+      <AccountDialog isOpen={accountOpen} onClose={() => setAccountOpen(false)} />
     </section>
   );
 }

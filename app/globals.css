@@ -65,7 +65,8 @@
   }
 }
 
-section[id] {
+section[id],
+footer[id] {
   scroll-margin-top: 5rem;
 }
 
