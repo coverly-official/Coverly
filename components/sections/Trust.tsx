@@ -46,7 +46,7 @@ export function Trust() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Top Incubator Badge */}
         <FadeUp className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-surface border border-[rgba(34,37,42,0.08)] shadow-soft text-xs font-heading font-semibold text-ink">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-surface border border-[rgba(45,50,80,0.08)] shadow-soft text-xs font-heading font-semibold text-ink">
             <span className="w-2.5 h-2.5 rounded-full bg-verified" />
             Incubated at Rungta University Business Incubator, Bhilai
           </div>
@@ -72,7 +72,7 @@ export function Trust() {
               <FadeUp
                 key={step.title}
                 delay={idx * 0.1}
-                className="bg-surface rounded-card p-6 border border-[rgba(34,37,42,0.06)] shadow-soft hover:shadow-card transition-all flex flex-col justify-between"
+                className="bg-surface rounded-card p-6 border border-[rgba(45,50,80,0.06)] shadow-soft hover:shadow-card transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="w-10 h-10 rounded-2xl bg-surface-pink text-coral flex items-center justify-center mb-5 shadow-sm">
@@ -85,7 +85,7 @@ export function Trust() {
                     {step.description}
                   </p>
                 </div>
-                <div className="pt-4 mt-4 border-t border-[rgba(34,37,42,0.06)] flex items-center gap-1.5 text-[11px] font-semibold text-verified">
+                <div className="pt-4 mt-4 border-t border-[rgba(45,50,80,0.06)] flex items-center gap-1.5 text-[11px] font-semibold text-verified">
                   <CheckCircle2 size={13} />
                   Field Verified
                 </div>
@@ -97,7 +97,7 @@ export function Trust() {
         {/* Trust Gap Stat Strip from PLACEHOLDERS */}
         <FadeUp
           delay={0.2}
-          className="bg-surface rounded-card-lg p-6 sm:p-8 border border-[rgba(34,37,42,0.06)] shadow-soft mb-16"
+          className="bg-surface rounded-card-lg p-6 sm:p-8 border border-[rgba(45,50,80,0.06)] shadow-soft mb-16"
         >
           <div className="text-center max-w-xl mx-auto mb-8">
             <span className="text-xs font-heading font-bold text-coral uppercase tracking-wider">
@@ -112,7 +112,7 @@ export function Trust() {
             {PLACEHOLDERS.trustStats.map((stat, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-2xl bg-surface-muted/60 border border-[rgba(34,37,42,0.04)]"
+                className="p-4 rounded-2xl bg-surface-muted/60 border border-[rgba(45,50,80,0.04)]"
               >
                 <div className="text-2xl sm:text-3xl font-heading font-bold text-ink mb-1.5">
                   <CountUp value={stat.value} />
@@ -135,20 +135,20 @@ export function Trust() {
             Ecosystem Associations & Regional Focus
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 py-4 px-6 rounded-2xl bg-surface/60 border border-[rgba(34,37,42,0.06)]">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 py-4 px-6 rounded-2xl bg-surface/60 border border-[rgba(45,50,80,0.06)]">
             <div className="flex items-center gap-2 font-heading font-bold text-sm text-ink tracking-tight">
               <span className="w-2 h-2 rounded-full bg-coral" />
               Rungta Incubation Centre
             </div>
-            <div className="h-4 w-px bg-[rgba(34,37,42,0.1)] hidden sm:block" />
+            <div className="h-4 w-px bg-[rgba(45,50,80,0.1)] hidden sm:block" />
             <div className="flex items-center gap-2 font-heading font-semibold text-sm text-ink-secondary">
               Bhilai Industrial Zone
             </div>
-            <div className="h-4 w-px bg-[rgba(34,37,42,0.1)] hidden sm:block" />
+            <div className="h-4 w-px bg-[rgba(45,50,80,0.1)] hidden sm:block" />
             <div className="flex items-center gap-2 font-heading font-semibold text-sm text-ink-secondary">
               Raipur Logistics Cluster
             </div>
-            <div className="h-4 w-px bg-[rgba(34,37,42,0.1)] hidden sm:block" />
+            <div className="h-4 w-px bg-[rgba(45,50,80,0.1)] hidden sm:block" />
             <div className="flex items-center gap-2 font-heading font-semibold text-sm text-ink-secondary">
               Chhattisgarh MSME Network
             </div>

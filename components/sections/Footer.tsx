@@ -69,10 +69,10 @@ export function Footer() {
   };
 
   return (
-    <footer id="contact" className="pt-20 md:pt-28 pb-12 bg-surface border-t border-[rgba(34,37,42,0.06)]">
+    <footer id="contact" className="pt-20 md:pt-28 pb-12 bg-surface border-t border-[rgba(45,50,80,0.06)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Concierge Sourcing Lead Card */}
-        <div className="bg-surface-muted rounded-card-lg p-6 sm:p-10 md:p-12 border border-[rgba(34,37,42,0.06)] shadow-card mb-20">
+        <div className="bg-surface-muted rounded-card-lg p-6 sm:p-10 md:p-12 border border-[rgba(45,50,80,0.06)] shadow-card mb-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             {/* Left Column: Value Prop & WhatsApp Direct */}
             <div className="lg:col-span-5 space-y-6">
@@ -107,7 +107,7 @@ export function Footer() {
               </div>
 
               {/* Instant WhatsApp Action */}
-              <div className="pt-4 border-t border-[rgba(34,37,42,0.06)]">
+              <div className="pt-4 border-t border-[rgba(45,50,80,0.06)]">
                 <div className="text-xs font-semibold text-ink-secondary mb-3">
                   Prefer direct messaging?
                 </div>
@@ -126,7 +126,7 @@ export function Footer() {
             </div>
 
             {/* Right Column: Lead Form */}
-            <div className="lg:col-span-7 bg-surface rounded-card p-6 sm:p-8 border border-[rgba(34,37,42,0.06)] shadow-soft">
+            <div className="lg:col-span-7 bg-surface rounded-card p-6 sm:p-8 border border-[rgba(45,50,80,0.06)] shadow-soft">
               {isSubmitted ? (
                 <div className="py-12 text-center space-y-4">
                   <div className="w-14 h-14 rounded-full bg-verified/10 text-verified mx-auto flex items-center justify-center">
@@ -182,7 +182,7 @@ export function Footer() {
                         className={`w-full h-11 px-3.5 rounded-xl bg-surface-muted border text-sm text-ink transition-colors focus:ring-1 ${
                           errors.name
                             ? "border-coral focus:border-coral focus:ring-coral"
-                            : "border-[rgba(34,37,42,0.1)] focus:border-navy focus:ring-navy"
+                            : "border-[rgba(45,50,80,0.1)] focus:border-navy focus:ring-navy"
                         }`}
                       />
                       {errors.name && (
@@ -211,7 +211,7 @@ export function Footer() {
                         className={`w-full h-11 px-3.5 rounded-xl bg-surface-muted border text-sm text-ink transition-colors focus:ring-1 ${
                           errors.business
                             ? "border-coral focus:border-coral focus:ring-coral"
-                            : "border-[rgba(34,37,42,0.1)] focus:border-navy focus:ring-navy"
+                            : "border-[rgba(45,50,80,0.1)] focus:border-navy focus:ring-navy"
                         }`}
                       />
                       {errors.business && (
@@ -242,7 +242,7 @@ export function Footer() {
                         className={`w-full h-11 px-3.5 rounded-xl bg-surface-muted border text-sm text-ink font-mono transition-colors focus:ring-1 ${
                           errors.phone
                             ? "border-coral focus:border-coral focus:ring-coral"
-                            : "border-[rgba(34,37,42,0.1)] focus:border-navy focus:ring-navy"
+                            : "border-[rgba(45,50,80,0.1)] focus:border-navy focus:ring-navy"
                         }`}
                       />
                       {errors.phone && (
@@ -266,7 +266,7 @@ export function Footer() {
                         onChange={(e) =>
                           setFormData({ ...formData, category: e.target.value })
                         }
-                        className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(34,37,42,0.1)] text-sm text-ink focus:border-navy focus:ring-1 focus:ring-navy transition-colors"
+                        className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.1)] text-sm text-ink focus:border-navy focus:ring-1 focus:ring-navy transition-colors"
                       >
                         {categories.map((cat) => (
                           <option key={cat.id} value={cat.id}>
@@ -296,7 +296,7 @@ export function Footer() {
                       className={`w-full p-3 rounded-xl bg-surface-muted border text-sm text-ink transition-colors focus:ring-1 ${
                         errors.requirement
                           ? "border-coral focus:border-coral focus:ring-coral"
-                          : "border-[rgba(34,37,42,0.1)] focus:border-navy focus:ring-navy"
+                          : "border-[rgba(45,50,80,0.1)] focus:border-navy focus:ring-navy"
                       }`}
                     />
                     {errors.requirement && (
@@ -329,10 +329,10 @@ export function Footer() {
         </div>
 
         {/* Global Footer Navigation & Legal Row */}
-        <div className="pt-8 border-t border-[rgba(34,37,42,0.06)] flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="pt-8 border-t border-[rgba(45,50,80,0.06)] flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Brand & Mission */}
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-coral flex items-center justify-center text-white">
+            <div className="w-7 h-7 rounded-lg bg-coral flex items-center justify-center text-navy">
               <span className="font-bold text-xs">C</span>
             </div>
             <span className="font-heading font-bold text-ink">Coverly</span>

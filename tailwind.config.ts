@@ -36,10 +36,10 @@ const config: Config = {
         "card-lg": "var(--radius-xl)",
       },
       boxShadow: {
-        soft: "0 2px 8px rgba(34,37,42,0.04), 0 0 1px rgba(34,37,42,0.06)",
-        card: "0 4px 16px rgba(34,37,42,0.06), 0 0 1px rgba(34,37,42,0.08)",
+        soft: "0 2px 8px rgba(45,50,80,0.04), 0 0 1px rgba(45,50,80,0.06)",
+        card: "0 4px 16px rgba(45,50,80,0.06), 0 0 1px rgba(45,50,80,0.08)",
         "card-hover":
-          "0 8px 24px rgba(34,37,42,0.08), 0 0 1px rgba(34,37,42,0.1)",
+          "0 8px 24px rgba(45,50,80,0.08), 0 0 1px rgba(45,50,80,0.1)",
       },
       keyframes: {
         "scan-line": {

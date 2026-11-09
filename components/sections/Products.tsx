@@ -16,10 +16,10 @@ export default function Products({ className }: ProductsProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const iconMap: Record<string, React.ElementType> = {
-    raw-materials: Layers,
+    "raw-materials": Layers,
     packaging: Package,
-    fmcg-groceries: ShoppingBasket,
-    food-beverages: Utensils,
+    "fmcg-groceries": ShoppingBasket,
+    "food-beverages": Utensils,
     textiles: Shirt,
     electronics: Cpu,
     construction: Building2,

@@ -98,11 +98,11 @@ export function LiveDemo() {
   }, [bestLandedSupplier, lowestStickerSupplier, quantity]);
 
   return (
-    <section id="live-demo" className="py-20 md:py-28 bg-surface-muted/60 border-y border-[rgba(34,37,42,0.06)]">
+    <section id="live-demo" className="py-20 md:py-28 bg-surface-muted/60 border-y border-[rgba(45,50,80,0.06)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Header */}
         <FadeUp className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface text-xs font-heading font-semibold text-coral uppercase tracking-wider mb-4 border border-[rgba(34,37,42,0.06)] shadow-soft">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface text-xs font-heading font-semibold text-coral uppercase tracking-wider mb-4 border border-[rgba(45,50,80,0.06)] shadow-soft">
             <Calculator size={14} /> Interactive RFQ Simulator
           </div>
           <h2 className="text-3xl sm:text-4xl font-heading font-bold text-ink tracking-tight mb-4">
@@ -115,14 +115,14 @@ export function LiveDemo() {
         </FadeUp>
 
         {/* Demo Widget Container */}
-        <div className="bg-surface rounded-card-lg p-6 sm:p-8 md:p-10 border border-[rgba(34,37,42,0.06)] shadow-card">
+        <div className="bg-surface rounded-card-lg p-6 sm:p-8 md:p-10 border border-[rgba(45,50,80,0.06)] shadow-card">
           {/* Controls Form */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
               setIsCalculated(true);
             }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end pb-8 border-b border-[rgba(34,37,42,0.06)] mb-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end pb-8 border-b border-[rgba(45,50,80,0.06)] mb-8"
           >
             {/* Category Select */}
             <div className="space-y-1.5">
@@ -136,7 +136,7 @@ export function LiveDemo() {
                 id={`${formId}-category`}
                 value={selectedCategory}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(34,37,42,0.1)] text-sm font-body text-ink focus:border-coral focus:ring-1 focus:ring-coral transition-colors"
+                className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.1)] text-sm font-body text-ink focus:border-coral focus:ring-1 focus:ring-coral transition-colors"
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -161,7 +161,7 @@ export function LiveDemo() {
                 step={50}
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(34,37,42,0.1)] text-sm font-mono text-ink focus:border-coral focus:ring-1 focus:ring-coral transition-colors"
+                className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.1)] text-sm font-mono text-ink focus:border-coral focus:ring-1 focus:ring-coral transition-colors"
               />
             </div>
 
@@ -177,7 +177,7 @@ export function LiveDemo() {
                 id={`${formId}-city`}
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(34,37,42,0.1)] text-sm font-body text-ink focus:border-coral focus:ring-1 focus:ring-coral transition-colors"
+                className="w-full h-11 px-3.5 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.1)] text-sm font-body text-ink focus:border-coral focus:ring-1 focus:ring-coral transition-colors"
               >
                 {cities.map((city) => (
                   <option key={city} value={city}>
@@ -208,7 +208,7 @@ export function LiveDemo() {
           >
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[rgba(34,37,42,0.08)] text-[11px] font-heading font-bold text-ink-secondary uppercase tracking-wider">
+                <tr className="border-b border-[rgba(45,50,80,0.08)] text-[11px] font-heading font-bold text-ink-secondary uppercase tracking-wider">
                   <th className="pb-3 pr-4">Supplier & Location</th>
                   <th className="pb-3 px-3">Unit Price</th>
                   <th className="pb-3 px-3">MOQ</th>
@@ -217,7 +217,7 @@ export function LiveDemo() {
                   <th className="pb-3 pl-4 text-right">Landed Cost / Unit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(34,37,42,0.06)] text-sm">
+              <tbody className="divide-y divide-[rgba(45,50,80,0.06)] text-sm">
                 {computedSuppliers.map((supplier) => {
                   const isBest =
                     bestLandedSupplier &&
@@ -297,7 +297,7 @@ export function LiveDemo() {
                             {formatRupees(supplier.calculation.landedPerUnit)}
                           </span>
                           {isBest && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-coral text-white text-xs font-heading font-bold shadow-sm">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-coral text-navy text-xs font-heading font-bold shadow-sm">
                               <Award size={12} />
                               Best landed cost
                             </span>
@@ -322,7 +322,7 @@ export function LiveDemo() {
               className="mt-8 p-4 rounded-2xl bg-surface-pink border border-[rgba(241,106,90,0.25)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
             >
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-coral text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-coral text-navy flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
                   <Info size={16} />
                 </div>
                 <div>

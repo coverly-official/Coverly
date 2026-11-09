@@ -12,8 +12,8 @@ const steps = [
       "Enter specifications, quantities, and delivery location. Coverly prioritizes verified suppliers nearby first, then across the state.",
     badge: "Location Prioritized",
     snippet: (
-      <div className="bg-surface rounded-xl p-3 border border-[rgba(34,37,42,0.06)] shadow-soft text-xs space-y-2">
-        <div className="flex items-center justify-between font-mono text-[11px] text-ink-secondary pb-1.5 border-b border-[rgba(34,37,42,0.06)]">
+      <div className="bg-surface rounded-xl p-3 border border-[rgba(45,50,80,0.06)] shadow-soft text-xs space-y-2">
+        <div className="flex items-center justify-between font-mono text-[11px] text-ink-secondary pb-1.5 border-b border-[rgba(45,50,80,0.06)]">
           <span className="flex items-center gap-1 text-ink font-semibold">
             <Layers size={13} className="text-coral" /> RFQ-8492
           </span>
@@ -42,8 +42,8 @@ const steps = [
       "See raw sticker prices converted into transparent landed figures including MOQ, freight quotes, and applicable GST rates.",
     badge: "Transparent Math",
     snippet: (
-      <div className="bg-surface rounded-xl p-3 border border-[rgba(34,37,42,0.06)] shadow-soft text-xs space-y-1.5">
-        <div className="flex items-center justify-between text-[11px] font-mono text-ink-secondary pb-1 border-b border-[rgba(34,37,42,0.06)]">
+      <div className="bg-surface rounded-xl p-3 border border-[rgba(45,50,80,0.06)] shadow-soft text-xs space-y-1.5">
+        <div className="flex items-center justify-between text-[11px] font-mono text-ink-secondary pb-1 border-b border-[rgba(45,50,80,0.06)]">
           <span>Formula</span>
           <span className="text-coral font-semibold">(Price + GST) + Freight</span>
         </div>
@@ -66,8 +66,8 @@ const steps = [
       "Select your best match, coordinate delivery status, and reorder from trusted partners in one organized workflow.",
     badge: "Unified Sourcing",
     snippet: (
-      <div className="bg-surface rounded-xl p-3 border border-[rgba(34,37,42,0.06)] shadow-soft text-xs space-y-2">
-        <div className="flex items-center justify-between text-[11px] font-mono text-ink-secondary pb-1 border-b border-[rgba(34,37,42,0.06)]">
+      <div className="bg-surface rounded-xl p-3 border border-[rgba(45,50,80,0.06)] shadow-soft text-xs space-y-2">
+        <div className="flex items-center justify-between text-[11px] font-mono text-ink-secondary pb-1 border-b border-[rgba(45,50,80,0.06)]">
           <span className="text-ink font-semibold">PO #4102</span>
           <span className="text-verified flex items-center gap-1 font-sans">
             <CheckCircle2 size={12} /> Confirmed
@@ -89,7 +89,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 md:py-28 bg-surface/50 border-y border-[rgba(34,37,42,0.06)]">
+    <section id="how-it-works" className="py-20 md:py-28 bg-surface/50 border-y border-[rgba(45,50,80,0.06)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Header: Clean vertical stack */}
         <FadeUp className="text-center max-w-2xl mx-auto mb-16">
@@ -118,12 +118,12 @@ export function HowItWorks() {
               <FadeUp
                 key={step.action}
                 delay={index * 0.12}
-                className="bg-surface rounded-card p-6 sm:p-7 border border-[rgba(34,37,42,0.06)] shadow-soft hover:shadow-card transition-all duration-300 flex flex-col justify-between"
+                className="bg-surface rounded-card p-6 sm:p-7 border border-[rgba(45,50,80,0.06)] shadow-soft hover:shadow-card transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   {/* Top row: Number circle & Badge */}
                   <div className="flex items-center justify-between mb-6">
-                    <span className="w-10 h-10 rounded-2xl bg-surface-muted border border-[rgba(34,37,42,0.08)] flex items-center justify-center font-mono font-bold text-sm text-ink shadow-sm">
+                    <span className="w-10 h-10 rounded-2xl bg-surface-muted border border-[rgba(45,50,80,0.08)] flex items-center justify-center font-mono font-bold text-sm text-ink shadow-sm">
                       {step.number}
                     </span>
                     <span className="text-[11px] font-medium text-ink-secondary bg-surface-muted px-2.5 py-1 rounded-full">
@@ -144,7 +144,7 @@ export function HowItWorks() {
                 </div>
 
                 {/* Illustrative Snippet */}
-                <div className="pt-4 border-t border-[rgba(34,37,42,0.06)]">
+                <div className="pt-4 border-t border-[rgba(45,50,80,0.06)]">
                   {step.snippet}
                 </div>
               </FadeUp>

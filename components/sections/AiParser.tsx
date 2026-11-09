@@ -84,7 +84,7 @@ export function AiParser() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <FadeUp className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-[rgba(34,37,42,0.06)] text-xs font-semibold text-ink mb-4 shadow-soft">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-[rgba(45,50,80,0.06)] text-xs font-semibold text-ink mb-4 shadow-soft">
             <Sparkles size={14} className="text-coral" />
             WhatsApp to Structured Table Parser
           </div>
@@ -103,7 +103,7 @@ export function AiParser() {
           {/* Left: Realistic WhatsApp Container */}
           <FadeUp
             delay={0.1}
-            className="lg:col-span-5 bg-[#EFEAE2] rounded-card-lg overflow-hidden border border-[rgba(34,37,42,0.1)] shadow-card flex flex-col"
+            className="lg:col-span-5 bg-[#EFEAE2] rounded-card-lg overflow-hidden border border-[rgba(45,50,80,0.1)] shadow-card flex flex-col"
           >
             {/* WhatsApp Header Bar */}
             <div className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between">
@@ -199,7 +199,7 @@ export function AiParser() {
             </div>
 
             {/* Bottom Parser Indicator */}
-            <div className="bg-surface p-3 border-t border-[rgba(34,37,42,0.06)] flex items-center justify-between text-xs text-ink-secondary">
+            <div className="bg-surface p-3 border-t border-[rgba(45,50,80,0.06)] flex items-center justify-between text-xs text-ink-secondary">
               <span className="flex items-center gap-1.5 font-medium">
                 <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
                 Listening to WhatsApp Business Webhook
@@ -211,7 +211,7 @@ export function AiParser() {
           {/* Right: Clean Structured Table */}
           <FadeUp
             delay={0.2}
-            className="lg:col-span-7 bg-surface rounded-card-lg p-6 sm:p-8 border border-[rgba(34,37,42,0.06)] shadow-card relative flex flex-col justify-between"
+            className="lg:col-span-7 bg-surface rounded-card-lg p-6 sm:p-8 border border-[rgba(45,50,80,0.06)] shadow-card relative flex flex-col justify-between"
           >
             {/* Scanning Line Effect when triggered */}
             {isScanning && (
@@ -222,7 +222,7 @@ export function AiParser() {
             )}
 
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[rgba(34,37,42,0.06)] mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[rgba(45,50,80,0.06)] mb-6">
                 <div>
                   <h3 className="text-lg font-heading font-semibold text-ink">
                     Structured Comparison Extraction
@@ -248,7 +248,7 @@ export function AiParser() {
                     className={`rounded-2xl p-4 border transition-all ${
                       row.highlight
                         ? "bg-surface-pink/40 border-coral/30 shadow-soft"
-                        : "bg-surface-muted border-[rgba(34,37,42,0.06)]"
+                        : "bg-surface-muted border-[rgba(45,50,80,0.06)]"
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -261,8 +261,8 @@ export function AiParser() {
                       <span
                         className={`text-xs font-heading font-semibold px-2.5 py-0.5 rounded-full ${
                           row.highlight
-                            ? "bg-coral text-white"
-                            : "bg-surface text-ink-secondary border border-[rgba(34,37,42,0.06)]"
+                            ? "bg-coral text-navy"
+                            : "bg-surface text-ink-secondary border border-[rgba(45,50,80,0.06)]"
                         }`}
                       >
                         {row.tag}
@@ -296,7 +296,7 @@ export function AiParser() {
                         </div>
                         <div className="font-mono text-ink mt-0.5">{row.gst}</div>
                       </div>
-                      <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-[rgba(34,37,42,0.06)] pt-1 sm:pt-0 sm:pl-3">
+                      <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-[rgba(45,50,80,0.06)] pt-1 sm:pt-0 sm:pl-3">
                         <div className="text-[10px] text-coral uppercase tracking-wider font-bold">
                           Landed/Unit
                         </div>
@@ -315,7 +315,7 @@ export function AiParser() {
             </div>
 
             {/* Bottom Callout Note */}
-            <div className="mt-6 pt-4 border-t border-[rgba(34,37,42,0.06)] flex items-center justify-between text-xs text-ink-secondary">
+            <div className="mt-6 pt-4 border-t border-[rgba(45,50,80,0.06)] flex items-center justify-between text-xs text-ink-secondary">
               <span className="max-w-[42ch]">
                 Notice: Surat appears Rs 9 cheaper on sticker, but high freight makes
                 Ludhiana Rs 5.35 cheaper per landed unit.

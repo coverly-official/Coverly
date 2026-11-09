@@ -3,7 +3,6 @@ import { calculateLandedCost } from "@/lib/landed-cost";
 import { formatRupees } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { FadeUp } from "@/components/ui/FadeUp";
-import { VerifiedBadge } from "@/components/ui/Badge";
 
 export default function Comparison() {
   const cottonTshirtsCategory: ProductCategory = [
@@ -117,15 +116,7 @@ export default function Comparison() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-ink">{supplier.name}</span>
                         {isBest && (
-                          <VerifiedBadge
-                            size="sm"
-                            className={cn(
-                              "bg-coral text-navy",
-                              isBest ? "" : "bg-coral/10 text-surface-muted"
-                            )}
-                          >
-                            Best landed cost
-                          </VerifiedBadge>
+                          <span className="inline-flex items-center rounded-full bg-coral px-2 py-0.5 text-[11px] font-semibold text-navy">Best landed cost</span>
                         )}
                       </div>
                       <span className="text-surface-muted">

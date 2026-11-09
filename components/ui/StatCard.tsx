@@ -11,7 +11,7 @@ export function StatCard({ value, label, className }: StatCardProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl bg-surface p-4 shadow-soft border border-[rgba(34,37,42,0.06)]",
+        "rounded-2xl bg-surface p-4 shadow-soft border border-[rgba(45,50,80,0.06)]",
         className
       )}
     >
