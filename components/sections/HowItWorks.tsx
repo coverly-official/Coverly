@@ -118,7 +118,7 @@ export function HowItWorks() {
               <FadeUp
                 key={step.action}
                 delay={index * 0.12}
-                className="bg-surface rounded-card p-6 sm:p-7 border border-[rgba(45,50,80,0.06)] shadow-soft hover:shadow-card transition-all duration-300 flex flex-col justify-between"
+                className="bg-surface rounded-card p-6 sm:p-7 border border-[rgba(45,50,80,0.06)] shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all duration-200 motion-reduce:transform-none flex flex-col justify-between"
               >
                 <div>
                   {/* Top row: Number circle & Badge */}

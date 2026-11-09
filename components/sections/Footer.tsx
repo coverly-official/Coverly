@@ -31,7 +31,6 @@ export function Footer() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
@@ -60,13 +59,26 @@ export function Footer() {
     setErrors({});
     setIsSubmitting(true);
 
+    const selectedCatLabel = categories.find((c) => c.id === formData.category)?.label || formData.category;
+    const message = [
+      "Hello Coverly team,",
+      "",
+      `Name: ${formData.name}`,
+      `Business: ${formData.business}`,
+      `Phone: ${formData.phone}`,
+      `Category: ${selectedCatLabel}`,
+      `Requirement: ${formData.requirement}`,
+    ].join("\n");
 
+    if (WHATSAPP_NUMBER) {
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
+    } else if (CONTACT_EMAIL) {
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Coverly Sourcing Request - " + formData.business)}&body=${encodeURIComponent(message)}`;
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
+    }
 
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 600);
+    setIsSubmitting(false);
   };
 
   return (
@@ -78,7 +90,7 @@ export function Footer() {
             {/* Left Column: Value Prop & WhatsApp Direct */}
             <div className="lg:col-span-5 space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-pink text-coral text-xs font-heading font-semibold uppercase tracking-wider">
-                <Clock size={13} /> 48-Hour Concierge Pilot
+                <Clock size={13} /> Sourcing Concierge Pilot
               </div>
 
               <h2 className="text-3xl font-heading font-bold text-ink tracking-tight">
@@ -88,8 +100,7 @@ export function Footer() {
               <p className="text-sm text-ink-secondary leading-relaxed">
                 Need raw materials or bulk orders right away? Tell us your target
                 item, quantity, and destination. Our pilot concierge team contacts
-                verified producers across the state to collect landed quotes for
-                you within 48 hours.
+                producers across the state to collect landed quotes.
               </p>
 
               <div className="space-y-3 pt-2">
@@ -103,7 +114,7 @@ export function Footer() {
                   <div className="w-8 h-8 rounded-xl bg-surface flex items-center justify-center text-coral shadow-sm">
                     <ShieldCheck size={16} />
                   </div>
-                  <span>Direct phone verification of suppliers</span>
+                  <span>Direct contact with regional suppliers</span>
                 </div>
               </div>
 
@@ -134,41 +145,7 @@ export function Footer() {
 
             {/* Right Column: Lead Form */}
             <div className="lg:col-span-7 bg-surface rounded-card p-6 sm:p-8 border border-[rgba(45,50,80,0.06)] shadow-soft">
-              {isSubmitted ? (
-                <div className="py-12 text-center space-y-4">
-                  <div className="w-14 h-14 rounded-full bg-verified/10 text-verified mx-auto flex items-center justify-center">
-                    <CheckCircle2 size={32} />
-                  </div>
-                  <h3 className="text-xl font-heading font-bold text-ink">
-                    Request Received!
-                  </h3>
-                  <p className="text-sm text-ink-secondary max-w-md mx-auto leading-relaxed">
-                    Thank you, {formData.name}. Our sourcing concierge has logged
-                    your requirement for {formData.business}. We will reach out on
-                    WhatsApp within {PLACEHOLDERS.responseTime} with matched supplier
-                    options.
-                  </p>
-                  <div className="pt-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setIsSubmitted(false);
-                        setFormData({
-                          name: "",
-                          business: "",
-                          phone: "",
-                          category: categories[0].id,
-                          requirement: "",
-                        });
-                      }}
-                    >
-                      Submit Another Requirement
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Full Name */}
                     <div className="space-y-1.5">
@@ -322,15 +299,14 @@ export function Footer() {
                       disabled={isSubmitting}
                       className="w-full"
                     >
-                      {isSubmitting ? "Submitting..." : "Submit for 48h Concierge Match"}
+                      {isSubmitting ? "Opening WhatsApp..." : "Send Sourcing Request via WhatsApp"}
                       <Send size={15} />
                     </Button>
                     <p className="text-[11px] text-ink-secondary text-center mt-2.5">
-                      No spam. We contact you only with verified quote options.
+                      Opens WhatsApp with your requirement prefilled. Email fallback if unavailable.
                     </p>
                   </div>
                 </form>
-              )}
             </div>
           </div>
         </div>

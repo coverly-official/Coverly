@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FadeUp } from "@/components/ui/FadeUp";
+import { supplierData } from "@/data/suppliers";
+import { calculateLandedCost } from "@/lib/landed-cost";
+import { formatRupees } from "@/lib/utils";
 import { VerifiedBadge } from "@/components/ui/Badge";
 import {
   MessageSquare,
@@ -44,26 +47,46 @@ const chatMessages = [
   },
 ];
 
+// Sample data from data/suppliers.ts calculated through calculateLandedCost
+const cottonCategory = supplierData.find((c) => c.id === "cotton-tshirts") || supplierData[0];
+const ludhianaSupplier = cottonCategory.suppliers.find((s) => s.city === "Ludhiana") || cottonCategory.suppliers[2];
+const suratSupplier = cottonCategory.suppliers.find((s) => s.city === "Surat") || cottonCategory.suppliers[1];
+const sampleQty = cottonCategory.defaultQty;
+
+const ludhianaLanded = calculateLandedCost({
+  unitPrice: ludhianaSupplier.unitPrice,
+  quantity: sampleQty,
+  gstRate: ludhianaSupplier.gstRate,
+  freight: ludhianaSupplier.freight,
+});
+
+const suratLanded = calculateLandedCost({
+  unitPrice: suratSupplier.unitPrice,
+  quantity: sampleQty,
+  gstRate: suratSupplier.gstRate,
+  freight: suratSupplier.freight,
+});
+
 const parsedRows = [
   {
-    source: "Ludhiana Garments Co",
-    rawQuote: "Rs205/pc + Rs2400 transport + 5% GST",
-    unitPrice: "Rs205.00",
-    moq: "250 pcs",
-    freight: "Rs2,400",
-    gst: "5%",
-    landed: "Rs220.05",
+    source: ludhianaSupplier.name,
+    rawQuote: `Rs${ludhianaSupplier.unitPrice}/pc + Rs${ludhianaSupplier.freight} transport + ${Math.round(ludhianaSupplier.gstRate * 100)}% GST`,
+    unitPrice: formatRupees(ludhianaSupplier.unitPrice),
+    moq: `${ludhianaSupplier.moq} pcs`,
+    freight: formatRupees(ludhianaSupplier.freight),
+    gst: `${Math.round(ludhianaSupplier.gstRate * 100)}%`,
+    landed: formatRupees(ludhianaLanded.landedPerUnit),
     highlight: true,
     tag: "Best Landed Cost",
   },
   {
-    source: "Surat Textile Hub",
-    rawQuote: "Rs196/pc + Rs9800 transport + 5% GST",
-    unitPrice: "Rs196.00",
-    moq: "500 pcs",
-    freight: "Rs9,800",
-    gst: "5%",
-    landed: "Rs225.40",
+    source: suratSupplier.name,
+    rawQuote: `Rs${suratSupplier.unitPrice}/pc + Rs${suratSupplier.freight} transport + ${Math.round(suratSupplier.gstRate * 100)}% GST`,
+    unitPrice: formatRupees(suratSupplier.unitPrice),
+    moq: `${suratSupplier.moq} pcs`,
+    freight: formatRupees(suratSupplier.freight),
+    gst: `${Math.round(suratSupplier.gstRate * 100)}%`,
+    landed: formatRupees(suratLanded.landedPerUnit),
     highlight: false,
     tag: "Lowest Sticker Only",
   },
@@ -86,10 +109,10 @@ export function AiParser() {
         <FadeUp className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-[rgba(45,50,80,0.06)] text-xs font-semibold text-ink mb-4 shadow-soft">
             <Sparkles size={14} className="text-coral" />
-            WhatsApp to Structured Table Parser
+            Sample preview
           </div>
           <h2 className="text-3xl sm:text-4xl font-heading font-bold text-ink tracking-tight mb-4">
-            Turn Messy WhatsApp Quotes into Instant Landed Truth
+            Turn Unstructured Quotes into Clear Landed Costs
           </h2>
           <p className="text-base text-ink-secondary leading-relaxed">
             Suppliers do not fill out web forms. They send Hinglish voice notes,
@@ -116,7 +139,7 @@ export function AiParser() {
                     Supplier Inquiry Chat
                   </div>
                   <div className="text-[11px] text-white/80">
-                    2 active vendor threads
+                    Integration in development
                   </div>
                 </div>
               </div>
