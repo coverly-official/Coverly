@@ -2,8 +2,13 @@
 
 import { FadeUp } from "@/components/ui/FadeUp";
 import { CountUp } from "@/components/ui/CountUp";
-import { VerifiedBadge } from "@/components/ui/Badge";
-import { PLACEHOLDERS } from "@/data/placeholders";
+// Project status
+const projectStats = [
+  { value: "9", label: "Planned product categories" },
+  { value: "3", label: "Discovery tiers (Nearby, State, World)" },
+  { value: "Pilot", label: "Current development stage" },
+  { value: "C.G.", label: "Planned initial market focus" },
+];
 import {
   ShieldCheck,
   Building2,
@@ -16,27 +21,27 @@ import {
 const verificationSteps = [
   {
     icon: Building2,
-    title: "Premise & GSTIN Audit",
+    title: "Incubated in Bhilai",
     description:
-      "Physical verification of the manufacturing unit or warehouse, cross-referenced with active GST filings and dispatch logs.",
+      "Associated with the Rungta University Business Incubator, Bhilai.",
   },
   {
     icon: Scale,
-    title: "Capacity & MOQ Validation",
+    title: "Platform in Development",
     description:
-      "Independent inspection of installed machinery and production output to guarantee genuine minimum order capacity.",
+      "The web app and provider tools are currently in development for early testing.",
   },
   {
     icon: FileCheck2,
-    title: "Locked Freight Tariffs",
+    title: "Bootstrapped Project",
     description:
-      "Prior agreement on lane freight charges so buyers never face unexpected transport surcharges upon delivery.",
+      "An independent, early-stage project focused on transparent landed costs.",
   },
   {
     icon: Award,
-    title: "Quality Consistency Check",
+    title: "Chhattisgarh Focus",
     description:
-      "Batch sample evaluation before granting the verified status mark on the Coverly network.",
+      "Starting with local businesses and suppliers in Chhattisgarh before expanding.",
   },
 ];
 
@@ -48,19 +53,19 @@ export function Trust() {
         <FadeUp className="flex justify-center mb-6">
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-surface border border-[rgba(45,50,80,0.08)] shadow-soft text-xs font-heading font-semibold text-ink">
             <span className="w-2.5 h-2.5 rounded-full bg-verified" />
-            Incubated at Rungta University Business Incubator, Bhilai
+            Startup project associated with the Rungta University Business Incubator, Bhilai
           </div>
         </FadeUp>
 
         {/* Section Headline */}
         <FadeUp className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-4xl font-heading font-bold text-ink tracking-tight mb-4">
-            Ground-Truth Verification to Smash the Trust Deficit
+            Where We Are: Building for Local Businesses
           </h2>
           <p className="text-base text-ink-secondary leading-relaxed">
-            Wholesale sourcing fails when suppliers misrepresent capacity or hit
-            buyers with freight markups. We audit on the ground before any vendor
-            earns a verified badge.
+            Coverly is an early-stage B2B marketplace project in active development.
+            We are building tools to help buyers discover providers and compare
+            landed costs, starting in Chhattisgarh.
           </p>
         </FadeUp>
 
@@ -87,7 +92,7 @@ export function Trust() {
                 </div>
                 <div className="pt-4 mt-4 border-t border-[rgba(45,50,80,0.06)] flex items-center gap-1.5 text-[11px] font-semibold text-verified">
                   <CheckCircle2 size={13} />
-                  Field Verified
+                  Current focus
                 </div>
               </FadeUp>
             );
@@ -101,15 +106,15 @@ export function Trust() {
         >
           <div className="text-center max-w-xl mx-auto mb-8">
             <span className="text-xs font-heading font-bold text-coral uppercase tracking-wider">
-              The Reality of Indian B2B Procurement
+              Project Scope & Current Status
             </span>
             <div className="text-lg font-heading font-semibold text-ink mt-1">
-              Why Transparent Sourcing Matters
+              Planned Marketplace Architecture
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            {PLACEHOLDERS.trustStats.map((stat, idx) => (
+            {projectStats.map((stat, idx) => (
               <div
                 key={idx}
                 className="p-4 rounded-2xl bg-surface-muted/60 border border-[rgba(45,50,80,0.04)]"
@@ -125,7 +130,7 @@ export function Trust() {
           </div>
 
           <div className="text-center text-[11px] text-ink-secondary/70 mt-4 font-mono">
-            * Estimated baseline metrics for informal B2B purchasing workflows
+            * Current project specifications and development phase
           </div>
         </FadeUp>
 

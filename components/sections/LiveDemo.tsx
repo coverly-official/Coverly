@@ -327,19 +327,19 @@ export function LiveDemo() {
                 </div>
                 <div>
                   <div className="text-sm font-heading font-bold text-ink">
-                    Sticker Price Illusion Unmasked
+                    Sample Landed Cost Comparison
                   </div>
                   <p className="text-xs text-ink-secondary mt-0.5 max-w-[60ch]">
                     {savingsAnalysis.stickerName} offers the lowest unit sticker,
-                    yet {savingsAnalysis.bestName} saves you{" "}
+                    yet {savingsAnalysis.bestName} has a lower landed cost by{" "}
                     <strong className="text-coral">
                       {formatRupees(savingsAnalysis.diffPerUnit)} per {currentCategory.unit}
                     </strong>{" "}
-                    due to lower transport. That is a net savings of{" "}
+                    due to lower transport. That is a difference of{" "}
                     <strong className="text-coral">
                       {formatRupees(savingsAnalysis.totalSavings)}
                     </strong>{" "}
-                    on this batch.
+                    on this sample batch.
                   </p>
                 </div>
               </div>

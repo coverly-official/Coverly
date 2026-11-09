@@ -202,9 +202,9 @@ export function AiParser() {
             <div className="bg-surface p-3 border-t border-[rgba(45,50,80,0.06)] flex items-center justify-between text-xs text-ink-secondary">
               <span className="flex items-center gap-1.5 font-medium">
                 <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-                Listening to WhatsApp Business Webhook
+                WhatsApp integration in development
               </span>
-              <span className="font-mono text-[11px]">Realtime OCR</span>
+              <span className="font-mono text-[11px]">Sample preview</span>
             </div>
           </FadeUp>
 
@@ -233,7 +233,7 @@ export function AiParser() {
                 </div>
                 <div className="inline-flex items-center gap-1 text-xs font-semibold text-verified bg-verified/10 px-3 py-1 rounded-full">
                   <Sparkles size={13} />
-                  Extracted in 1.4s
+                  Sample preview
                 </div>
               </div>
 

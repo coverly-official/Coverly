@@ -5,6 +5,7 @@ import { FadeUp } from "@/components/ui/FadeUp";
 import { Button } from "@/components/ui/Button";
 import { categories } from "@/data/categories";
 import { PLACEHOLDERS } from "@/data/placeholders";
+import { WHATSAPP_NUMBER, WHATSAPP_MESSAGE, CONTACT_EMAIL } from "@/data/contact";
 import {
   MessageCircle,
   Clock,
@@ -59,8 +60,8 @@ export function Footer() {
     setErrors({});
     setIsSubmitting(true);
 
-    // TODO: Connect this form submission to real API endpoint (e.g., /api/concierge-lead)
-    console.log("Coverly Concierge Sourcing Lead Submitted:", formData);
+
+
 
     setTimeout(() => {
       setIsSubmitting(false);
@@ -112,7 +113,13 @@ export function Footer() {
                   Prefer direct messaging?
                 </div>
                 <a
-                  href="https://wa.me/919999999999?text=Hi%20Coverly%20team,%20I%20need%20a%20wholesale%20quote"
+                  href={
+                    WHATSAPP_NUMBER
+                      ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
+                      : (CONTACT_EMAIL
+                          ? `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(WHATSAPP_MESSAGE)}`
+                          : `https://wa.me/?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`)
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block w-full sm:w-auto"
@@ -337,32 +344,32 @@ export function Footer() {
             </div>
             <span className="font-heading font-bold text-ink">Coverly</span>
             <span className="text-xs text-ink-secondary">
-              Modern Wholesale Marketplace for Indian MSMEs
+              Early-stage B2B marketplace project in development
             </span>
           </div>
 
           {/* Nav Links */}
           <div className="flex flex-wrap items-center gap-6 text-xs text-ink-secondary">
-            <a href="#how-it-works" className="hover:text-ink transition-colors">
+            <a href="/#how-it-works" className="hover:text-ink transition-colors">
               How it works
             </a>
-            <a href="#ai-parser" className="hover:text-ink transition-colors">
+            <a href="/#ai-parser" className="hover:text-ink transition-colors">
               AI Parser
             </a>
-            <a href="#live-demo" className="hover:text-ink transition-colors">
+            <a href="/#live-demo" className="hover:text-ink transition-colors">
               Live Demo
             </a>
-            <a href="#trust" className="hover:text-ink transition-colors">
+            <a href="/#trust" className="hover:text-ink transition-colors">
               Trust
             </a>
-            <a href="#contact" className="hover:text-ink transition-colors">
+            <a href="/#contact" className="hover:text-ink transition-colors">
               Concierge
             </a>
           </div>
 
           {/* Legal / Copyright */}
           <div className="text-xs text-ink-secondary">
-            (c) 2026 Coverly Technologies. All rights reserved.
+            (c) 2026 Coverly. Associated with Rungta University Business Incubator, Bhilai.
           </div>
         </div>
       </div>

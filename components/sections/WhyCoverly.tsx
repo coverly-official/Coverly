@@ -36,7 +36,7 @@ export default function WhyCoverly() {
               Landed Cost Variance
             </span>
             <span className="text-xs text-ink-secondary font-medium">
-              3 Quotes Analyzed
+              3 Sample Quotes Analyzed
             </span>
           </div>
 
@@ -44,7 +44,7 @@ export default function WhyCoverly() {
           <div className="flex items-center gap-3 mb-5">
             <div className="px-3 py-1.5 rounded-full bg-surface shadow-soft text-xs font-semibold text-ink flex items-center gap-1.5">
               <TrendingUp size={14} className="text-verified" />
-              Avg Savings: 12%
+              Sample Calculation
             </div>
             <div className="px-3 py-1.5 rounded-full bg-surface shadow-soft text-xs font-semibold text-ink flex items-center gap-1.5">
               <ShieldCheck size={14} className="text-coral" />

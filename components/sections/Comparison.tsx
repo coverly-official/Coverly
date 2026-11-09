@@ -64,10 +64,10 @@ export default function Comparison() {
       <div className="container mx-auto px-4 max-w-5xl">
         <FadeUp delay={0}>
           <h2 className="text-center text-3xl md:text-4xl font-heading font-bold text-ink mb-3">
-            Stop the Sourcing Nightmare
+            Compare Sticker Price and Landed Cost
           </h2>
           <p className="text-center text-lg text-surface-muted mb-8">
-            Compare landed costs instantly
+            See how freight and taxes affect the final per-unit price using sample data
           </p>
         </FadeUp>
 

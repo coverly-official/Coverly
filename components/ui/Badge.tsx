@@ -16,10 +16,10 @@ export function VerifiedBadge({ className, size = "sm" }: VerifiedBadgeProps) {
         size === "md" && "px-2.5 py-1 text-xs font-medium",
         className
       )}
-      aria-label="Verified supplier"
+      aria-label="Sample listing"
     >
       <ShieldCheck size={iconSize} strokeWidth={2} />
-      Verified
+      Sample
     </span>
   );
 }

@@ -19,7 +19,7 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Coverly - Compare True Landed Costs Instantly",
   description:
-    "The modern wholesale marketplace for Indian MSMEs. Compare quotes with unit price, MOQ, GST, and freight calculated into one true landed cost.",
+    "Early-stage B2B marketplace project associated with the Rungta University Business Incubator, Bhilai. Discover providers, compare quotations, and manage orders.",
   keywords: [
     "B2B marketplace",
     "wholesale India",

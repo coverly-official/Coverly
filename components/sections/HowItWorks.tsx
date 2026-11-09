@@ -9,7 +9,7 @@ const steps = [
     action: "Connect",
     title: "Submit structured requirements",
     description:
-      "Enter specifications, quantities, and delivery location. Coverly prioritizes verified suppliers nearby first, then across the state.",
+      "Enter specifications, quantities, and delivery location. Coverly prioritizes suppliers nearby first, then across the state.",
     badge: "Location Prioritized",
     snippet: (
       <div className="bg-surface rounded-xl p-3 border border-[rgba(45,50,80,0.06)] shadow-soft text-xs space-y-2">
@@ -63,7 +63,7 @@ const steps = [
     action: "Manage",
     title: "Order and track centrally",
     description:
-      "Select your best match, coordinate delivery status, and reorder from trusted partners in one organized workflow.",
+      "Select your best match, coordinate delivery status, and reorder from providers in one organized workflow.",
     badge: "Unified Sourcing",
     snippet: (
       <div className="bg-surface rounded-xl p-3 border border-[rgba(45,50,80,0.06)] shadow-soft text-xs space-y-2">
