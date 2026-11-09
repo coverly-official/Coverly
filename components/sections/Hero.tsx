@@ -11,10 +11,6 @@ export function Hero() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <FadeUp className="bg-surface-muted rounded-card-lg p-8 sm:p-12 md:p-16 border border-[rgba(45,50,80,0.06)] shadow-soft text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-[rgba(45,50,80,0.06)] text-xs font-medium text-ink mb-6">
-            <span className="w-2 h-2 rounded-full bg-coral" />
-            Raw Materials &amp; Business Sourcing
-          </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-ink tracking-tight leading-[1.12] max-w-3xl mx-auto mb-5">
             Find providers, compare quotes and manage orders in one place.
           </h1>

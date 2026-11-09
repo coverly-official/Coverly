@@ -1,4 +1,3 @@
-import LoadingScreen from "@/components/ui/LoadingScreen";
 import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
 import Products from "@/components/sections/Products";
@@ -13,7 +12,6 @@ import { Footer } from "@/components/sections/Footer";
 export default function Home() {
   return (
     <div className="flex flex-col min-h-[100dvh]">
-      <LoadingScreen />
       <Navbar />
       <main className="flex-1">
         <Hero />
