@@ -21,7 +21,7 @@ export function Navbar() {
   const [accountOpen, setAccountOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-surface/90 backdrop-blur-md border-b border-[rgba(45,50,80,0.06)] transition-colors">
+    <header className="sticky top-0 z-50 w-full bg-surface/90 backdrop-blur-md border-b border-[rgba(45,50,80,0.12)] transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <Link
@@ -97,7 +97,7 @@ export function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden border-b border-[rgba(45,50,80,0.06)] bg-surface px-4 py-6 space-y-4 shadow-card"
+            className="md:hidden border-b border-[rgba(45,50,80,0.12)] bg-surface px-4 py-6 space-y-4 shadow-card"
           >
             <nav className="flex flex-col space-y-3" aria-label="Mobile Navigation">
               {navLinks.map((link) => (
@@ -111,7 +111,7 @@ export function Navbar() {
                 </a>
               ))}
             </nav>
-            <div className="pt-4 border-t border-[rgba(45,50,80,0.06)] flex flex-col gap-3">
+            <div className="pt-4 border-t border-[rgba(45,50,80,0.12)] flex flex-col gap-3">
               <Button
                 variant="coral"
                 size="md"

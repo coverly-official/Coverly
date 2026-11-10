@@ -98,11 +98,11 @@ export function LiveDemo() {
   }, [bestLandedSupplier, lowestStickerSupplier, quantity]);
 
   return (
-    <section id="live-demo" className="py-20 md:py-28 bg-surface-muted/60 border-y border-[rgba(45,50,80,0.06)]">
+    <section id="live-demo" className="py-20 md:py-28 bg-surface-muted/60 border-y border-[rgba(45,50,80,0.12)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Header */}
         <FadeUp className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface text-xs font-heading font-semibold text-coral uppercase tracking-wider mb-4 border border-[rgba(45,50,80,0.06)] shadow-soft">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface text-xs font-heading font-semibold text-coral uppercase tracking-wider mb-4 border border-[rgba(45,50,80,0.12)] shadow-soft">
             <Calculator size={14} /> Interactive RFQ Simulator
           </div>
           <h2 className="text-3xl sm:text-4xl font-heading font-bold text-ink tracking-tight mb-4">
@@ -115,14 +115,14 @@ export function LiveDemo() {
         </FadeUp>
 
         {/* Demo Widget Container */}
-        <div className="bg-surface rounded-card-lg p-6 sm:p-8 md:p-10 border border-[rgba(45,50,80,0.06)] shadow-card">
+        <div className="bg-surface rounded-card-lg p-6 sm:p-8 md:p-10 border border-[rgba(45,50,80,0.12)] shadow-card">
           {/* Controls Form */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
               setIsCalculated(true);
             }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end pb-8 border-b border-[rgba(45,50,80,0.06)] mb-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end pb-8 border-b border-[rgba(45,50,80,0.12)] mb-8"
           >
             {/* Category Select */}
             <div className="space-y-1.5">
@@ -217,7 +217,7 @@ export function LiveDemo() {
                   <th className="pb-3 pl-4 text-right">Landed Cost / Unit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(45,50,80,0.06)] text-sm">
+              <tbody className="divide-y divide-[rgba(45,50,80,0.12)] text-sm">
                 {computedSuppliers.map((supplier) => {
                   const isBest =
                     bestLandedSupplier &&

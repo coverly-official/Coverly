@@ -49,7 +49,7 @@ export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
         </div>
 
         {/* Supplier & Location */}
-        <div className="pt-3 border-t border-[rgba(45,50,80,0.06)] space-y-1.5 text-xs text-ink-secondary mb-4">
+        <div className="pt-3 border-t border-[rgba(45,50,80,0.12)] space-y-1.5 text-xs text-ink-secondary mb-4">
           <div className="font-medium text-ink line-clamp-1">
             {product.supplierName}
           </div>

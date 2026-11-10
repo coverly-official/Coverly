@@ -86,7 +86,7 @@ export function ProductDetailClient({
             {[1, 2, 3].map((idx) => (
               <div
                 key={idx}
-                className="h-20 rounded-xl bg-surface border border-[rgba(45,50,80,0.06)] flex items-center justify-center text-[11px] text-ink-secondary"
+                className="h-20 rounded-xl bg-surface border border-[rgba(45,50,80,0.12)] flex items-center justify-center text-[11px] text-ink-secondary"
               >
                 Angle {idx}
               </div>
@@ -126,7 +126,7 @@ export function ProductDetailClient({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-ink-secondary pt-2 border-t border-[rgba(45,50,80,0.06)]">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-ink-secondary pt-2 border-t border-[rgba(45,50,80,0.12)]">
               <div>
                 Minimum Order Quantity: <strong className="text-ink font-mono">{product.moq} {product.unit}s</strong>
               </div>
@@ -231,7 +231,7 @@ export function ProductDetailClient({
 
       {/* Related Products from same category */}
       {relatedProducts.length > 0 && (
-        <div className="pt-8 border-t border-[rgba(45,50,80,0.06)]">
+        <div className="pt-8 border-t border-[rgba(45,50,80,0.12)]">
           <h2 className="text-xl font-heading font-bold text-ink mb-6">
             Related Products in {categoryName}
           </h2>
@@ -239,7 +239,7 @@ export function ProductDetailClient({
             {relatedProducts.slice(0, 3).map((rel) => (
               <div
                 key={rel.id}
-                className="p-5 rounded-2xl bg-surface border border-[rgba(45,50,80,0.06)] shadow-soft hover:shadow-card transition-all"
+                className="p-5 rounded-2xl bg-surface border border-[rgba(45,50,80,0.12)] shadow-soft hover:shadow-card transition-all"
               >
                 <div className="text-[11px] text-ink-secondary mb-1">
                   {rel.supplierName}

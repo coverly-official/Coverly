@@ -82,10 +82,10 @@ export function Footer() {
   };
 
   return (
-    <footer id="contact" className="pt-20 md:pt-28 pb-12 bg-surface border-t border-[rgba(45,50,80,0.06)]">
+    <footer id="contact" className="pt-20 md:pt-28 pb-12 bg-surface border-t border-[rgba(45,50,80,0.12)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Concierge Sourcing Lead Card */}
-        <div className="bg-surface-muted rounded-card-lg p-6 sm:p-10 md:p-12 border border-[rgba(45,50,80,0.06)] shadow-card mb-20">
+        <div className="bg-surface-muted rounded-card-lg p-6 sm:p-10 md:p-12 border border-[rgba(45,50,80,0.12)] shadow-card mb-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             {/* Left Column: Value Prop & WhatsApp Direct */}
             <div className="lg:col-span-5 space-y-6">
@@ -119,7 +119,7 @@ export function Footer() {
               </div>
 
               {/* Instant WhatsApp Action */}
-              <div className="pt-4 border-t border-[rgba(45,50,80,0.06)]">
+              <div className="pt-4 border-t border-[rgba(45,50,80,0.12)]">
                 <div className="text-xs font-semibold text-ink-secondary mb-3">
                   Prefer direct messaging?
                 </div>
@@ -144,7 +144,7 @@ export function Footer() {
             </div>
 
             {/* Right Column: Lead Form */}
-            <div className="lg:col-span-7 bg-surface rounded-card p-6 sm:p-8 border border-[rgba(45,50,80,0.06)] shadow-soft">
+            <div className="lg:col-span-7 bg-surface rounded-card p-6 sm:p-8 border border-[rgba(45,50,80,0.12)] shadow-soft">
               <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Full Name */}
@@ -312,7 +312,7 @@ export function Footer() {
         </div>
 
         {/* Global Footer Navigation & Legal Row */}
-        <div className="pt-8 border-t border-[rgba(45,50,80,0.06)] flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="pt-8 border-t border-[rgba(45,50,80,0.12)] flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Brand & Mission */}
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg bg-coral flex items-center justify-center text-navy">

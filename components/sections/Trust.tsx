@@ -77,7 +77,7 @@ export function Trust() {
               <FadeUp
                 key={step.title}
                 delay={idx * 0.1}
-                className="bg-surface rounded-card p-6 border border-[rgba(45,50,80,0.06)] shadow-soft hover:shadow-card transition-all flex flex-col justify-between"
+                className="bg-surface rounded-card p-6 border border-[rgba(45,50,80,0.12)] shadow-soft hover:shadow-card transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="w-10 h-10 rounded-2xl bg-surface-pink text-coral flex items-center justify-center mb-5 shadow-sm">
@@ -90,7 +90,7 @@ export function Trust() {
                     {step.description}
                   </p>
                 </div>
-                <div className="pt-4 mt-4 border-t border-[rgba(45,50,80,0.06)] flex items-center gap-1.5 text-[11px] font-semibold text-verified">
+                <div className="pt-4 mt-4 border-t border-[rgba(45,50,80,0.12)] flex items-center gap-1.5 text-[11px] font-semibold text-verified">
                   <CheckCircle2 size={13} />
                   Current focus
                 </div>
@@ -102,7 +102,7 @@ export function Trust() {
         {/* Trust Gap Stat Strip from PLACEHOLDERS */}
         <FadeUp
           delay={0.2}
-          className="bg-surface rounded-card-lg p-6 sm:p-8 border border-[rgba(45,50,80,0.06)] shadow-soft mb-16"
+          className="bg-surface rounded-card-lg p-6 sm:p-8 border border-[rgba(45,50,80,0.12)] shadow-soft mb-16"
         >
           <div className="text-center max-w-xl mx-auto mb-8">
             <span className="text-xs font-heading font-bold text-coral uppercase tracking-wider">
@@ -140,7 +140,7 @@ export function Trust() {
             Ecosystem Associations & Regional Focus
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 py-4 px-6 rounded-2xl bg-surface/60 border border-[rgba(45,50,80,0.06)]">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 py-4 px-6 rounded-2xl bg-surface/60 border border-[rgba(45,50,80,0.12)]">
             <div className="flex items-center gap-2 font-heading font-bold text-sm text-ink tracking-tight">
               <span className="w-2 h-2 rounded-full bg-coral" />
               Rungta Incubation Centre

@@ -201,7 +201,7 @@ export function BrowseClient() {
       </div>
 
       {/* Guest Gating Utility Strip */}
-      <div className="mb-8 p-4 rounded-2xl bg-surface border border-[rgba(45,50,80,0.06)] shadow-soft flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-8 p-4 rounded-2xl bg-surface border border-[rgba(45,50,80,0.12)] shadow-soft flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-medium text-ink-secondary">
           <span className="w-2 h-2 rounded-full bg-coral" />
           <span>Guest browsing mode enabled. Accounts are coming soon for workflow tools.</span>
@@ -271,7 +271,7 @@ export function BrowseClient() {
         </div>
 
         {/* Location Scope Tabs & State Selector */}
-        <div className="pt-3 border-t border-[rgba(45,50,80,0.06)] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="pt-3 border-t border-[rgba(45,50,80,0.12)] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-heading font-semibold text-ink-secondary mr-1">
               Discovery Scope:
@@ -340,7 +340,7 @@ export function BrowseClient() {
       </div>
 
       {/* Controls & Results Count */}
-      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-ink-secondary pb-3 border-b border-[rgba(45,50,80,0.06)]">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-ink-secondary pb-3 border-b border-[rgba(45,50,80,0.12)]">
         <div>
           Showing <strong className="text-ink font-mono">{sortedProducts.length}</strong> sample products
           {selectedCategory !== "all" && ` in ${productCategories.find((c) => c.id === selectedCategory)?.name}`}
@@ -394,7 +394,7 @@ export function BrowseClient() {
 
       {/* Product Grid / Empty State */}
       {sortedProducts.length === 0 ? (
-        <div className="text-center py-20 bg-surface rounded-2xl border border-[rgba(45,50,80,0.06)] shadow-soft p-8">
+        <div className="text-center py-20 bg-surface rounded-2xl border border-[rgba(45,50,80,0.12)] shadow-soft p-8">
           <div className="w-12 h-12 rounded-2xl bg-surface-muted mx-auto flex items-center justify-center text-ink-secondary mb-4">
             <Search size={22} />
           </div>

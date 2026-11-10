@@ -148,7 +148,7 @@ export function RequestQuoteModal({
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Prefilled Product & Supplier Info */}
-          <div className="p-3.5 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.06)] space-y-1">
+          <div className="p-3.5 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.12)] space-y-1">
             <div className="text-xs font-heading font-semibold text-ink">
               {product.name}
             </div>

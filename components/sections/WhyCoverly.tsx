@@ -55,7 +55,7 @@ export default function WhyCoverly() {
           {/* Line Chart */}
           <div className="bg-surface/80 backdrop-blur-sm rounded-xl p-3 border border-[rgba(45,50,80,0.04)]">
             <LineChart color="var(--accent)" secondaryColor="var(--btn-primary)" />
-            <div className="flex justify-between items-center text-[10px] text-ink-secondary font-mono mt-2 pt-2 border-t border-[rgba(45,50,80,0.06)]">
+            <div className="flex justify-between items-center text-[10px] text-ink-secondary font-mono mt-2 pt-2 border-t border-[rgba(45,50,80,0.12)]">
               <span>Sticker Price (Surat): Rs196</span>
               <span className="text-coral font-bold">Landed (Ludhiana): Rs220.05</span>
             </div>

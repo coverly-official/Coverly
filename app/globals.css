@@ -5,17 +5,17 @@
 @layer base {
   :root {
     --canvas-start: #ffffff;
-    --canvas-end: #eef0f7;
+    --canvas-end: #e6e9f4;
     --surface: #ffffff;
-    --surface-muted: #f4f5fa;
+    --surface-muted: #eceef6;
     --surface-pink: #fef1e6;
     --text-primary: #2d3250;
-    --text-secondary: #676f9d;
+    --text-secondary: #474d73;
     --btn-primary: #2d3250;
     --accent: #f9b17a;
     --verified: #1f9d6b;
     --whatsapp: #25d366;
-    --border-color: rgba(45, 50, 80, 0.1);
+    --border-color: rgba(45, 50, 80, 0.16);
     --radius-lg: 24px;
     --radius-xl: 32px;
   }

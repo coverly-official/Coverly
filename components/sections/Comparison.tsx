@@ -74,7 +74,7 @@ export default function Comparison() {
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Left Card - Typical Marketplace Listing */}
           <FadeUp delay={100}>
-            <div className="rounded-2xl bg-surface p-6 shadow-soft border border-[rgba(45,50,80,0.06)]">
+            <div className="rounded-2xl bg-surface p-6 shadow-soft border border-[rgba(45,50,80,0.12)]">
               <h3 className="text-xl font-heading font-semibold text-ink mb-4">
                 Typical marketplace listing
               </h3>
@@ -96,7 +96,7 @@ export default function Comparison() {
 
           {/* Right Card - Coverly */}
           <FadeUp delay={200}>
-            <div className="rounded-2xl bg-surface p-6 shadow-soft border border-[rgba(45,50,80,0.06)]">
+            <div className="rounded-2xl bg-surface p-6 shadow-soft border border-[rgba(45,50,80,0.12)]">
               <h3 className="text-xl font-heading font-semibold text-ink mb-4">
                 Coverly
               </h3>
