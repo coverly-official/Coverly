@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { logOut, useAuth } from "@/lib/session";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -22,6 +23,18 @@ const signupClass =
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { status, user } = useAuth();
+
+  async function handleLogOut() {
+    setMobileOpen(false);
+    await logOut();
+    router.push("/");
+  }
+
+  const roleText = user?.role
+    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+    : "Account";
 
   function isActive(href: string, label: string): boolean {
     if (label === "Products") {
@@ -83,12 +96,36 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link href="/login" className={loginClass}>
-            Log in
-          </Link>
-          <Link href="/signup" className={signupClass}>
-            Sign up
-          </Link>
+          {status === "loading" ? (
+            <div className="h-9 w-44" aria-hidden="true" />
+          ) : status === "signed-in" && user ? (
+            <>
+              <Link
+                href="/account"
+                className="inline-flex items-center gap-2 rounded-full border border-[rgba(45,50,80,0.25)] py-1.5 pl-1.5 pr-4 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy text-xs font-bold uppercase text-white">
+                  {user.name.charAt(0)}
+                </span>
+                <span className="max-w-[9rem] truncate">{user.name}</span>
+                <span className="rounded-full bg-coral/30 px-2 py-0.5 text-[11px] font-semibold text-ink">
+                  {roleText}
+                </span>
+              </Link>
+              <button type="button" onClick={handleLogOut} className={loginClass}>
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className={loginClass}>
+                Log in
+              </Link>
+              <Link href="/signup" className={signupClass}>
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -124,20 +161,37 @@ export function Navbar() {
               ))}
             </nav>
             <div className="flex flex-col gap-3 border-t border-[rgba(45,50,80,0.12)] pt-4">
-              <Link
-                href="/signup"
-                onClick={() => setMobileOpen(false)}
-                className={signupClass}
-              >
-                Sign up
-              </Link>
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className={loginClass}
-              >
-                Log in
-              </Link>
+              {status === "signed-in" && user ? (
+                <>
+                  <Link
+                    href="/account"
+                    onClick={() => setMobileOpen(false)}
+                    className={signupClass}
+                  >
+                    My account ({roleText})
+                  </Link>
+                  <button type="button" onClick={handleLogOut} className={loginClass}>
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className={signupClass}
+                  >
+                    Sign up
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className={loginClass}
+                  >
+                    Log in
+                  </Link>
+                </>
+              )}
               <Link
                 href="/browse"
                 onClick={() => setMobileOpen(false)}

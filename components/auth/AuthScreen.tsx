@@ -13,18 +13,28 @@ import {
   Store,
 } from "lucide-react";
 import { CONTACT_EMAIL, WHATSAPP_NUMBER } from "@/data/contact";
-import { ROLE_OPTIONS, signIn, signUp, type AccountRole } from "@/lib/auth";
+import {
+  ROLE_OPTIONS,
+  signIn,
+  signUp,
+  type AccountRole,
+  type AuthReason,
+} from "@/lib/auth";
+import { refreshAuth } from "@/lib/session";
 
 type Mode = "login" | "signup";
 type FieldName =
-  | "identifier"
   | "name"
   | "business"
   | "email"
   | "phone"
   | "password";
 type Errors = Partial<Record<FieldName, string>>;
-type Status = "idle" | "not-configured" | "failed";
+interface Notice {
+  kind: AuthReason;
+  message?: string;
+  actualRole?: AccountRole;
+}
 
 const ROLE_ICONS = {
   buyer: ShoppingBag,
@@ -96,6 +106,40 @@ function tabClass(active: boolean): string {
   }`;
 }
 
+function roleLabel(role: AccountRole): string {
+  return ROLE_OPTIONS.find((option) => option.id === role)?.label ?? role;
+}
+
+function noticeTitle(notice: Notice): string {
+  switch (notice.kind) {
+    case "verify-email":
+      return "Check your email";
+    case "role-mismatch":
+      return "Different account type";
+    case "not-configured":
+      return "Accounts are not open yet";
+    default:
+      return "That did not work";
+  }
+}
+
+function noticeText(notice: Notice, email: string): string {
+  switch (notice.kind) {
+    case "verify-email":
+      return `We sent a verification message to ${email.trim() || "your email"}. Verify your address, then log in.`;
+    case "role-mismatch":
+      return notice.actualRole
+        ? `This email is registered as a ${roleLabel(notice.actualRole).toLowerCase()} account.`
+        : "This email is registered with a different account type.";
+    case "not-configured":
+      return "Nothing you typed has been saved. Request early access and the Coverly team will get in touch.";
+    default:
+      return notice.message
+        ? `${notice.message}. You can try again, or request early access and the team will get in touch.`
+        : "You can try again, or request early access and the team will get in touch.";
+  }
+}
+
 interface AuthScreenProps {
   mode: Mode;
   initialRole: AccountRole;
@@ -105,7 +149,6 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
   const router = useRouter();
   const [role, setRole] = useState<AccountRole>(initialRole);
   const [values, setValues] = useState<Record<FieldName, string>>({
-    identifier: "",
     name: "",
     business: "",
     email: "",
@@ -115,7 +158,7 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
   const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<Status>("idle");
+  const [notice, setNotice] = useState<Notice | null>(null);
 
   const isSignup = mode === "signup";
   const activeRole =
@@ -143,9 +186,8 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
         found.password = "Use at least 8 characters.";
       }
     } else {
-      const id = values.identifier.trim();
-      if (!EMAIL_PATTERN.test(id) && !PHONE_PATTERN.test(id)) {
-        found.identifier = "Enter your email or phone number.";
+      if (!EMAIL_PATTERN.test(values.email.trim())) {
+        found.email = "Enter the email you signed up with.";
       }
       if (!values.password) found.password = "Enter your password.";
     }
@@ -159,7 +201,7 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
     if (Object.keys(found).length > 0) return;
 
     setBusy(true);
-    setStatus("idle");
+    setNotice(null);
     const result = isSignup
       ? await signUp({
           role,
@@ -171,16 +213,21 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
         })
       : await signIn({
           role,
-          identifier: values.identifier.trim(),
+          email: values.email.trim(),
           password: values.password,
         });
     setBusy(false);
 
     if (result.ok) {
-      router.push("/");
+      await refreshAuth();
+      router.push("/account");
       return;
     }
-    setStatus(result.reason === "not-configured" ? "not-configured" : "failed");
+    setNotice({
+      kind: result.reason ?? "failed",
+      message: result.message,
+      actualRole: result.actualRole,
+    });
   }
 
   function buildEarlyAccessMessage(): string {
@@ -192,8 +239,8 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
     if (isSignup) {
       if (values.email.trim()) lines.push(`Email: ${values.email.trim()}`);
       if (values.phone.trim()) lines.push(`Phone: ${values.phone.trim()}`);
-    } else if (values.identifier.trim()) {
-      lines.push(`Contact: ${values.identifier.trim()}`);
+    } else if (values.email.trim()) {
+      lines.push(`Email: ${values.email.trim()}`);
     }
     return lines.join("\n");
   }
@@ -303,11 +350,12 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
               </>
             ) : (
               <Field
-                id="identifier"
-                label="Email or phone number"
-                value={values.identifier}
-                onChange={(v) => setValue("identifier", v)}
-                error={errors.identifier}
+                id="email"
+                label="Email"
+                type="email"
+                value={values.email}
+                onChange={(v) => setValue("email", v)}
+                error={errors.email}
                 autoComplete="username"
               />
             )}
@@ -361,39 +409,47 @@ export function AuthScreen({ mode, initialRole }: AuthScreenProps) {
           </form>
 
           <div aria-live="polite">
-            {status !== "idle" && (
+            {notice && (
               <div
                 role="alert"
                 className="mt-4 rounded-xl border border-coral/40 bg-coral/10 p-4 text-sm"
               >
                 <p className="mb-1 font-semibold text-coral">
-                  {status === "not-configured"
-                    ? "Accounts are not open yet"
-                    : "Something went wrong"}
+                  {noticeTitle(notice)}
                 </p>
-                <p className="mb-3 text-white/80">
-                  {status === "not-configured"
-                    ? "Nothing you typed has been saved. Request early access and the Coverly team will get in touch."
-                    : "Please try again, or request early access and the Coverly team will get in touch."}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <a
-                    href={whatsappHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <p className="mb-3 text-white/80">{noticeText(notice, values.email)}</p>
+                {notice.kind === "role-mismatch" && notice.actualRole && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRole(notice.actualRole as AccountRole);
+                      setNotice(null);
+                    }}
                     className="inline-flex items-center rounded-full bg-coral px-4 py-2 text-xs font-semibold text-navy hover:brightness-95"
                   >
-                    Request early access on WhatsApp
-                  </a>
-                  {contactEmail && (
+                    Switch to {roleLabel(notice.actualRole)}
+                  </button>
+                )}
+                {(notice.kind === "not-configured" || notice.kind === "failed") && (
+                  <div className="flex flex-wrap gap-2">
                     <a
-                      href={mailHref}
-                      className="inline-flex items-center rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10"
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center rounded-full bg-coral px-4 py-2 text-xs font-semibold text-navy hover:brightness-95"
                     >
-                      Email us instead
+                      Request early access on WhatsApp
                     </a>
-                  )}
-                </div>
+                    {contactEmail && (
+                      <a
+                        href={mailHref}
+                        className="inline-flex items-center rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10"
+                      >
+                        Email us instead
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
