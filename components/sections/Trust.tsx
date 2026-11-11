@@ -129,7 +129,7 @@ export function Trust() {
             ))}
           </div>
 
-          <div className="text-center text-[11px] text-ink-secondary/70 mt-4 font-mono">
+          <div className="text-center text-[11px] text-ink-secondary/90 mt-4 font-mono">
             * Current project specifications and development phase
           </div>
         </FadeUp>

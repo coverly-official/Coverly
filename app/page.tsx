@@ -18,12 +18,12 @@ export default function Home() {
         <Products />
         <WhyCoverly />
         <Comparison />
-        <Trust />
+        <div className="theme-dark"><Trust /></div>
         <HowItWorks />
         <AiParser />
         <LiveDemo />
       </main>
-      <Footer />
+      <div className="theme-dark"><Footer /></div>
     </div>
   );
 }

@@ -26,7 +26,7 @@ export function ProductCard({ product, onRequestQuote }: ProductCardProps) {
         </div>
 
         {/* Image Placeholder */}
-        <div className="w-full h-36 rounded-xl bg-surface-muted/80 border border-[rgba(45,50,80,0.04)] flex flex-col items-center justify-center text-ink-secondary/70 mb-4 group-hover:bg-surface-muted transition-colors">
+        <div className="w-full h-36 rounded-xl bg-surface-muted/80 border border-[rgba(45,50,80,0.04)] flex flex-col items-center justify-center text-ink-secondary/90 mb-4 group-hover:bg-surface-muted transition-colors">
           <Package size={28} className="text-coral/60 mb-1" />
           <span className="text-[11px] font-medium text-ink-secondary">
             Sample Product Image

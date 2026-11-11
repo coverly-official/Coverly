@@ -83,3 +83,32 @@ footer[id] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Dark band: wrap a section in <div className="theme-dark"> to flip it to the navy look. */
+.theme-dark {
+  --surface: #383d5f;
+  --surface-muted: #424769;
+  --text-primary: #ffffff;
+  --text-secondary: #d3d6ee;
+  --border-color: rgba(255, 255, 255, 0.16);
+  --verified: #3ddc97;
+  background-color: #2d3250;
+  color: #ffffff;
+}
+
+.theme-dark [class*="border-[rgba(45"] {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.theme-dark [class*="bg-[rgba(45"] {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.theme-dark .bg-navy {
+  background-color: var(--accent);
+  color: var(--btn-primary);
+}
+
+.theme-dark .bg-navy:hover {
+  filter: brightness(0.95);
+}

@@ -61,11 +61,11 @@ export function ProductDetailClient({
           <ArrowLeft size={13} />
           Back to Browse
         </Link>
-        <ChevronRight size={12} className="text-ink-secondary/50" />
+        <ChevronRight size={12} className="text-ink-secondary/70" />
         <Link href={`/browse?category=${product.categoryId}`} className="hover:text-ink transition-colors">
           {categoryName}
         </Link>
-        <ChevronRight size={12} className="text-ink-secondary/50" />
+        <ChevronRight size={12} className="text-ink-secondary/70" />
         <span className="text-ink truncate max-w-[200px] sm:max-w-none">{product.name}</span>
       </nav>
 

@@ -245,13 +245,13 @@ export function BrowseClient() {
         {/* Search input + Category select */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
           <div className="md:col-span-8 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-secondary/70 h-4 w-4" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-secondary/90 h-4 w-4" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search products, materials, specs or suppliers..."
-              className="w-full pl-10 pr-4 h-11 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.1)] text-sm text-ink placeholder:text-ink-secondary/70 focus:outline-none focus:ring-1 focus:ring-navy"
+              className="w-full pl-10 pr-4 h-11 rounded-xl bg-surface-muted border border-[rgba(45,50,80,0.1)] text-sm text-ink placeholder:text-ink-secondary/90 focus:outline-none focus:ring-1 focus:ring-navy"
             />
           </div>
           <div className="md:col-span-4">

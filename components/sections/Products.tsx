@@ -54,7 +54,7 @@ export default function Products({ className }: ProductsProps) {
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-ink mb-3">
             Browse Products
           </h2>
-          <p className="text-lg text-surface-muted">
+          <p className="text-lg text-ink-secondary">
             Find providers by category, starting nearby.
           </p>
         </div>
@@ -62,14 +62,14 @@ export default function Products({ className }: ProductsProps) {
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-8">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-muted h-5 w-5" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-secondary h-5 w-5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search raw materials, packaging, textiles"
               className={cn(
-                "w-full pl-12 pr-4 py-3 rounded-full border border-surface-muted/50 bg-surface text-ink placeholder:text-surface-muted/70 focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all",
+                "w-full pl-12 pr-4 py-3 rounded-full border border-surface-muted/50 bg-surface text-ink placeholder:text-ink-secondary/90 focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all",
                 selectedCategory && "ring-2 ring-coral"
               )}
             />
@@ -90,14 +90,14 @@ export default function Products({ className }: ProductsProps) {
                   "px-4 py-2 rounded-full text-sm font-medium transition-all",
                   location === loc
                     ? "bg-navy text-white shadow-soft"
-                    : "text-surface-muted hover:text-ink"
+                    : "text-ink-secondary hover:text-ink"
                 )}
               >
                 {loc}
               </button>
             ))}
           </div>
-          <p className="text-center text-sm text-surface-muted mt-3">
+          <p className="text-center text-sm text-ink-secondary mt-3">
             Nearby providers first, then across your state, then All World.
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function Products({ className }: ProductsProps) {
                   <h3 className="text-lg font-heading font-semibold text-ink mb-1">
                     {category.name}
                   </h3>
-                  <p className="text-sm text-surface-muted">
+                  <p className="text-sm text-ink-secondary">
                     {category.tagline}
                   </p>
                 </div>
@@ -150,7 +150,7 @@ export default function Products({ className }: ProductsProps) {
 
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-surface-muted">No matching products yet.</p>
+              <p className="text-ink-secondary">No matching products yet.</p>
             </div>
           ) : (
             <div className={cn(
@@ -167,10 +167,10 @@ export default function Products({ className }: ProductsProps) {
                     <h3 className="text-base font-heading font-semibold text-ink mb-2">
                       {product.name}
                     </h3>
-                    <p className="text-sm text-surface-muted mb-3">
+                    <p className="text-sm text-ink-secondary mb-3">
                       {category?.name || "Unknown Category"}
                     </p>
-                    <p className="text-sm text-surface-muted mb-4">
+                    <p className="text-sm text-ink-secondary mb-4">
                       {product.priceRange}
                     </p>
                     <span className={cn(

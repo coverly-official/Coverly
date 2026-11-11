@@ -18,12 +18,20 @@ export default function AboutPage() {
         <p className="text-base md:text-lg text-ink-secondary leading-relaxed mb-8">
           Coverly is an early-stage B2B marketplace project associated with the Rungta University Business Incubator, Bhilai. It aims to help businesses discover providers, compare quotations, purchase supplies and manage orders through one platform, with Chhattisgarh, India as the planned starting market.
         </p>
-        <Link
-          href="/"
-          className="inline-flex items-center rounded-full bg-navy text-white px-6 py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          Back to home
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/signup"
+            className="inline-flex items-center rounded-full bg-coral px-6 py-3 text-sm font-semibold text-navy shadow-[0_8px_30px_rgba(249,177,122,0.35)] transition hover:brightness-95"
+          >
+            Create an account
+          </Link>
+          <Link
+            href="/browse"
+            className="inline-flex items-center rounded-full border border-[rgba(45,50,80,0.25)] px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
+          >
+            Browse as guest
+          </Link>
+        </div>
       </main>
       <Footer />
     </>

@@ -66,7 +66,7 @@ export default function Comparison() {
           <h2 className="text-center text-3xl md:text-4xl font-heading font-bold text-ink mb-3">
             Compare Sticker Price and Landed Cost
           </h2>
-          <p className="text-center text-lg text-surface-muted mb-8">
+          <p className="text-center text-lg text-ink-secondary mb-8">
             See how freight and taxes affect the final per-unit price using sample data
           </p>
         </FadeUp>
@@ -85,7 +85,7 @@ export default function Comparison() {
                     className="flex justify-between items-center py-2 border-b border-[rgba(45,50,80,0.1)] last:border-0"
                   >
                     <span className="font-medium text-ink">{supplier.name}</span>
-                    <span className="text-surface-muted">
+                    <span className="text-ink-secondary">
                       {formatRupees(supplier.unitPrice)} / pc
                     </span>
                   </div>
@@ -119,7 +119,7 @@ export default function Comparison() {
                           <span className="inline-flex items-center rounded-full bg-coral px-2 py-0.5 text-[11px] font-semibold text-navy">Best landed cost</span>
                         )}
                       </div>
-                      <span className="text-surface-muted">
+                      <span className="text-ink-secondary">
                         {formatRupees(landedCost.landedPerUnit)} / pc
                       </span>
                     </div>
@@ -131,7 +131,7 @@ export default function Comparison() {
         </div>
 
         <FadeUp delay={300}>
-          <p className="text-center text-sm text-surface-muted">
+          <p className="text-center text-sm text-ink-secondary">
             Illustrative example with sample data
           </p>
         </FadeUp>
