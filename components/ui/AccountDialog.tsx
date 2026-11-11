@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import Link from "next/link";
 import { X, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { WHATSAPP_NUMBER, WHATSAPP_MESSAGE, CONTACT_EMAIL } from "@/data/contact";
+import { useAuth } from "@/lib/session";
 
 interface AccountDialogProps {
   isOpen: boolean;
@@ -15,10 +16,11 @@ interface AccountDialogProps {
 export function AccountDialog({
   isOpen,
   onClose,
-  title = "Accounts are coming soon",
-  description = "User accounts and authentication are in development. For inquiries or supplier onboarding, contact us directly.",
+  title,
+  description,
 }: AccountDialogProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const { status, user } = useAuth();
+  const signedIn = status === "signed-in" && Boolean(user);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -35,11 +37,26 @@ export function AccountDialog({
 
   if (!isOpen) return null;
 
-  const whatsappHref = WHATSAPP_NUMBER
-    ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
-    : CONTACT_EMAIL
-    ? `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(WHATSAPP_MESSAGE)}`
+  const whatsappNumber: string = WHATSAPP_NUMBER;
+  const contactEmail: string = CONTACT_EMAIL;
+  const whatsappHref = whatsappNumber
+    ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
+    : contactEmail
+    ? `mailto:${contactEmail}?subject=${encodeURIComponent(WHATSAPP_MESSAGE)}`
     : `https://wa.me/?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+
+  const heading =
+    title ?? (signedIn ? "Coming soon" : "Create an account to continue");
+  const body =
+    description ??
+    (signedIn
+      ? "This feature is still in development. For anything urgent, contact the Coverly team directly."
+      : "This feature is still in development and will need an account. You can create one now or log in if you already have one.");
+
+  const primaryClass =
+    "inline-flex flex-1 items-center justify-center rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#424769] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral";
+  const secondaryClass =
+    "inline-flex flex-1 items-center justify-center rounded-full border border-[rgba(45,50,80,0.25)] px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral";
 
   return (
     <div
@@ -50,7 +67,6 @@ export function AccountDialog({
       onClick={onClose}
     >
       <div
-        ref={dialogRef}
         className="w-full max-w-md rounded-2xl bg-surface p-6 sm:p-7 shadow-card border border-[rgba(45,50,80,0.1)] relative"
         onClick={(e) => e.stopPropagation()}
       >
@@ -67,34 +83,36 @@ export function AccountDialog({
           id="account-dialog-title"
           className="text-xl font-heading font-bold text-ink mb-2 pr-6"
         >
-          {title}
+          {heading}
         </h3>
 
-        <p className="text-sm text-ink-secondary leading-relaxed mb-6">
-          {description}
-        </p>
+        <p className="text-sm text-ink-secondary leading-relaxed mb-6">{body}</p>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1"
-          >
-            <Button variant="whatsapp" size="md" className="w-full">
-              <MessageCircle size={16} />
+        <div className="flex flex-col gap-3">
+          {!signedIn && (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link href="/signup" className={primaryClass}>
+                Sign up
+              </Link>
+              <Link href="/login" className={secondaryClass}>
+                Log in
+              </Link>
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={secondaryClass}
+            >
+              <MessageCircle size={16} className="mr-2" aria-hidden="true" />
               Contact on WhatsApp
-            </Button>
-          </a>
-          <Button
-            type="button"
-            variant="ghost"
-            size="md"
-            onClick={onClose}
-            className="flex-none"
-          >
-            Close
-          </Button>
+            </a>
+            <button type="button" onClick={onClose} className={secondaryClass}>
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
