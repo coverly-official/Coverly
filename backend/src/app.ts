@@ -24,9 +24,11 @@ import businessServicesRoutes from "./routes/business-services.js";
 import businessesRoutes from "./routes/businesses.js";
 import reportsRoutes from "./routes/reports.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
-dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
+const currentDir = typeof import.meta !== "undefined" && import.meta.url
+  ? path.dirname(fileURLToPath(import.meta.url))
+  : process.cwd();
+dotenv.config({ path: path.resolve(currentDir, "../.env") });
+dotenv.config({ path: path.resolve(currentDir, "../../.env.local") });
 dotenv.config();
 
 const app = express();
