@@ -3,9 +3,23 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 import healthRoutes from "./routes/health.js";
 import supplierRoutes from "./routes/suppliers.js";
 import conciergeRoutes from "./routes/concierge.js";
+import authRoutes from "./routes/auth.js";
+import categoriesRoutes from "./routes/categories.js";
+import productsRoutes from "./routes/products.js";
+import directoryRoutes from "./routes/directory.js";
+import rfqsRoutes from "./routes/rfqs.js";
+import quotationsRoutes from "./routes/quotations.js";
+import ordersRoutes from "./routes/orders.js";
+import verificationsRoutes from "./routes/verifications.js";
+import adminRoutes from "./routes/admin.js";
+import ticketsRoutes from "./routes/tickets.js";
+import notificationsRoutes from "./routes/notifications.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -13,6 +27,22 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
 dotenv.config();
 
 const app = express();
+
+// Security Headers
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Managed at Edge CDN
+  })
+);
+
+// Rate Limiting (100 requests per 15 minutes per IP)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000, // Generous limit for development & staging
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api", limiter);
 
 const corsOrigin = process.env.CORS_ORIGIN?.trim();
 const allowedOrigins =
@@ -28,8 +58,20 @@ app.use(
 );
 app.use(express.json());
 
+// Mount modular REST APIs
 app.use("/api", healthRoutes);
 app.use("/api", supplierRoutes);
 app.use("/api", conciergeRoutes);
+app.use("/api", authRoutes);
+app.use("/api", categoriesRoutes);
+app.use("/api", productsRoutes);
+app.use("/api", directoryRoutes);
+app.use("/api", rfqsRoutes);
+app.use("/api", quotationsRoutes);
+app.use("/api", ordersRoutes);
+app.use("/api", verificationsRoutes);
+app.use("/api", adminRoutes);
+app.use("/api", ticketsRoutes);
+app.use("/api", notificationsRoutes);
 
 export default app;
