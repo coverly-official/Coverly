@@ -17,18 +17,22 @@ export type LandedCostResult = {
  * landed_per_unit = (unit_price * qty * (1 + gst) + freight) / qty
  */
 export function calculateLandedCost(input: LandedCostInput): LandedCostResult {
-  const { unitPrice, quantity, gstRate, freight } = input;
+  const unitPrice = Number.isFinite(input.unitPrice) ? Math.max(0, input.unitPrice) : 0;
+  const quantity = Number.isFinite(input.quantity) ? Math.max(0, input.quantity) : 0;
+  const freight = Number.isFinite(input.freight) ? Math.max(0, input.freight) : 0;
+  const gstRate = Number.isFinite(input.gstRate) ? Math.max(0, input.gstRate) : 0;
 
+  const normalizedGstRate = gstRate > 1 ? gstRate / 100 : gstRate;
   const subtotal = unitPrice * quantity;
-  const gstAmount = subtotal * gstRate;
+  const gstAmount = subtotal * normalizedGstRate;
   const totalCost = subtotal + gstAmount + freight;
-  const landedPerUnit = totalCost / quantity;
-  const freightPerUnit = freight / quantity;
+  const landedPerUnit = quantity > 0 ? totalCost / quantity : 0;
+  const freightPerUnit = quantity > 0 ? freight / quantity : 0;
 
   return {
-    landedPerUnit: Math.round(landedPerUnit * 100) / 100,
-    totalCost: Math.round(totalCost * 100) / 100,
-    gstAmount: Math.round(gstAmount * 100) / 100,
-    freightPerUnit: Math.round(freightPerUnit * 100) / 100,
+    landedPerUnit: Number.isFinite(landedPerUnit) ? Math.round(landedPerUnit * 100) / 100 : 0,
+    totalCost: Number.isFinite(totalCost) ? Math.round(totalCost * 100) / 100 : 0,
+    gstAmount: Number.isFinite(gstAmount) ? Math.round(gstAmount * 100) / 100 : 0,
+    freightPerUnit: Number.isFinite(freightPerUnit) ? Math.round(freightPerUnit * 100) / 100 : 0,
   };
 }

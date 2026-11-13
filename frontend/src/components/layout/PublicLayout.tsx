@@ -1,81 +1,61 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import {
-  Layers,
-  Search,
-  Building2,
-  Package,
-  User,
-  LogOut,
-  ArrowRightLeft,
-  ChevronDown,
-  Briefcase,
-} from "lucide-react";
+import { Layers, Building2, Package, LogOut, Briefcase, Menu, X, Info, Mail } from "lucide-react";
 
 export const PublicLayout: React.FC = () => {
   const { user, activeRole, setActiveRole, logout } = useAuth();
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = [
+    { to: "/", label: "Home", icon: Layers },
+    { to: "/products", label: "Products", icon: Package },
+    { to: "/manufacturers", label: "Manufacturers", icon: Building2 },
+    { to: "/wholesalers", label: "Wholesalers", icon: Building2 },
+    { to: "/distributors", label: "Distributors", icon: Building2 },
+    { to: "/services", label: "Business Services", icon: Briefcase },
+    { to: "/how-it-works", label: "How it Works", icon: Info },
+    { to: "/about", label: "About", icon: Info },
+    { to: "/contact", label: "Contact", icon: Mail },
+  ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F5] text-stone-900 font-sans antialiased">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-[#FAF9F5]/90 backdrop-blur-md border-b border-stone-200">
+    <div className="min-h-screen flex flex-col bg-[#F5F7F5] text-stone-900 font-sans antialiased">
+      <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-[#F5F7F5]/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Brand */}
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-stone-900 flex items-center justify-center text-white font-bold text-sm tracking-wider">
+              <div className="w-8 h-8 rounded-lg bg-[#173a2a] flex items-center justify-center text-white font-bold text-sm tracking-wider">
                 C
               </div>
-              <span className="font-semibold text-lg tracking-tight group-hover:text-stone-700 transition">
+              <span className="font-semibold text-lg tracking-tight text-stone-900 group-hover:text-stone-700 transition">
                 COVERLY
               </span>
             </Link>
 
-            {/* Navigation Links */}
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600">
-              <Link to="/products" className="hover:text-stone-900 transition flex items-center gap-1.5">
-                <Package className="w-4 h-4" />
-                Products
-              </Link>
-              <Link to="/categories" className="hover:text-stone-900 transition flex items-center gap-1.5">
-                <Layers className="w-4 h-4" />
-                Categories
-              </Link>
-              <Link to="/manufacturers" className="hover:text-stone-900 transition flex items-center gap-1.5">
-                <Building2 className="w-4 h-4" />
-                Manufacturers
-              </Link>
-              <Link to="/services" className="hover:text-stone-900 transition flex items-center gap-1.5 text-stone-900 font-semibold">
-                <Briefcase className="w-4 h-4 text-stone-700" />
-                Services
-              </Link>
-              <Link to="/wholesalers" className="hover:text-stone-900 transition">
-                Wholesalers
-              </Link>
-              <Link to="/distributors" className="hover:text-stone-900 transition">
-                Distributors
-              </Link>
+            <nav className="hidden md:flex items-center gap-5 text-sm font-medium text-stone-600">
+              {navItems.map(({ to, label, icon: Icon }) => (
+                <Link key={to} to={to} className="flex items-center gap-1.5 hover:text-stone-900 transition">
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
 
-          {/* Right Action Controls */}
           <div className="flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                {/* Role Switcher for Dual Role */}
                 {user.roles.includes("buyer_supplier") && (
-                  <div className="flex items-center bg-stone-200/60 p-1 rounded-lg text-xs font-medium">
+                  <div className="hidden sm:flex items-center bg-stone-200/70 p-1 rounded-lg text-xs font-medium">
                     <button
                       onClick={() => {
                         setActiveRole("buyer");
                         navigate("/buyer/dashboard");
                       }}
                       className={`px-2.5 py-1 rounded-md transition ${
-                        activeRole === "buyer"
-                          ? "bg-white text-stone-900 shadow-sm font-semibold"
-                          : "text-stone-600 hover:text-stone-900"
+                        activeRole === "buyer" ? "bg-white text-stone-900 shadow-sm font-semibold" : "text-stone-600 hover:text-stone-900"
                       }`}
                     >
                       Buyer
@@ -86,9 +66,7 @@ export const PublicLayout: React.FC = () => {
                         navigate("/supplier/dashboard");
                       }}
                       className={`px-2.5 py-1 rounded-md transition ${
-                        activeRole !== "buyer" && !activeRole.includes("admin")
-                          ? "bg-white text-stone-900 shadow-sm font-semibold"
-                          : "text-stone-600 hover:text-stone-900"
+                        activeRole !== "buyer" && !activeRole.includes("admin") ? "bg-white text-stone-900 shadow-sm font-semibold" : "text-stone-600 hover:text-stone-900"
                       }`}
                     >
                       Supplier
@@ -96,21 +74,19 @@ export const PublicLayout: React.FC = () => {
                   </div>
                 )}
 
-                {/* Dashboard Shortcut */}
                 <Link
                   to={
                     activeRole.includes("admin")
                       ? "/admin/dashboard"
                       : activeRole === "buyer"
-                      ? "/buyer/dashboard"
-                      : "/supplier/dashboard"
+                        ? "/buyer/dashboard"
+                        : "/supplier/dashboard"
                   }
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-300 hover:bg-stone-100 transition"
+                  className="hidden sm:inline-flex text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-300 bg-white hover:bg-stone-100 transition"
                 >
                   Dashboard
                 </Link>
 
-                {/* User menu / Logout */}
                 <div className="flex items-center gap-2 border-l border-stone-200 pl-3">
                   <div className="text-right hidden sm:block">
                     <div className="text-xs font-semibold text-stone-900">{user.full_name}</div>
@@ -127,31 +103,49 @@ export const PublicLayout: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  to="/auth/login"
-                  className="text-xs font-semibold text-stone-700 hover:text-stone-900 px-3 py-1.5 rounded-lg transition"
-                >
-                  Sign In
+                <Link to="/auth/login" className="text-xs font-semibold text-stone-700 hover:text-stone-900 px-3 py-1.5 rounded-lg transition">
+                  Login
                 </Link>
-                <Link
-                  to="/auth/register?role=buyer"
-                  className="text-xs font-medium text-white bg-stone-900 hover:bg-stone-800 px-3.5 py-1.5 rounded-lg shadow-sm transition"
-                >
-                  Start Sourcing
+                <Link to="/auth/register?role=buyer" className="hidden sm:inline-flex text-xs font-medium text-white bg-[#173a2a] hover:bg-[#214d3c] px-3.5 py-1.5 rounded-lg shadow-sm transition">
+                  Register
                 </Link>
-                <Link
-                  to="/auth/register?role=manufacturer"
-                  className="hidden sm:inline-block text-xs font-medium text-stone-700 bg-stone-200 hover:bg-stone-300 px-3 py-1.5 rounded-lg transition"
+                <button
+                  type="button"
+                  className="md:hidden p-2 rounded-lg border border-stone-200 bg-white text-stone-700"
+                  onClick={() => setMobileOpen((value) => !value)}
+                  aria-label="Toggle menu"
                 >
-                  Become a Supplier
-                </Link>
+                  {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                </button>
               </div>
             )}
           </div>
         </div>
+
+        {mobileOpen && (
+          <div className="md:hidden border-t border-stone-200 bg-white">
+            <nav className="max-w-7xl mx-auto px-4 py-4 space-y-3 text-sm font-medium text-stone-700">
+              {navItems.map(({ to, label, icon: Icon }) => (
+                <Link key={to} to={to} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-stone-50">
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              ))}
+              {!user && (
+                <div className="pt-2 border-t border-stone-200 space-y-2">
+                  <Link to="/auth/register?role=buyer" onClick={() => setMobileOpen(false)} className="block rounded-lg bg-[#173a2a] text-white px-3 py-2 text-center">
+                    Start Sourcing
+                  </Link>
+                  <Link to="/auth/login" onClick={() => setMobileOpen(false)} className="block rounded-lg border border-stone-200 px-3 py-2 text-center">
+                    Sign In
+                  </Link>
+                </div>
+              )}
+            </nav>
+          </div>
+        )}
       </header>
 
-      {/* Main Page Slot */}
       <main className="flex-1">
         <Outlet />
       </main>

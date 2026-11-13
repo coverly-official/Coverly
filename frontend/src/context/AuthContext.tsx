@@ -85,11 +85,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: body.error || "Login failed" };
       }
 
-      const loggedUser = body.data.user;
-      setUser(loggedUser);
+      const loggedUser = body.data.user as UserProfile;
+      const activeRole = (loggedUser.activeRole || loggedUser.roles?.[0] || "buyer") as UserRole;
+      const normalizedUser: UserProfile = {
+        ...loggedUser,
+        roles: loggedUser.roles?.length ? loggedUser.roles : [activeRole],
+        activeRole,
+        is_active: loggedUser.is_active ?? true,
+      };
+
+      setUser(normalizedUser);
       setBusiness(body.data.business || null);
-      setActiveRole(loggedUser.activeRole);
-      localStorage.setItem("coverly_user_id", loggedUser.id);
+      setActiveRole(activeRole);
+      localStorage.setItem("coverly_user_id", normalizedUser.id);
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
@@ -115,10 +123,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: body.error || "Registration failed" };
       }
 
-      const registeredUser = body.data.user;
-      setUser(registeredUser);
-      setActiveRole(registeredUser.role);
-      localStorage.setItem("coverly_user_id", registeredUser.id);
+      const registeredUser = body.data.user as Partial<UserProfile> & { role?: UserRole };
+      const activeRole = (registeredUser.activeRole || registeredUser.role || payload.role || "buyer") as UserRole;
+      const normalizedUser: UserProfile = {
+        id: registeredUser.id || "",
+        email: registeredUser.email || payload.email,
+        full_name: registeredUser.full_name || payload.full_name,
+        phone: payload.phone,
+        roles: Array.isArray(registeredUser.roles) && registeredUser.roles.length ? registeredUser.roles : [activeRole],
+        activeRole,
+        is_active: registeredUser.is_active ?? true,
+      };
+
+      setUser(normalizedUser);
+      setBusiness(null);
+      setActiveRole(activeRole);
+      localStorage.setItem("coverly_user_id", normalizedUser.id);
+      localStorage.setItem("coverly_active_role", activeRole);
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };

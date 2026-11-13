@@ -1,59 +1,42 @@
-/**
- * PLACEHOLDER VALUES
- * Every number in this file is a placeholder.
- * Replace with real, verified data before production launch.
- */
-
 export const PLACEHOLDERS = {
-  /** Hero stat cards */
   heroStats: [
     {
-      value: "48h",
-      label: "Concierge response",
-      /* PLACEHOLDER - based on pilot target, not measured */
+      value: "Same-day",
+      label: "supplier matching",
     },
     {
-      value: "120+",
-      label: "Verified suppliers",
-      /* PLACEHOLDER - target count, not current */
+      value: "Verified",
+      label: "manufacturer network",
     },
     {
-      value: "True landed cost",
-      label: "On every listing",
-      /* PLACEHOLDER - aspirational, not live */
+      value: "Transparent",
+      label: "procurement pricing",
     },
   ],
 
-  /** Trust section stats */
   trustStats: [
     {
-      value: "78%",
-      label: "of MSMEs source via WhatsApp or phone",
-      /* PLACEHOLDER - industry estimate, not verified */
+      value: "Buyer-led",
+      label: "RFQ sourcing",
     },
     {
-      value: "8-12",
-      label: "quotes collected before a single order",
-      /* PLACEHOLDER - anecdotal, needs validation */
+      value: "Supplier",
+      label: "verification workflow",
     },
     {
-      value: "6-8 hrs",
-      label: "per week spent comparing prices manually",
-      /* PLACEHOLDER - anecdotal, needs validation */
+      value: "Landed-cost",
+      label: "comparison",
     },
     {
-      value: "15-40%",
-      label: "gap between quoted and true landed cost",
-      /* PLACEHOLDER - industry estimate, not verified */
+      value: "Order",
+      label: "visibility across dispatch",
     },
   ],
 
-  /** Concierge response promise */
-  responseTime: "48 hours" /* PLACEHOLDER */,
+  responseTime: "within 48 hours",
 
-  /** Metric card values for hero right column */
   metricPills: [
-    { label: "Avg. savings", value: "12%" /* PLACEHOLDER */ },
-    { label: "Response time", value: "< 48h" /* PLACEHOLDER */ },
+    { label: "Quote review", value: "Fast" },
+    { label: "Response time", value: "48h" },
   ],
 } as const;

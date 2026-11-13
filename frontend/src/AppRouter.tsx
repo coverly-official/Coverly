@@ -20,10 +20,14 @@ import { DirectoriesPage } from "@/pages/public/DirectoriesPage";
 import { SupplierProfilePage } from "@/pages/public/SupplierProfilePage";
 import { AboutPage } from "@/pages/public/AboutPage";
 import { ContactPage } from "@/pages/public/ContactPage";
+import { HowCoverlyWorksPage } from "@/pages/public/HowCoverlyWorksPage";
 
 // Auth Pages
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterPage } from "@/pages/auth/RegisterPage";
+import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
+import { EmailVerificationPage } from "@/pages/auth/EmailVerificationPage";
 import { OnboardingPage } from "@/pages/auth/OnboardingPage";
 
 // Buyer Pages
@@ -34,6 +38,10 @@ import { RfqDetailPage } from "@/pages/buyer/RfqDetailPage";
 import { QuotationComparePage } from "@/pages/buyer/QuotationComparePage";
 import { BuyerOrdersPage } from "@/pages/buyer/BuyerOrdersPage";
 import { BuyerOrderDetailPage } from "@/pages/buyer/BuyerOrderDetailPage";
+import { SavedSuppliersPage } from "@/pages/buyer/SavedSuppliersPage";
+import { BuyerProfilePage } from "@/pages/buyer/BuyerProfilePage";
+import { BuyerSettingsPage } from "@/pages/buyer/BuyerSettingsPage";
+import { BuyerSupportPage } from "@/pages/buyer/BuyerSupportPage";
 
 // Supplier Pages
 import { SupplierDashboardPage } from "@/pages/supplier/SupplierDashboardPage";
@@ -43,6 +51,10 @@ import { SupplierIncomingRfqsPage } from "@/pages/supplier/SupplierIncomingRfqsP
 import { SubmitQuotePage } from "@/pages/supplier/SubmitQuotePage";
 import { SupplierOrdersPage } from "@/pages/supplier/SupplierOrdersPage";
 import { SupplierVerificationPage } from "@/pages/supplier/SupplierVerificationPage";
+import { SupplierBusinessProfilePage } from "@/pages/supplier/SupplierBusinessProfilePage";
+import { SupplierQuotationsPage } from "@/pages/supplier/SupplierQuotationsPage";
+import { SupplierAnalyticsPage } from "@/pages/supplier/SupplierAnalyticsPage";
+import { SupplierSettingsPage } from "@/pages/supplier/SupplierSettingsPage";
 
 // Business Services Pages
 import { ServicesLandingPage } from "@/pages/services/ServicesLandingPage";
@@ -95,6 +107,7 @@ export const AppRouter: React.FC = () => {
             <Route path="suppliers/:slug" element={<SupplierProfilePage />} />
             <Route path="about" element={<AboutPage />} />
             <Route path="contact" element={<ContactPage />} />
+            <Route path="how-it-works" element={<HowCoverlyWorksPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="access-denied" element={<AccessDeniedPage />} />
 
@@ -129,6 +142,9 @@ export const AppRouter: React.FC = () => {
           <Route path="auth" element={<AuthLayout />}>
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
+            <Route path="forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="reset-password" element={<ResetPasswordPage />} />
+            <Route path="verify-email" element={<EmailVerificationPage />} />
             <Route
               path="onboarding"
               element={
@@ -158,8 +174,10 @@ export const AppRouter: React.FC = () => {
             <Route path="rfqs/:id/compare" element={<QuotationComparePage />} />
             <Route path="orders" element={<BuyerOrdersPage />} />
             <Route path="orders/:id" element={<BuyerOrderDetailPage />} />
-            <Route path="saved" element={<BuyerDashboardPage />} />
-            <Route path="settings" element={<BuyerDashboardPage />} />
+            <Route path="saved" element={<SavedSuppliersPage />} />
+            <Route path="profile" element={<BuyerProfilePage />} />
+            <Route path="settings" element={<BuyerSettingsPage />} />
+            <Route path="support" element={<BuyerSupportPage />} />
           </Route>
 
           {/* 4. Supplier Workspace (Screens 41–60) */}
@@ -189,10 +207,10 @@ export const AppRouter: React.FC = () => {
             <Route path="rfqs/:id/quote" element={<SubmitQuotePage />} />
             <Route path="orders" element={<SupplierOrdersPage />} />
             <Route path="verification" element={<SupplierVerificationPage />} />
-            <Route path="profile" element={<SupplierDashboardPage />} />
-            <Route path="quotations" element={<SupplierDashboardPage />} />
-            <Route path="analytics" element={<SupplierDashboardPage />} />
-            <Route path="settings" element={<SupplierDashboardPage />} />
+            <Route path="profile" element={<SupplierBusinessProfilePage />} />
+            <Route path="quotations" element={<SupplierQuotationsPage />} />
+            <Route path="analytics" element={<SupplierAnalyticsPage />} />
+            <Route path="settings" element={<SupplierSettingsPage />} />
           </Route>
 
           {/* 5. Provider Workspace (Business Services) */}

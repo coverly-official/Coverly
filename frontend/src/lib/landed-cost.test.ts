@@ -77,4 +77,30 @@ describe("calculateLandedCost", () => {
     expect(result.gstAmount).toBe(3600);
     expect(result.totalCost).toBe(24600);
   });
+
+  it("handles zero quantity without dividing by zero", () => {
+    const result = calculateLandedCost({
+      unitPrice: 200,
+      quantity: 0,
+      gstRate: 0.18,
+      freight: 1000,
+    });
+
+    expect(result.landedPerUnit).toBe(0);
+    expect(result.freightPerUnit).toBe(0);
+    expect(result.totalCost).toBe(1000);
+  });
+
+  it("supports percentage-style GST inputs", () => {
+    const result = calculateLandedCost({
+      unitPrice: 100,
+      quantity: 10,
+      gstRate: 18,
+      freight: 0,
+    });
+
+    expect(result.gstAmount).toBe(180);
+    expect(result.totalCost).toBe(1180);
+    expect(result.landedPerUnit).toBe(118);
+  });
 });

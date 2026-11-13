@@ -21,6 +21,8 @@ import adminRoutes from "./routes/admin.js";
 import ticketsRoutes from "./routes/tickets.js";
 import notificationsRoutes from "./routes/notifications.js";
 import businessServicesRoutes from "./routes/business-services.js";
+import businessesRoutes from "./routes/businesses.js";
+import reportsRoutes from "./routes/reports.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -75,5 +77,7 @@ app.use("/api", adminRoutes);
 app.use("/api", ticketsRoutes);
 app.use("/api", notificationsRoutes);
 app.use("/api", businessServicesRoutes);
+app.use("/api", businessesRoutes);
+app.use("/api", reportsRoutes);
 
 export default app;

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { getWorkspaceRoute } from "@/lib/role-routing";
 import { Lock, Mail, ArrowRight } from "lucide-react";
 
 export const LoginPage: React.FC = () => {
@@ -29,16 +30,8 @@ export const LoginPage: React.FC = () => {
     if (redirect) {
       navigate(redirect);
     } else {
-      const role = localStorage.getItem("coverly_active_role");
-      if (role === "service_provider") {
-        navigate("/provider/dashboard");
-      } else if (role && ["manufacturer", "wholesaler", "distributor"].includes(role)) {
-        navigate("/supplier/dashboard");
-      } else if (role && role.includes("admin")) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/buyer/dashboard");
-      }
+      const role = (localStorage.getItem("coverly_active_role") || "buyer") as any;
+      navigate(getWorkspaceRoute(role));
     }
   };
 
@@ -95,6 +88,12 @@ export const LoginPage: React.FC = () => {
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </form>
+
+      <div className="mt-4 text-right">
+        <Link to="/auth/forgot-password" className="text-[11px] font-medium text-stone-600 hover:text-stone-900">
+          Forgot password?
+        </Link>
+      </div>
 
       <div className="mt-6 pt-4 border-t border-stone-100 text-center text-xs text-stone-500">
         Don't have an account?{" "}

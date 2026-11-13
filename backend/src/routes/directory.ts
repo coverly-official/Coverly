@@ -241,4 +241,95 @@ router.post("/directory/onboarding", async (req, res) => {
   }
 });
 
+// ====================================================================
+// Saved Suppliers Endpoints
+// ====================================================================
+
+// POST /api/directory/saved (Save a supplier)
+router.post("/directory/saved", async (req, res) => {
+  const { user_id, supplier_business_id } = req.body;
+
+  if (!user_id || !supplier_business_id) {
+    return res.status(400).json({
+      success: false,
+      error: "User ID and Supplier Business ID are required.",
+    });
+  }
+
+  const insforge = getInsForgeClient();
+  if (!insforge) return res.status(503).json({ success: false, error: "Database client unavailable." });
+
+  try {
+    const { data, error } = await insforge.database
+      .from("saved_suppliers")
+      .insert([{ user_id, supplier_business_id }])
+      .select()
+      .single();
+
+    if (error) {
+      if (error.message.includes("uq_saved_supplier") || error.code === "23505") {
+        return res.json({ success: true, message: "Supplier already saved." });
+      }
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    return res.status(201).json({ success: true, message: "Supplier saved to bookmarks.", data });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/directory/saved (List saved suppliers)
+router.get("/directory/saved", async (req, res) => {
+  const { user_id } = req.query as { user_id?: string };
+
+  if (!user_id) {
+    return res.status(400).json({ success: false, error: "User ID is required." });
+  }
+
+  const insforge = getInsForgeClient();
+  if (!insforge) return res.status(503).json({ success: false, error: "Database client unavailable." });
+
+  try {
+    const { data, error } = await insforge.database
+      .from("saved_suppliers")
+      .select("id, created_at, businesses!supplier_business_id(id, name, slug, business_type, city, state, verification_level, phone, email)")
+      .eq("user_id", user_id)
+      .order("created_at", { ascending: false });
+
+    if (error) return res.status(500).json({ success: false, error: error.message });
+
+    return res.json({ success: true, data: data || [] });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// DELETE /api/directory/saved/:supplierBusinessId (Remove saved supplier)
+router.delete("/directory/saved/:supplierBusinessId", async (req, res) => {
+  const { supplierBusinessId } = req.params;
+  const { user_id } = req.query as { user_id?: string };
+
+  if (!user_id) {
+    return res.status(400).json({ success: false, error: "User ID is required." });
+  }
+
+  const insforge = getInsForgeClient();
+  if (!insforge) return res.status(503).json({ success: false, error: "Database client unavailable." });
+
+  try {
+    const { error } = await insforge.database
+      .from("saved_suppliers")
+      .delete()
+      .eq("user_id", user_id)
+      .eq("supplier_business_id", supplierBusinessId);
+
+    if (error) return res.status(500).json({ success: false, error: error.message });
+
+    return res.json({ success: true, message: "Supplier removed from bookmarks." });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;

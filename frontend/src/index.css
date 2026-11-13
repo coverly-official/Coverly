@@ -6,20 +6,20 @@
   :root {
     --font-raleway: "Raleway", sans-serif;
     --font-jetbrains: "JetBrains Mono", monospace;
-    --canvas-start: #f9dcd8;
-    --canvas-end: #f5eae6;
+    --canvas-start: #f3f7f4;
+    --canvas-end: #f8faf8;
     --surface: #ffffff;
-    --surface-muted: #f6f7f9;
-    --surface-pink: #fdeceb;
-    --text-primary: #22252a;
-    --text-secondary: #7a7f87;
-    --btn-primary: #1d2235;
-    --accent: #f16a5a;
-    --verified: #1f9d6b;
+    --surface-muted: #f2f5f3;
+    --surface-pink: #edf7f0;
+    --text-primary: #1a2a24;
+    --text-secondary: #5a6b64;
+    --btn-primary: #173a2a;
+    --accent: #1f7a5a;
+    --verified: #0d8b62;
     --whatsapp: #25d366;
-    --border-color: rgba(34, 37, 42, 0.06);
-    --radius-lg: 24px;
-    --radius-xl: 32px;
+    --border-color: rgba(23, 58, 42, 0.1);
+    --radius-lg: 22px;
+    --radius-xl: 30px;
   }
 
   html {
@@ -29,12 +29,7 @@
   }
 
   body {
-    background: linear-gradient(
-      180deg,
-      var(--canvas-start) 0%,
-      var(--canvas-end) 50%,
-      var(--canvas-end) 100%
-    );
+    background: linear-gradient(180deg, var(--canvas-start) 0%, var(--canvas-end) 100%);
     background-attachment: fixed;
     color: var(--text-primary);
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -48,8 +43,8 @@
   }
 
   ::selection {
-    background-color: var(--accent);
-    color: var(--surface);
+    background-color: rgba(31, 122, 90, 0.18);
+    color: var(--text-primary);
   }
 }
 

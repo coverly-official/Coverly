@@ -13,6 +13,7 @@ import {
   BarChart,
   Settings,
   Briefcase,
+  Building,
 } from "lucide-react";
 
 export const AdminLayout: React.FC = () => {
@@ -20,12 +21,20 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
 
   const navLinks = [
-    { label: "Overview", href: "/admin/dashboard", icon: BarChart },
+    { label: "Dashboard", href: "/admin/dashboard", icon: BarChart },
+    { label: "Users", href: "/admin/users", icon: Users },
+    { label: "Businesses", href: "/admin/users", icon: Building },
+    { label: "Products", href: "/supplier/products", icon: ShoppingBag },
+    { label: "Verifications", href: "/admin/verifications", icon: CheckCircle },
+    { label: "Categories", href: "/categories", icon: List },
+    { label: "RFQs", href: "/buyer/rfqs", icon: FileText },
+    { label: "Quotations", href: "/supplier/quotations", icon: Briefcase },
+    { label: "Orders", href: "/buyer/orders", icon: ShoppingBag },
     { label: "Business Services", href: "/admin/services", icon: Briefcase },
-    { label: "User Governance", href: "/admin/users", icon: Users },
-    { label: "Verification Queue", href: "/admin/verifications", icon: CheckCircle },
-    { label: "Support Desk", href: "/admin/support", icon: HelpCircle },
+    { label: "Reports", href: "/admin/dashboard", icon: BarChart },
+    { label: "Support", href: "/admin/support", icon: HelpCircle },
     { label: "Audit Logs", href: "/admin/audit-logs", icon: List },
+    { label: "Settings", href: "/admin/dashboard", icon: Settings },
   ];
 
   return (

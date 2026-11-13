@@ -1,80 +1,133 @@
 import { Router } from "express";
 import { getInsForgeClient } from "../lib/insforge.js";
-import { calculateLandedCost } from "../lib/landed-cost.js";
+import { authenticateUser } from "../middleware/auth.js";
+import { calculateLandedCost, roundToTwoDecimals } from "../lib/landed-cost.js";
+import { sendSuccess, sendError } from "../utils/response.js";
 
 const router = Router();
 
-// POST /api/quotations
-router.post("/quotations", async (req, res) => {
+// POST /api/landed-cost/calculate (Simulation Endpoint)
+router.post("/landed-cost/calculate", (req, res) => {
+  const {
+    quantity = 1,
+    unitPrice = 0,
+    discount = 0,
+    packaging = 0,
+    freight = 0,
+    insurance = 0,
+    otherCharges = 0,
+    gstRate = 0.18,
+  } = req.body;
+
+  const result = calculateLandedCost({
+    quantity: Number(quantity),
+    unitPrice: Number(unitPrice),
+    discount: Number(discount),
+    packaging: Number(packaging),
+    freight: Number(freight),
+    insurance: Number(insurance),
+    otherCharges: Number(otherCharges),
+    gstRate: Number(gstRate),
+  });
+
+  return sendSuccess(res, result, "Landed cost calculated successfully.");
+});
+
+// POST /api/quotations (Submit Quotation)
+router.post("/quotations", authenticateUser, async (req, res) => {
+  const user = req.user!;
   const {
     rfq_id,
     supplier_business_id,
-    supplier_user_id,
     valid_until,
     lead_time_days = 7,
     terms_and_conditions,
     items,
+    discount = 0,
     freight = 0,
     packaging = 0,
     insurance = 0,
+    otherCharges = 0,
     gst_rate = 0.18,
   } = req.body;
 
-  if (!rfq_id || !supplier_business_id || !supplier_user_id || !valid_until) {
-    return res.status(400).json({
-      success: false,
-      error: "RFQ ID, Supplier Business, Supplier User, and Validity Date are required.",
-    });
+  if (!rfq_id || !supplier_business_id || !valid_until) {
+    return sendError(
+      res,
+      "RFQ ID, Supplier Business, and Valid Until Date are required.",
+      400,
+      "VALIDATION_FAILED"
+    );
   }
 
   if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: "Quotation must have at least one line item.",
-    });
+    return sendError(res, "Quotation must have at least one line item.", 400, "VALIDATION_FAILED");
   }
 
   const insforge = getInsForgeClient();
-  if (!insforge) {
-    return res.status(503).json({
-      success: false,
-      error: "Database client unavailable.",
-    });
-  }
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
 
   try {
-    const quoteNumber = `QT-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+    // 1. Check RFQ existence and status
+    const { data: rfq, error: rfqErr } = await insforge.database
+      .from("rfqs")
+      .select("id, rfq_number, buyer_id, status")
+      .eq("id", rfq_id)
+      .single();
 
-    // 1. Calculate Landed Cost
+    if (rfqErr || !rfq) {
+      return sendError(res, "RFQ not found.", 404, "NOT_FOUND");
+    }
+
+    if (["accepted", "closed", "cancelled"].includes(rfq.status)) {
+      return sendError(res, `Cannot quote on an RFQ that is already ${rfq.status}.`, 400, "INVALID_STATE");
+    }
+
+    // 2. Validate supplier business membership
+    if (!user.roles.includes("admin")) {
+      const { data: member } = await insforge.database
+        .from("business_members")
+        .select("role_in_business")
+        .eq("business_id", supplier_business_id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (!member) {
+        return sendError(res, "You are not an authorized member of this supplier business.", 403, "FORBIDDEN");
+      }
+    }
+
+    // 3. Compute item totals & landed cost breakdown
     let subtotal = 0;
     let totalQty = 0;
     for (const item of items) {
-      const q = Number.parseInt(item.quantity, 10) || 1;
-      const p = Number.parseFloat(item.unit_price) || 0;
+      const q = Math.max(1, Number.parseInt(item.quantity, 10) || 1);
+      const p = Math.max(0, Number.parseFloat(item.unit_price) || 0);
       subtotal += q * p;
       totalQty += q;
     }
 
     const calcResult = calculateLandedCost({
-      unitPrice: totalQty > 0 ? subtotal / totalQty : subtotal,
       quantity: totalQty,
-      freight: Number.parseFloat(freight) || 0,
-      gstRate: Number.parseFloat(gst_rate) || 0.18,
+      unitPrice: totalQty > 0 ? subtotal / totalQty : subtotal,
+      discount: Number(discount),
+      packaging: Number(packaging),
+      freight: Number(freight),
+      insurance: Number(insurance),
+      otherCharges: Number(otherCharges),
+      gstRate: Number(gst_rate),
     });
 
-    const parsedPackaging = Number.parseFloat(packaging) || 0;
-    const parsedInsurance = Number.parseFloat(insurance) || 0;
-    const finalTotalLandedCost = calcResult.totalCost + parsedPackaging + parsedInsurance;
-    const effectiveLandedUnitCost = totalQty > 0 ? Math.round((finalTotalLandedCost / totalQty) * 100) / 100 : finalTotalLandedCost;
+    const quoteNumber = `QT-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
 
-    // 2. Insert Quotation
+    // 4. Insert Quotation
     const { data: quote, error: quoteError } = await insforge.database
       .from("quotations")
       .insert([
         {
           rfq_id,
           supplier_business_id,
-          supplier_user_id,
+          supplier_user_id: user.id,
           quotation_number: quoteNumber,
           valid_until,
           lead_time_days: Number.parseInt(lead_time_days, 10) || 7,
@@ -86,13 +139,13 @@ router.post("/quotations", async (req, res) => {
       .single();
 
     if (quoteError || !quote) {
-      return res.status(500).json({ success: false, error: quoteError?.message || "Failed to create quotation." });
+      return sendError(res, quoteError?.message || "Failed to create quotation.", 500, "DATABASE_ERROR");
     }
 
-    // 3. Insert Quotation Items
+    // 5. Insert Line Items
     const quoteItemsPayload = items.map((item: any) => {
-      const q = Number.parseInt(item.quantity, 10) || 1;
-      const p = Number.parseFloat(item.unit_price) || 0;
+      const q = Math.max(1, Number.parseInt(item.quantity, 10) || 1);
+      const p = Math.max(0, Number.parseFloat(item.unit_price) || 0);
       return {
         quotation_id: quote.id,
         rfq_item_id: item.rfq_item_id || null,
@@ -100,131 +153,163 @@ router.post("/quotations", async (req, res) => {
         quantity: q,
         unit: item.unit || "pc",
         unit_price: p,
-        total_price: q * p,
+        total_price: roundToTwoDecimals(q * p),
       };
     });
     await insforge.database.from("quotation_items").insert(quoteItemsPayload);
 
-    // 4. Insert Quotation Costs
+    // 6. Insert Quotation Costs
     await insforge.database.from("quotation_costs").insert([
       {
         quotation_id: quote.id,
-        subtotal,
-        freight: Number.parseFloat(freight) || 0,
-        packaging: parsedPackaging,
-        insurance: parsedInsurance,
-        gst_rate: Number.parseFloat(gst_rate) || 0.18,
+        subtotal: calcResult.baseAmount,
+        freight: calcResult.freight,
+        packaging: calcResult.packaging,
+        insurance: calcResult.insurance,
+        gst_rate: calcResult.gstRate,
         gst_amount: calcResult.gstAmount,
-        total_landed_cost: finalTotalLandedCost,
-        effective_landed_unit_cost: effectiveLandedUnitCost,
+        total_landed_cost: calcResult.totalLandedCost,
+        effective_landed_unit_cost: calcResult.effectiveLandedUnitCost,
       },
     ]);
 
-    // 5. Update RFQ Status to quotes_received
+    // 7. Update RFQ status to quotes_received
     await insforge.database
       .from("rfqs")
-      .update({ status: "quotes_received" })
+      .update({ status: "quotes_received", updated_at: new Date().toISOString() })
       .eq("id", rfq_id);
 
-    return res.status(201).json({
-      success: true,
-      message: "Quotation submitted successfully.",
-      data: quote,
-    });
+    // 8. Update supplier recipient status
+    await insforge.database
+      .from("rfq_recipients")
+      .update({ status: "quoted" })
+      .eq("rfq_id", rfq_id)
+      .eq("supplier_business_id", supplier_business_id);
+
+    // 9. Send notification to buyer
+    await insforge.database.from("notifications").insert([
+      {
+        user_id: rfq.buyer_id,
+        title: "New Quotation Received",
+        message: `A supplier submitted quotation ${quoteNumber} for RFQ ${rfq.rfq_number}.`,
+        link: `/buyer/rfqs/${rfq_id}/compare`,
+      },
+    ]);
+
+    return sendSuccess(res, quote, "Quotation submitted successfully.", 201);
   } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      error: err.message || "Failed to submit quotation.",
-    });
+    return sendError(res, err.message || "Failed to submit quotation.", 500, "SERVER_ERROR");
   }
 });
 
 // GET /api/quotations/compare/:rfqId
-router.get("/quotations/compare/:rfqId", async (req, res) => {
+router.get("/quotations/compare/:rfqId", authenticateUser, async (req, res) => {
   const { rfqId } = req.params;
   const insforge = getInsForgeClient();
-  if (!insforge) {
-    return res.status(503).json({
-      success: false,
-      error: "Database client unavailable.",
-    });
-  }
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
 
   try {
     const { data: quotations, error } = await insforge.database
       .from("quotations")
-      .select("id, quotation_number, status, valid_until, lead_time_days, created_at, quotation_costs(*), quotation_items(*), businesses(id, name, city, verification_level)")
+      .select(
+        "id, quotation_number, status, valid_until, lead_time_days, terms_and_conditions, created_at, quotation_costs(*), quotation_items(*), businesses!supplier_business_id(id, name, city, verification_level, phone, email)"
+      )
       .eq("rfq_id", rfqId);
 
-    if (error) {
-      return res.status(500).json({ success: false, error: error.message });
-    }
+    if (error) return sendError(res, error.message, 500, "DATABASE_ERROR");
 
     // Sort by lowest landed unit cost
     const sortedQuotes = (quotations || []).sort((a: any, b: any) => {
-      const aCost = (a.quotation_costs && (a.quotation_costs as any).effective_landed_unit_cost) || 0;
-      const bCost = (b.quotation_costs && (b.quotation_costs as any).effective_landed_unit_cost) || 0;
+      const aCost = a.quotation_costs?.effective_landed_unit_cost || 0;
+      const bCost = b.quotation_costs?.effective_landed_unit_cost || 0;
       return aCost - bCost;
     });
 
-    return res.json({
-      success: true,
-      data: sortedQuotes,
-      bestQuoteId: sortedQuotes[0]?.id || null,
+    return sendSuccess(res, {
+      quotations: sortedQuotes,
+      lowestLandedQuoteId: sortedQuotes[0]?.id || null,
     });
   } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      error: err.message || "Failed to compare quotations.",
-    });
+    return sendError(res, err.message || "Failed to compare quotations.", 500, "SERVER_ERROR");
   }
 });
 
-// POST /api/quotations/:id/accept
-router.post("/quotations/:id/accept", async (req, res) => {
+// POST /api/quotations/:id/accept (Accept Quotation -> Creates Order)
+router.post("/quotations/:id/accept", authenticateUser, async (req, res) => {
+  const user = req.user!;
   const { id } = req.params;
-  const { buyer_id, buyer_business_id } = req.body;
-
-  if (!buyer_id) {
-    return res.status(400).json({
-      success: false,
-      error: "Buyer ID is required.",
-    });
-  }
+  const { buyer_business_id } = req.body;
 
   const insforge = getInsForgeClient();
-  if (!insforge) {
-    return res.status(503).json({
-      success: false,
-      error: "Database client unavailable.",
-    });
-  }
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
 
   try {
-    // 1. Fetch quotation
+    // 1. Fetch quotation with items and RFQ
     const { data: quote, error: quoteError } = await insforge.database
       .from("quotations")
-      .select("id, rfq_id, supplier_business_id, quotation_costs(*), quotation_items(*)")
+      .select(
+        "id, quotation_number, rfq_id, supplier_business_id, supplier_user_id, status, valid_until, quotation_costs(*), quotation_items(*), rfqs(id, buyer_id, rfq_number, status)"
+      )
       .eq("id", id)
       .single();
 
     if (quoteError || !quote) {
-      return res.status(404).json({ success: false, error: "Quotation not found." });
+      return sendError(res, "Quotation not found.", 404, "NOT_FOUND");
     }
 
-    // 2. Mark quote accepted
+    const parentRfq = (quote as any).rfqs;
+
+    // Security Check: Buyer ownership
+    if (parentRfq.buyer_id !== user.id && !user.roles.includes("admin")) {
+      return sendError(res, "You are not authorized to accept this quotation.", 403, "FORBIDDEN");
+    }
+
+    // Expiry Check
+    const today = new Date().toISOString().split("T")[0];
+    if (quote.valid_until && quote.valid_until < today) {
+      return sendError(res, "This quotation has expired and can no longer be accepted.", 400, "QUOTE_EXPIRED");
+    }
+
+    // Duplicate Check
+    if (quote.status === "accepted") {
+      return sendError(res, "This quotation has already been accepted.", 400, "ALREADY_ACCEPTED");
+    }
+
+    if (quote.status === "rejected") {
+      return sendError(res, "Cannot accept a rejected quotation.", 400, "ALREADY_REJECTED");
+    }
+
+    // Check if RFQ already has an accepted quote / order
+    const { data: existingOrder } = await insforge.database
+      .from("orders")
+      .select("id, order_number")
+      .eq("quotation_id", id)
+      .single();
+
+    if (existingOrder) {
+      return sendError(res, `An order (${existingOrder.order_number}) already exists for this quotation.`, 409, "ORDER_EXISTS");
+    }
+
+    // 2. Mark this quote accepted
     await insforge.database
       .from("quotations")
-      .update({ status: "accepted" })
+      .update({ status: "accepted", updated_at: new Date().toISOString() })
       .eq("id", id);
 
-    // 3. Mark RFQ accepted
+    // 3. Mark competing quotes for this RFQ as rejected
+    await insforge.database
+      .from("quotations")
+      .update({ status: "rejected", updated_at: new Date().toISOString() })
+      .eq("rfq_id", quote.rfq_id)
+      .neq("id", id);
+
+    // 4. Update RFQ status to accepted
     await insforge.database
       .from("rfqs")
-      .update({ status: "accepted" })
+      .update({ status: "accepted", updated_at: new Date().toISOString() })
       .eq("id", quote.rfq_id);
 
-    // 4. Generate Order
+    // 5. Create Order
     const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
     const costRecord = quote.quotation_costs as any;
     const totalAmount = costRecord?.total_landed_cost || 0;
@@ -235,7 +320,7 @@ router.post("/quotations/:id/accept", async (req, res) => {
         {
           order_number: orderNumber,
           quotation_id: id,
-          buyer_id,
+          buyer_id: user.id,
           buyer_business_id: buyer_business_id || null,
           supplier_business_id: quote.supplier_business_id,
           status: "pending_deposit",
@@ -246,10 +331,10 @@ router.post("/quotations/:id/accept", async (req, res) => {
       .single();
 
     if (orderError || !order) {
-      return res.status(500).json({ success: false, error: orderError?.message || "Failed to create order." });
+      return sendError(res, orderError?.message || "Failed to create order.", 500, "DATABASE_ERROR");
     }
 
-    // 5. Insert Order Items
+    // 6. Insert Order Items
     if (Array.isArray(quote.quotation_items)) {
       const orderItems = quote.quotation_items.map((item: any) => ({
         order_id: order.id,
@@ -262,26 +347,63 @@ router.post("/quotations/:id/accept", async (req, res) => {
       await insforge.database.from("order_items").insert(orderItems);
     }
 
-    // 6. Record Status History
+    // 7. Record Status History
     await insforge.database.from("order_status_history").insert([
       {
         order_id: order.id,
         new_status: "pending_deposit",
-        changed_by: buyer_id,
-        note: "Order created upon quotation acceptance.",
+        changed_by: user.id,
+        note: `Order generated upon accepting quotation ${quote.quotation_number}.`,
       },
     ]);
 
-    return res.status(200).json({
-      success: true,
-      message: "Quotation accepted and order created.",
-      data: order,
-    });
+    // 8. Notify Supplier
+    if (quote.supplier_user_id) {
+      await insforge.database.from("notifications").insert([
+        {
+          user_id: quote.supplier_user_id,
+          title: "Quotation Accepted!",
+          message: `Buyer accepted your quote ${quote.quotation_number}. Purchase Order ${orderNumber} generated.`,
+          link: `/supplier/orders`,
+        },
+      ]);
+    }
+
+    return sendSuccess(res, order, "Quotation accepted and order created successfully.", 201);
   } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      error: err.message || "Failed to accept quotation.",
-    });
+    return sendError(res, err.message || "Failed to accept quotation.", 500, "SERVER_ERROR");
+  }
+});
+
+// POST /api/quotations/:id/reject
+router.post("/quotations/:id/reject", authenticateUser, async (req, res) => {
+  const user = req.user!;
+  const { id } = req.params;
+
+  const insforge = getInsForgeClient();
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
+
+  try {
+    const { data: quote } = await insforge.database
+      .from("quotations")
+      .select("id, rfq_id, rfqs(buyer_id)")
+      .eq("id", id)
+      .single();
+
+    if (!quote) return sendError(res, "Quotation not found.", 404, "NOT_FOUND");
+
+    if ((quote as any).rfqs?.buyer_id !== user.id && !user.roles.includes("admin")) {
+      return sendError(res, "Not authorized to reject this quotation.", 403, "FORBIDDEN");
+    }
+
+    await insforge.database
+      .from("quotations")
+      .update({ status: "rejected", updated_at: new Date().toISOString() })
+      .eq("id", id);
+
+    return sendSuccess(res, null, "Quotation rejected.");
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to reject quotation.", 500, "SERVER_ERROR");
   }
 });
 

@@ -24,15 +24,17 @@ export const BuyerLayout: React.FC = () => {
 
   const navLinks = [
     { label: "Dashboard", href: "/buyer/dashboard", icon: LayoutDashboard },
-    { label: "Discover Products", href: "/products", icon: Search },
+    { label: "Marketplace", href: "/products", icon: Search },
     { label: "Find Suppliers", href: "/manufacturers", icon: Building2 },
+    { label: "RFQs", href: "/buyer/rfqs", icon: FileText },
+    { label: "Quotations", href: "/buyer/rfqs", icon: ArrowRightLeft },
+    { label: "Orders", href: "/buyer/orders", icon: ShoppingBag },
     { label: "Business Services", href: "/services", icon: Briefcase },
-    { label: "Service Inquiries", href: "/services/my-requests", icon: Briefcase },
-    { label: "My RFQs", href: "/buyer/rfqs", icon: FileText },
-    { label: "Create RFQ", href: "/buyer/rfq/new", icon: PlusCircle },
-    { label: "My Orders", href: "/buyer/orders", icon: ShoppingBag },
     { label: "Saved Suppliers", href: "/buyer/saved", icon: Bookmark },
+    { label: "Notifications", href: "/notifications", icon: Bell },
+    { label: "Profile", href: "/buyer/profile", icon: Building2 },
     { label: "Settings", href: "/buyer/settings", icon: Settings },
+    { label: "Support", href: "/buyer/support", icon: Briefcase },
   ];
 
   return (
@@ -144,6 +146,12 @@ export const BuyerLayout: React.FC = () => {
               className="p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition relative"
             >
               <Bell className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/buyer/profile"
+              className="text-xs font-medium text-stone-700 hover:text-stone-900 px-2 py-1.5 rounded-lg transition"
+            >
+              Profile
             </Link>
           </div>
         </header>

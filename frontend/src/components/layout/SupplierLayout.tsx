@@ -24,15 +24,15 @@ export const SupplierLayout: React.FC = () => {
 
   const navLinks = [
     { label: "Dashboard", href: "/supplier/dashboard", icon: LayoutDashboard },
-    { label: "Business Profile", href: "/supplier/profile", icon: Building },
-    { label: "Verification Center", href: "/supplier/verification", icon: ShieldCheck },
-    { label: "Business Services", href: "/services", icon: Briefcase },
-    { label: "My Products", href: "/supplier/products", icon: Package },
-    { label: "Add Product", href: "/supplier/products/new", icon: PlusCircle },
+    { label: "Products", href: "/supplier/products", icon: Package },
     { label: "Incoming RFQs", href: "/supplier/rfqs", icon: Inbox },
-    { label: "Submitted Quotes", href: "/supplier/quotations", icon: Send },
-    { label: "Order Management", href: "/supplier/orders", icon: ShoppingBag },
-    { label: "Analytics & Stats", href: "/supplier/analytics", icon: TrendingUp },
+    { label: "Quotations", href: "/supplier/quotations", icon: Send },
+    { label: "Orders", href: "/supplier/orders", icon: ShoppingBag },
+    { label: "Verification", href: "/supplier/verification", icon: ShieldCheck },
+    { label: "Business Profile", href: "/supplier/profile", icon: Building },
+    { label: "Business Services", href: "/services", icon: Briefcase },
+    { label: "Notifications", href: "/notifications", icon: Bell },
+    { label: "Analytics", href: "/supplier/analytics", icon: TrendingUp },
     { label: "Settings", href: "/supplier/settings", icon: Settings },
   ];
 
