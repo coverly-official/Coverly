@@ -5,6 +5,7 @@ export type UserRole =
   | "wholesaler"
   | "distributor"
   | "buyer_supplier"
+  | "service_provider"
   | "admin"
   | "verification_admin"
   | "support_admin";
@@ -32,7 +33,7 @@ export interface Business {
   name: string;
   legal_name?: string;
   slug: string;
-  business_type: "buyer" | "manufacturer" | "wholesaler" | "distributor";
+  business_type: "buyer" | "manufacturer" | "wholesaler" | "distributor" | "service_provider";
   city: string;
   state: string;
   pincode: string;
@@ -43,6 +44,150 @@ export interface Business {
   verification_level: VerificationTier;
   is_active: boolean;
   created_at: string;
+}
+
+export interface BusinessServiceSubcategory {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface BusinessServiceCategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string;
+  description?: string;
+  sort_order: number;
+  is_active: boolean;
+  subcategories?: BusinessServiceSubcategory[];
+}
+
+export interface ServiceProviderProfile {
+  id: string;
+  business_id: string;
+  headline?: string;
+  bio?: string;
+  experience_years: number;
+  service_areas: string[];
+  certifications: string[];
+  website_url?: string;
+}
+
+export interface BusinessServicePortfolio {
+  id: string;
+  service_id?: string;
+  business_id: string;
+  title: string;
+  image_url: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface BusinessService {
+  id: string;
+  business_id: string;
+  category_id: string;
+  subcategory_id?: string;
+  title: string;
+  slug: string;
+  short_description: string;
+  full_description?: string;
+  deliverables?: string[];
+  pricing_model: "fixed" | "starting_at" | "custom_quote";
+  starting_price?: number;
+  turnaround_days: number;
+  is_active: boolean;
+  created_at: string;
+  businesses?: {
+    id: string;
+    name: string;
+    slug?: string;
+    city: string;
+    state?: string;
+    phone?: string;
+    email?: string;
+    website?: string;
+    verification_level: VerificationTier;
+  };
+  business_service_categories?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  business_service_subcategories?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  portfolio?: BusinessServicePortfolio[];
+  provider_profile?: ServiceProviderProfile;
+}
+
+export type ServiceRequestStatus =
+  | "submitted"
+  | "viewed"
+  | "quoted"
+  | "accepted"
+  | "rejected"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
+
+export interface ServiceRequestQuotation {
+  id: string;
+  quotation_number: string;
+  request_id: string;
+  provider_business_id: string;
+  provider_user_id: string;
+  quoted_price: number;
+  scope_of_work: string;
+  deliverables?: string[];
+  turnaround_days: number;
+  valid_until: string;
+  terms?: string;
+  status: "submitted" | "accepted" | "rejected" | "expired";
+  created_at: string;
+}
+
+export interface ServiceRequest {
+  id: string;
+  request_number: string;
+  customer_id: string;
+  customer_business_id?: string;
+  service_id?: string;
+  provider_business_id: string;
+  title: string;
+  requirements: string;
+  delivery_city?: string;
+  target_timeline?: string;
+  budget?: number;
+  status: ServiceRequestStatus;
+  created_at: string;
+  businesses?: {
+    id: string;
+    name: string;
+    city: string;
+    phone?: string;
+    email?: string;
+    verification_level: VerificationTier;
+  };
+  business_services?: {
+    title: string;
+    pricing_model: string;
+  };
+  quotations?: ServiceRequestQuotation[];
+  history?: Array<{
+    id: string;
+    previous_status?: string;
+    new_status: string;
+    note?: string;
+    created_at: string;
+  }>;
 }
 
 export interface ProductCategory {

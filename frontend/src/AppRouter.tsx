@@ -44,12 +44,34 @@ import { SubmitQuotePage } from "@/pages/supplier/SubmitQuotePage";
 import { SupplierOrdersPage } from "@/pages/supplier/SupplierOrdersPage";
 import { SupplierVerificationPage } from "@/pages/supplier/SupplierVerificationPage";
 
+// Business Services Pages
+import { ServicesLandingPage } from "@/pages/services/ServicesLandingPage";
+import { AllServicesPage } from "@/pages/services/AllServicesPage";
+import { ServiceCategoryPage } from "@/pages/services/ServiceCategoryPage";
+import { ServiceDetailPage } from "@/pages/services/ServiceDetailPage";
+import { ProviderDirectoryPage } from "@/pages/services/ProviderDirectoryPage";
+import { ProviderProfilePage } from "@/pages/services/ProviderProfilePage";
+import { RequestServicePage } from "@/pages/services/RequestServicePage";
+import { CustomerRequestsPage } from "@/pages/services/CustomerRequestsPage";
+import { CustomerRequestDetailPage } from "@/pages/services/CustomerRequestDetailPage";
+
+// Provider Workspace Pages & Layout
+import { ProviderLayout } from "@/components/layout/ProviderLayout";
+import { ProviderDashboardPage } from "@/pages/provider/ProviderDashboardPage";
+import { ProviderServicesPage } from "@/pages/provider/ProviderServicesPage";
+import { ProviderServiceAddPage } from "@/pages/provider/ProviderServiceAddPage";
+import { ProviderInquiriesPage } from "@/pages/provider/ProviderInquiriesPage";
+import { ProviderQuoteBuilderPage } from "@/pages/provider/ProviderQuoteBuilderPage";
+import { ProviderActiveProjectsPage } from "@/pages/provider/ProviderActiveProjectsPage";
+import { ProviderOnboardingPage } from "@/pages/provider/ProviderOnboardingPage";
+
 // Admin Pages
 import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
 import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
 import { AdminVerificationsPage } from "@/pages/admin/AdminVerificationsPage";
 import { AdminAuditLogsPage } from "@/pages/admin/AdminAuditLogsPage";
 import { AdminSupportPage } from "@/pages/admin/AdminSupportPage";
+import { AdminServicesPage } from "@/pages/admin/AdminServicesPage";
 
 // Shared Pages
 import { NotificationsPage } from "@/pages/shared/NotificationsPage";
@@ -61,7 +83,7 @@ export const AppRouter: React.FC = () => {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* 1. Public Portal (Screens 1–12) */}
+          {/* 1. Public Portal (Screens 1–12) & Business Services */}
           <Route element={<PublicLayout />}>
             <Route index element={<HomePage />} />
             <Route path="products" element={<MarketplacePage />} />
@@ -75,6 +97,32 @@ export const AppRouter: React.FC = () => {
             <Route path="contact" element={<ContactPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="access-denied" element={<AccessDeniedPage />} />
+
+            {/* Public Business Services Marketplace */}
+            <Route path="services" element={<ServicesLandingPage />} />
+            <Route path="services/all" element={<AllServicesPage />} />
+            <Route path="services/search" element={<AllServicesPage />} />
+            <Route path="services/category/:slug" element={<ServiceCategoryPage />} />
+            <Route path="services/:id" element={<ServiceDetailPage />} />
+            <Route path="services/providers" element={<ProviderDirectoryPage />} />
+            <Route path="services/providers/:id" element={<ProviderProfilePage />} />
+            <Route path="services/request" element={<RequestServicePage />} />
+            <Route
+              path="services/my-requests"
+              element={
+                <ProtectedRoute>
+                  <CustomerRequestsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="services/my-requests/:id"
+              element={
+                <ProtectedRoute>
+                  <CustomerRequestDetailPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           {/* 2. Authentication & Onboarding (Screens 13–19) */}
@@ -147,7 +195,45 @@ export const AppRouter: React.FC = () => {
             <Route path="settings" element={<SupplierDashboardPage />} />
           </Route>
 
-          {/* 5. Admin Governance Console (Screens 61–75) */}
+          {/* 5. Provider Workspace (Business Services) */}
+          <Route
+            path="provider/onboarding"
+            element={
+              <ProtectedRoute>
+                <ProviderOnboardingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="provider"
+            element={
+              <ProtectedRoute>
+                <RoleGuard
+                  allowedRoles={[
+                    "service_provider",
+                    "manufacturer",
+                    "wholesaler",
+                    "distributor",
+                    "buyer_supplier",
+                    "admin",
+                  ]}
+                >
+                  <ProviderLayout />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/provider/dashboard" replace />} />
+            <Route path="dashboard" element={<ProviderDashboardPage />} />
+            <Route path="services" element={<ProviderServicesPage />} />
+            <Route path="services/new" element={<ProviderServiceAddPage />} />
+            <Route path="inquiries" element={<ProviderInquiriesPage />} />
+            <Route path="inquiries/:id/quote" element={<ProviderQuoteBuilderPage />} />
+            <Route path="projects" element={<ProviderActiveProjectsPage />} />
+            <Route path="profile" element={<ProviderDashboardPage />} />
+          </Route>
+
+          {/* 6. Admin Governance Console (Screens 61–75) */}
           <Route
             path="admin"
             element={
@@ -162,11 +248,12 @@ export const AppRouter: React.FC = () => {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="verifications" element={<AdminVerificationsPage />} />
+            <Route path="services" element={<AdminServicesPage />} />
             <Route path="audit-logs" element={<AdminAuditLogsPage />} />
             <Route path="support" element={<AdminSupportPage />} />
           </Route>
 
-          {/* 6. Fallback 404 */}
+          {/* 7. Fallback 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>

@@ -1,6 +1,7 @@
 import React from "react";
 import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
+import { BusinessServicesShowcase } from "@/components/sections/BusinessServicesShowcase";
 import { AiParser } from "@/components/sections/AiParser";
 import { LiveDemo } from "@/components/sections/LiveDemo";
 import { Trust } from "@/components/sections/Trust";
@@ -14,13 +15,16 @@ export const HomePage: React.FC = () => {
       {/* 2. How It Works (Connect -> Compare -> Manage) */}
       <HowItWorks />
 
-      {/* 3. AI Feature: WhatsApp-to-Table Parser */}
+      {/* 3. Business Services Marketplace Showcase */}
+      <BusinessServicesShowcase />
+
+      {/* 4. AI Feature: WhatsApp-to-Table Parser */}
       <AiParser />
 
-      {/* 4. Interactive Demo / Live Quote Preview */}
+      {/* 5. Interactive Demo / Live Quote Preview */}
       <LiveDemo />
 
-      {/* 5. Trust & Verification Network */}
+      {/* 6. Trust & Verification Network */}
       <Trust />
     </div>
   );

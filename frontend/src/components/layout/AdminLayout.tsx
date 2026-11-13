@@ -12,6 +12,7 @@ import {
   LogOut,
   BarChart,
   Settings,
+  Briefcase,
 } from "lucide-react";
 
 export const AdminLayout: React.FC = () => {
@@ -20,6 +21,7 @@ export const AdminLayout: React.FC = () => {
 
   const navLinks = [
     { label: "Overview", href: "/admin/dashboard", icon: BarChart },
+    { label: "Business Services", href: "/admin/services", icon: Briefcase },
     { label: "User Governance", href: "/admin/users", icon: Users },
     { label: "Verification Queue", href: "/admin/verifications", icon: CheckCircle },
     { label: "Support Desk", href: "/admin/support", icon: HelpCircle },

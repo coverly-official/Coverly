@@ -33,7 +33,11 @@ export const RegisterPage: React.FC = () => {
     }
 
     // Direct to onboarding for business setup
-    navigate(`/auth/onboarding?role=${formData.role}`);
+    if (formData.role === "service_provider") {
+      navigate("/provider/onboarding");
+    } else {
+      navigate(`/auth/onboarding?role=${formData.role}`);
+    }
   };
 
   const roleOptions = [
@@ -41,6 +45,7 @@ export const RegisterPage: React.FC = () => {
     { id: "manufacturer", title: "Manufacturer", desc: "Factory & production line" },
     { id: "wholesaler", title: "Wholesaler", desc: "Bulk stock lots & trading" },
     { id: "distributor", title: "Distributor", desc: "Regional brand distribution" },
+    { id: "service_provider", title: "Service Provider", desc: "Offer corporate & business services" },
     { id: "buyer_supplier", title: "Dual Role", desc: "Procure and supply on 1 account" },
   ];
 

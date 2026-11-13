@@ -14,6 +14,7 @@ import {
   Building2,
   Bell,
   ArrowRightLeft,
+  Briefcase,
 } from "lucide-react";
 
 export const BuyerLayout: React.FC = () => {
@@ -25,6 +26,8 @@ export const BuyerLayout: React.FC = () => {
     { label: "Dashboard", href: "/buyer/dashboard", icon: LayoutDashboard },
     { label: "Discover Products", href: "/products", icon: Search },
     { label: "Find Suppliers", href: "/manufacturers", icon: Building2 },
+    { label: "Business Services", href: "/services", icon: Briefcase },
+    { label: "Service Inquiries", href: "/services/my-requests", icon: Briefcase },
     { label: "My RFQs", href: "/buyer/rfqs", icon: FileText },
     { label: "Create RFQ", href: "/buyer/rfq/new", icon: PlusCircle },
     { label: "My Orders", href: "/buyer/orders", icon: ShoppingBag },

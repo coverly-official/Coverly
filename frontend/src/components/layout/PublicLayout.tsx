@@ -10,6 +10,7 @@ import {
   LogOut,
   ArrowRightLeft,
   ChevronDown,
+  Briefcase,
 } from "lucide-react";
 
 export const PublicLayout: React.FC = () => {
@@ -45,6 +46,10 @@ export const PublicLayout: React.FC = () => {
               <Link to="/manufacturers" className="hover:text-stone-900 transition flex items-center gap-1.5">
                 <Building2 className="w-4 h-4" />
                 Manufacturers
+              </Link>
+              <Link to="/services" className="hover:text-stone-900 transition flex items-center gap-1.5 text-stone-900 font-semibold">
+                <Briefcase className="w-4 h-4 text-stone-700" />
+                Services
               </Link>
               <Link to="/wholesalers" className="hover:text-stone-900 transition">
                 Wholesalers
@@ -185,13 +190,14 @@ export const PublicLayout: React.FC = () => {
 
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-200 mb-3">
-                Solutions
+                Solutions & Services
               </h4>
               <ul className="space-y-2 text-xs text-stone-400">
                 <li><Link to="/buyer/rfq/new" className="hover:text-white transition">Request for Quotation</Link></li>
-                <li><Link to="/auth/register?role=manufacturer" className="hover:text-white transition">Supplier Verification</Link></li>
+                <li><Link to="/services" className="hover:text-white transition font-medium text-amber-200">Business Services Hub</Link></li>
+                <li><Link to="/services/providers" className="hover:text-white transition">Service Providers Directory</Link></li>
+                <li><Link to="/provider/onboarding" className="hover:text-white transition">Become a Service Partner</Link></li>
                 <li><Link to="/about" className="hover:text-white transition">Landed Cost Engine</Link></li>
-                <li><Link to="/contact" className="hover:text-white transition">Sourcing Concierge</Link></li>
               </ul>
             </div>
 

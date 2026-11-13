@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   Bell,
+  Briefcase,
 } from "lucide-react";
 
 export const SupplierLayout: React.FC = () => {
@@ -25,6 +26,7 @@ export const SupplierLayout: React.FC = () => {
     { label: "Dashboard", href: "/supplier/dashboard", icon: LayoutDashboard },
     { label: "Business Profile", href: "/supplier/profile", icon: Building },
     { label: "Verification Center", href: "/supplier/verification", icon: ShieldCheck },
+    { label: "Business Services", href: "/services", icon: Briefcase },
     { label: "My Products", href: "/supplier/products", icon: Package },
     { label: "Add Product", href: "/supplier/products/new", icon: PlusCircle },
     { label: "Incoming RFQs", href: "/supplier/rfqs", icon: Inbox },

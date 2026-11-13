@@ -29,7 +29,16 @@ export const LoginPage: React.FC = () => {
     if (redirect) {
       navigate(redirect);
     } else {
-      navigate("/buyer/dashboard");
+      const role = localStorage.getItem("coverly_active_role");
+      if (role === "service_provider") {
+        navigate("/provider/dashboard");
+      } else if (role && ["manufacturer", "wholesaler", "distributor"].includes(role)) {
+        navigate("/supplier/dashboard");
+      } else if (role && role.includes("admin")) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/buyer/dashboard");
+      }
     }
   };
 

@@ -20,6 +20,7 @@ import verificationsRoutes from "./routes/verifications.js";
 import adminRoutes from "./routes/admin.js";
 import ticketsRoutes from "./routes/tickets.js";
 import notificationsRoutes from "./routes/notifications.js";
+import businessServicesRoutes from "./routes/business-services.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -73,5 +74,6 @@ app.use("/api", verificationsRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", ticketsRoutes);
 app.use("/api", notificationsRoutes);
+app.use("/api", businessServicesRoutes);
 
 export default app;
