@@ -79,6 +79,7 @@ import { ProviderOnboardingPage } from "@/pages/provider/ProviderOnboardingPage"
 
 // Admin Pages
 import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
+import { AdminLoginPage } from "@/pages/admin/AdminLoginPage";
 import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
 import { AdminVerificationsPage } from "@/pages/admin/AdminVerificationsPage";
 import { AdminAuditLogsPage } from "@/pages/admin/AdminAuditLogsPage";
@@ -141,6 +142,7 @@ export const AppRouter: React.FC = () => {
           {/* 2. Authentication & Onboarding (Screens 13–19) */}
           <Route path="auth" element={<AuthLayout />}>
             <Route path="login" element={<LoginPage />} />
+            <Route path="admin-login" element={<AdminLoginPage />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="forgot-password" element={<ForgotPasswordPage />} />
             <Route path="reset-password" element={<ResetPasswordPage />} />
@@ -154,6 +156,8 @@ export const AppRouter: React.FC = () => {
               }
             />
           </Route>
+
+          <Route path="admin/login" element={<AuthLayout><AdminLoginPage /></AuthLayout>} />
 
           {/* 3. Buyer Workspace (Screens 20–40) */}
           <Route

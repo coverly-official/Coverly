@@ -32,7 +32,11 @@ export const OnboardingPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    const effectiveUserId = user?.id || localStorage.getItem("coverly_user_id");
+    if (!effectiveUserId) {
+      setErrorMsg("Session expired. Please sign in or register to complete setup.");
+      return;
+    }
     setIsSubmitting(true);
     setErrorMsg("");
 
@@ -41,7 +45,7 @@ export const OnboardingPage: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.id,
+          userId: effectiveUserId,
           name: formData.name,
           business_type: formData.business_type,
           city: formData.city,

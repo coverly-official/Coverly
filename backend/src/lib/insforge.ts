@@ -11,10 +11,16 @@ function resolveCredentials() {
   const baseUrl = (
     process.env.INSFORGE_BASE_URL ||
     process.env.INSFORGE_URL ||
-    ""
+    "https://4vwfw2w8.ap-southeast.insforge.app"
   ).trim();
-  const anonKey = (process.env.INSFORGE_ANON_KEY || "").trim();
-  const apiKey = (process.env.INSFORGE_API_KEY || "").trim();
+  const anonKey = (
+    process.env.INSFORGE_ANON_KEY ||
+    "anon_9da4660d2d03cec83d7ea57032348bab48a951f8ddf8b2b9dccdfb4b77eefe58"
+  ).trim();
+  const apiKey = (
+    process.env.INSFORGE_API_KEY ||
+    "ik_1d1fb7f3feb4e7723e653ef844b24492486caa96de0940f2e658c2f30cd392a1"
+  ).trim();
 
   return { baseUrl, anonKey, apiKey };
 }
@@ -30,8 +36,6 @@ export function getInsForgeConfigStatus(): InsForgeConfigStatus {
   };
 }
 
-let cachedClient: InsForgeClient | null = null;
-
 export function getInsForgeClient(): InsForgeClient | null {
   const { baseUrl, anonKey, apiKey } = resolveCredentials();
 
@@ -39,13 +43,10 @@ export function getInsForgeClient(): InsForgeClient | null {
     return null;
   }
 
-  if (!cachedClient) {
-    if (apiKey) {
-      cachedClient = createAdminClient({ baseUrl, apiKey });
-    } else {
-      cachedClient = createClient({ baseUrl, anonKey });
-    }
+  // Always return an unpolluted admin client for backend operations
+  if (apiKey) {
+    return createAdminClient({ baseUrl, apiKey });
+  } else {
+    return createClient({ baseUrl, anonKey });
   }
-
-  return cachedClient;
 }
