@@ -31,8 +31,13 @@ export const ProviderDashboardPage: React.FC = () => {
       fetch(`${API_BASE}/business-services?business_id=${business.id}`).then((r) => r.json()),
     ])
       .then(([reqRes, servRes]) => {
-        if (reqRes.success) setInquiries(reqRes.data);
-        if (servRes.success) setServicesCount(servRes.data.length);
+        if (reqRes.success) {
+          setInquiries(Array.isArray(reqRes.data) ? reqRes.data : (reqRes.data?.items || []));
+        }
+        if (servRes.success) {
+          const sList = Array.isArray(servRes.data) ? servRes.data : (servRes.data?.items || []);
+          setServicesCount(sList.length);
+        }
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

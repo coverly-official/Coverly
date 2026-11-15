@@ -6,8 +6,7 @@ import { sendSuccess, sendError } from "../utils/response.js";
 const router = Router();
 
 // Protect all admin endpoints
-router.use(authenticateUser);
-router.use(requireAdmin);
+router.use("/admin", authenticateUser, requireAdmin);
 
 // GET /api/admin/metrics (Comprehensive Platform Metrics)
 router.get("/admin/metrics", async (_req, res) => {

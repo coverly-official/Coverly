@@ -38,7 +38,7 @@ export const ServiceCategoryPage: React.FC = () => {
     fetch(`${API_BASE}/business-services/categories`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setCategories(data.data);
+        if (data.success) setCategories(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {});
   }, []);
@@ -56,7 +56,7 @@ export const ServiceCategoryPage: React.FC = () => {
     fetch(`${API_BASE}/business-services?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setServices(data.data);
+        if (data.success) setServices(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

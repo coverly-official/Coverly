@@ -12,7 +12,7 @@ export const AdminSupportPage: React.FC = () => {
     fetch(`${API_BASE}/tickets`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setTickets(data.data);
+        if (data.success) setTickets(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

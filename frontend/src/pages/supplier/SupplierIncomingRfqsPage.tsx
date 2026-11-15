@@ -17,7 +17,7 @@ export const SupplierIncomingRfqsPage: React.FC = () => {
     fetch(`${API_BASE}/rfqs/supplier/incoming?business_id=${business.id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setRecipients(data.data);
+        if (data.success) setRecipients(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

@@ -25,10 +25,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [business, setBusiness] = useState<Business | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [activeRole, setActiveRoleState] = useState<UserRole>("guest");
+  // Initialize state directly from localStorage for instant, zero-flicker session restore
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    try {
+      const stored = localStorage.getItem("coverly_user_profile");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [business, setBusiness] = useState<Business | null>(() => {
+    try {
+      const stored = localStorage.getItem("coverly_business_profile");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    const hasStoredProfile = Boolean(localStorage.getItem("coverly_user_profile"));
+    const hasStoredId = Boolean(localStorage.getItem("coverly_user_id"));
+    // Only show loading on initial mount if there is an ID to verify but no profile cached
+    return !hasStoredProfile && hasStoredId;
+  });
+
+  const [activeRole, setActiveRoleState] = useState<UserRole>(() => {
+    const savedRole = localStorage.getItem("coverly_active_role") as UserRole;
+    if (savedRole && savedRole !== "guest") return savedRole;
+    try {
+      const stored = localStorage.getItem("coverly_user_profile");
+      if (stored) {
+        const u = JSON.parse(stored);
+        return (u.activeRole || u.roles?.[0] || "buyer") as UserRole;
+      }
+    } catch {}
+    return "guest";
+  });
 
   const loadSession = async () => {
     try {
@@ -47,17 +81,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.ok) {
         const body = await res.json();
         if (body.success && body.data.user) {
-          setUser(body.data.user);
-          setBusiness(body.data.business || null);
-          const savedRole = (localStorage.getItem("coverly_active_role") as UserRole) || body.data.user.activeRole;
-          setActiveRoleState(savedRole);
+          const freshUser = body.data.user as UserProfile;
+          const freshBusiness = (body.data.business as Business) || null;
+          const role = (localStorage.getItem("coverly_active_role") as UserRole) || freshUser.activeRole || "buyer";
+
+          setUser(freshUser);
+          setBusiness(freshBusiness);
+          setActiveRoleState(role);
+
+          localStorage.setItem("coverly_user_profile", JSON.stringify(freshUser));
+          if (freshBusiness) {
+            localStorage.setItem("coverly_business_profile", JSON.stringify(freshBusiness));
+          }
         }
-      } else {
+      } else if (res.status === 401) {
+        // Only clear credentials if backend explicitly rejects the session as unauthorized
         localStorage.removeItem("coverly_user_id");
+        localStorage.removeItem("coverly_user_profile");
+        localStorage.removeItem("coverly_business_profile");
         localStorage.removeItem("coverly_active_role");
+        setUser(null);
+        setBusiness(null);
+        setActiveRoleState("guest");
       }
     } catch {
-      // Fallback
+      // Keep cached session on network errors or serverless wakeup delays
     } finally {
       setIsLoading(false);
     }
@@ -86,18 +134,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const loggedUser = body.data.user as UserProfile;
-      const activeRole = (loggedUser.activeRole || loggedUser.roles?.[0] || "buyer") as UserRole;
+      const role = (loggedUser.activeRole || loggedUser.roles?.[0] || "buyer") as UserRole;
       const normalizedUser: UserProfile = {
         ...loggedUser,
-        roles: loggedUser.roles?.length ? loggedUser.roles : [activeRole],
-        activeRole,
+        roles: loggedUser.roles?.length ? loggedUser.roles : [role],
+        activeRole: role,
         is_active: loggedUser.is_active ?? true,
       };
 
+      const biz = (body.data.business as Business) || null;
+
       setUser(normalizedUser);
-      setBusiness(body.data.business || null);
-      setActiveRole(activeRole);
+      setBusiness(biz);
+      setActiveRole(role);
+
       localStorage.setItem("coverly_user_id", normalizedUser.id);
+      localStorage.setItem("coverly_user_profile", JSON.stringify(normalizedUser));
+      localStorage.setItem("coverly_active_role", role);
+      if (biz) {
+        localStorage.setItem("coverly_business_profile", JSON.stringify(biz));
+      }
+
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
@@ -124,22 +181,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const registeredUser = body.data.user as Partial<UserProfile> & { role?: UserRole };
-      const activeRole = (registeredUser.activeRole || registeredUser.role || payload.role || "buyer") as UserRole;
+      const role = (registeredUser.activeRole || registeredUser.role || payload.role || "buyer") as UserRole;
       const normalizedUser: UserProfile = {
         id: registeredUser.id || "",
         email: registeredUser.email || payload.email,
         full_name: registeredUser.full_name || payload.full_name,
         phone: payload.phone,
-        roles: Array.isArray(registeredUser.roles) && registeredUser.roles.length ? registeredUser.roles : [activeRole],
-        activeRole,
+        roles: Array.isArray(registeredUser.roles) && registeredUser.roles.length ? registeredUser.roles : [role],
+        activeRole: role,
         is_active: registeredUser.is_active ?? true,
       };
 
       setUser(normalizedUser);
       setBusiness(null);
-      setActiveRole(activeRole);
+      setActiveRole(role);
+
       localStorage.setItem("coverly_user_id", normalizedUser.id);
-      localStorage.setItem("coverly_active_role", activeRole);
+      localStorage.setItem("coverly_user_profile", JSON.stringify(normalizedUser));
+      localStorage.setItem("coverly_active_role", role);
+
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
@@ -151,6 +211,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       insforge.auth.signOut().catch(() => {});
     } catch {}
     localStorage.removeItem("coverly_user_id");
+    localStorage.removeItem("coverly_user_profile");
+    localStorage.removeItem("coverly_business_profile");
     localStorage.removeItem("coverly_active_role");
     setUser(null);
     setBusiness(null);

@@ -11,7 +11,7 @@ export const AdminAuditLogsPage: React.FC = () => {
     fetch(`${API_BASE}/admin/audit-logs`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setLogs(data.data);
+        if (data.success) setLogs(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

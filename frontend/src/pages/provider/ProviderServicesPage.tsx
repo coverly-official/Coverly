@@ -18,7 +18,7 @@ export const ProviderServicesPage: React.FC = () => {
     fetch(`${API_BASE}/business-services?business_id=${business.id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setServices(data.data);
+        if (data.success) setServices(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

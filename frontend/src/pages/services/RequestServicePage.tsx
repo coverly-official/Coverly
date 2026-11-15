@@ -31,7 +31,7 @@ export const RequestServicePage: React.FC = () => {
       fetch(`${API_BASE}/business-services/providers`)
         .then((r) => r.json())
         .then((d) => {
-          if (d.success) setProviders(d.data);
+          if (d.success) setProviders(Array.isArray(d.data) ? d.data : (d.data?.items || []));
         })
         .catch(() => {});
     }

@@ -18,7 +18,7 @@ export const CustomerRequestsPage: React.FC = () => {
     fetch(`${API_BASE}/business-services/requests?customer_id=${user.id}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setRequests(data.data);
+        if (data.success) setRequests(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

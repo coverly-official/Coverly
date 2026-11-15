@@ -28,9 +28,10 @@ export const ProviderServiceAddPage: React.FC = () => {
     fetch(`${API_BASE}/business-services/categories`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.success && d.data.length > 0) {
-          setCategories(d.data);
-          setSelectedCatId(d.data[0].id);
+        const catList = Array.isArray(d.data) ? d.data : (d.data?.items || []);
+        if (d.success && catList.length > 0) {
+          setCategories(catList);
+          setSelectedCatId(catList[0].id);
         }
       })
       .catch(() => {});

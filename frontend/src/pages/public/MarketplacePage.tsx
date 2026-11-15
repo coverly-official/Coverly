@@ -20,7 +20,7 @@ export const MarketplacePage: React.FC = () => {
     fetch(`${API_BASE}/categories`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setCategories(data.data);
+        if (data.success) setCategories(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {});
   }, []);
@@ -36,7 +36,8 @@ export const MarketplacePage: React.FC = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setProducts(data.data);
+          const items = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+          setProducts(items);
         }
       })
       .catch(() => {})

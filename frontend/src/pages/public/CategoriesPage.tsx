@@ -13,7 +13,10 @@ export const CategoriesPage: React.FC = () => {
     fetch(`${API_BASE}/categories`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setCategories(data.data);
+        if (data.success) {
+          const items = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+          setCategories(items);
+        }
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

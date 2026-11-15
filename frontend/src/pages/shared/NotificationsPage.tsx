@@ -17,7 +17,7 @@ export const NotificationsPage: React.FC = () => {
     fetch(`${API_BASE}/notifications?user_id=${user.id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setNotifications(data.data);
+        if (data.success) setNotifications(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

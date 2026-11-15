@@ -24,7 +24,7 @@ export const BuyerRfqsPage: React.FC = () => {
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setRfqs(data.data);
+        if (data.success) setRfqs(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

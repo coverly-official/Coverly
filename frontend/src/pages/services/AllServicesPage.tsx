@@ -21,7 +21,7 @@ export const AllServicesPage: React.FC = () => {
     fetch(`${API_BASE}/business-services/categories`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setCategories(d.data);
+        if (d.success) setCategories(Array.isArray(d.data) ? d.data : (d.data?.items || []));
       })
       .catch(() => {});
   }, []);
@@ -38,7 +38,7 @@ export const AllServicesPage: React.FC = () => {
     fetch(`${API_BASE}/business-services?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setServices(data.data);
+        if (data.success) setServices(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

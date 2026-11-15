@@ -26,7 +26,7 @@ export const SupplierOrdersPage: React.FC = () => {
     fetch(`${API_BASE}/orders?supplier_business_id=${business.id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setOrders(data.data);
+        if (data.success) setOrders(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

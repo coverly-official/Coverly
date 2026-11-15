@@ -43,8 +43,11 @@ export const ServicesLandingPage: React.FC = () => {
       fetch(`${API_BASE}/business-services`).then((r) => r.json()),
     ])
       .then(([catRes, servRes]) => {
-        if (catRes.success) setCategories(catRes.data);
-        if (servRes.success) setFeaturedServices(servRes.data.slice(0, 6));
+        if (catRes.success) setCategories(Array.isArray(catRes.data) ? catRes.data : (catRes.data?.items || []));
+        if (servRes.success) {
+          const list = Array.isArray(servRes.data) ? servRes.data : (servRes.data?.items || []);
+          setFeaturedServices(list.slice(0, 6));
+        }
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

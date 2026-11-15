@@ -18,7 +18,7 @@ export const SupplierProductsPage: React.FC = () => {
     fetch(`${API_BASE}/products?business_id=${business.id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setProducts(data.data);
+        if (data.success) setProducts(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

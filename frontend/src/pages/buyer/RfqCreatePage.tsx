@@ -40,7 +40,7 @@ export const RfqCreatePage: React.FC = () => {
     fetch(`${API_BASE}/categories`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setCategories(data.data);
+        if (data.success) setCategories(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {});
   }, []);

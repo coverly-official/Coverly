@@ -53,7 +53,7 @@ export const AdminServicesPage: React.FC = () => {
     fetch(`${API_BASE}/business-services?limit=100`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setServices(data.data);
+        if (data.success) setServices(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
@@ -64,9 +64,10 @@ export const AdminServicesPage: React.FC = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setCategories(data.data);
-          if (data.data.length > 0 && !selectedCatId) {
-            setSelectedCatId(data.data[0].id);
+          const catList = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+          setCategories(catList);
+          if (catList.length > 0 && !selectedCatId) {
+            setSelectedCatId(catList[0].id);
           }
         }
       })

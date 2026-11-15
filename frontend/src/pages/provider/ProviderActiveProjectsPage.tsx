@@ -20,7 +20,8 @@ export const ProviderActiveProjectsPage: React.FC = () => {
       .then((data) => {
         if (data.success) {
           // Filter to accepted, in_progress, completed
-          setProjects(data.data.filter((p: any) => ["accepted", "in_progress", "completed"].includes(p.status)));
+          const list = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+          setProjects(list.filter((p: any) => ["accepted", "in_progress", "completed"].includes(p.status)));
         }
       })
       .catch(() => {})

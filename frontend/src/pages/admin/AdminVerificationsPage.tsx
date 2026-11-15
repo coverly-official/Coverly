@@ -15,7 +15,7 @@ export const AdminVerificationsPage: React.FC = () => {
     fetch(`${API_BASE}/admin/verifications?status=${statusFilter}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setVerifications(data.data);
+        if (data.success) setVerifications(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

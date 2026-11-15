@@ -18,7 +18,7 @@ export const AdminUsersPage: React.FC = () => {
     fetch(`${API_BASE}/admin/users?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setUsers(data.data);
+        if (data.success) setUsers(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

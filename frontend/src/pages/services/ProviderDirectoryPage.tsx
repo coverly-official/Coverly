@@ -20,7 +20,7 @@ export const ProviderDirectoryPage: React.FC = () => {
     fetch(`${API_BASE}/business-services/providers?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setProviders(data.data);
+        if (data.success) setProviders(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

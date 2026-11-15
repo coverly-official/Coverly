@@ -18,7 +18,7 @@ export const BuyerOrdersPage: React.FC = () => {
     fetch(`${API_BASE}/orders?buyer_id=${user.id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setOrders(data.data);
+        if (data.success) setOrders(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));

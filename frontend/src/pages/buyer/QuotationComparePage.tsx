@@ -30,7 +30,7 @@ export const QuotationComparePage: React.FC = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setQuotations(data.data);
+          setQuotations(Array.isArray(data.data) ? data.data : (data.data?.items || []));
           setBestQuoteId(data.bestQuoteId);
         }
       })

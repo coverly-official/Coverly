@@ -39,7 +39,8 @@ export const DirectoriesPage: React.FC = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setBusinesses(data.data);
+          const items = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+          setBusinesses(items);
         }
       })
       .catch(() => {})

@@ -24,7 +24,7 @@ export const ProviderInquiriesPage: React.FC = () => {
     fetch(url)
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setInquiries(data.data);
+        if (data.success) setInquiries(Array.isArray(data.data) ? data.data : (data.data?.items || []));
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
