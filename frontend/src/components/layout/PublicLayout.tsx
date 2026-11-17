@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Link, Navigate, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
-import { getWorkspaceRoute } from "@/lib/role-routing";
+import { getWorkspaceRoute, isAdminRole } from "@/lib/role-routing";
 import {
   Search,
   MapPin,
@@ -52,6 +52,15 @@ export const PublicLayout: React.FC = () => {
   const [searchType, setSearchType] = useState<"products" | "suppliers" | "services">("products");
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isAuthenticatedAdmin = Boolean(
+    user && (isAdminRole(activeRole) || user.roles?.some((r) => isAdminRole(r)))
+  );
+
+  // Admins must never land on the Guest Marketplace homepage; route directly to Admin Control Center
+  if (isAuthenticatedAdmin && location.pathname === "/") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,14 +227,26 @@ export const PublicLayout: React.FC = () => {
 
               {user ? (
                 <div className="flex items-center gap-2">
-                  <WorkspaceSwitcher />
-                  <Link
-                    to={getWorkspaceRoute(activeRole)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-900/20 bg-blue-50/60 text-blue-950 hover:bg-blue-100 text-xs font-semibold transition"
-                  >
-                    <User className="w-3.5 h-3.5" />
-                    Dashboard
-                  </Link>
+                  {isAuthenticatedAdmin ? (
+                    <Link
+                      to="/admin/dashboard"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 text-white hover:bg-stone-800 text-xs font-semibold transition"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                      Admin Control Center
+                    </Link>
+                  ) : (
+                    <>
+                      <WorkspaceSwitcher />
+                      <Link
+                        to={getWorkspaceRoute(activeRole)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-900/20 bg-blue-50/60 text-blue-950 hover:bg-blue-100 text-xs font-semibold transition"
+                      >
+                        <User className="w-3.5 h-3.5" />
+                        Dashboard
+                      </Link>
+                    </>
+                  )}
 
                   <button
                     onClick={logout}

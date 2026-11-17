@@ -2,12 +2,25 @@ import { Router } from "express";
 import crypto from "crypto";
 import { getInsForgeClient } from "../lib/insforge.js";
 import { authenticateUser, requireAdmin } from "../middleware/auth.js";
+import { requireAdminModule } from "../middleware/adminPermissions.js";
 import { sendSuccess, sendError } from "../utils/response.js";
 
 const router = Router();
 
 // Protect all admin endpoints with authentication and admin role verification
 router.use("/admin", authenticateUser, requireAdmin);
+
+// Enforce fine-grained role-based module access control across Admin Control Center APIs
+router.use("/admin/employees", requireAdminModule("system_admin", "users"));
+router.use("/admin/settings", requireAdminModule("system_admin"));
+router.use("/admin/audit-logs", requireAdminModule("system_admin", "overview"));
+router.use("/admin/finance", requireAdminModule("finance"));
+router.use("/admin/verifications", requireAdminModule("verification"));
+router.use("/admin/categories", requireAdminModule("marketplace"));
+router.use("/admin/support", requireAdminModule("support"));
+router.use("/admin/logistics", requireAdminModule("logistics", "orders"));
+router.use("/admin/transporters", requireAdminModule("transporters", "logistics"));
+router.use("/admin/warehouse", requireAdminModule("warehouse", "orders", "logistics"));
 
 // ====================================================================
 // 1. ADMIN METRICS & DASHBOARD
@@ -164,9 +177,16 @@ const handleAdminMetrics = async (_req: any, res: any) => {
     let activeBuyers = 0;
     let activeRetailers = 0;
     let totalServiceProviders = 0;
+    let totalLogisticsPartners = 0;
     let totalTransporters = 0;
+    let pendingQuotations = 0;
     let activeShipments = 0;
     let recentActivities: any[] = [];
+    let verificationQueue: any[] = [];
+    let businessGrowth: { month: string; count: number }[] = [];
+    let userRegistrations: { month: string; count: number }[] = [];
+    let ordersOverview: Record<string, number> = {};
+    let rfqActivity: Record<string, number> = {};
 
     try {
       const { count: buyerRoles } = await insforge.database
@@ -200,6 +220,25 @@ const handleAdminMetrics = async (_req: any, res: any) => {
     } catch {}
 
     try {
+      const { count: lpCount } = await insforge.database
+        .from("logistics_partners")
+        .select("*", { count: "exact", head: true });
+      const { count: lpRoles } = await insforge.database
+        .from("user_roles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "logistics_partner");
+      totalLogisticsPartners = Math.max(lpCount || 0, lpRoles || 0);
+    } catch {}
+
+    try {
+      const { count: pqCount } = await insforge.database
+        .from("quotations")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["pending", "submitted", "under_review"]);
+      pendingQuotations = pqCount || 0;
+    } catch {}
+
+    try {
       const { count: trCount } = await insforge.database
         .from("transporter_profiles")
         .select("*", { count: "exact", head: true });
@@ -227,8 +266,83 @@ const handleAdminMetrics = async (_req: any, res: any) => {
         .from("audit_logs")
         .select("id, action, target_type, target_id, metadata, created_at, admin_id, users!admin_id(full_name, email)")
         .order("created_at", { ascending: false })
-        .limit(8);
+        .limit(10);
       recentActivities = logs || [];
+    } catch {}
+
+    try {
+      const { data: vQueue } = await insforge.database
+        .from("supplier_verifications")
+        .select("id, business_id, document_type, status, created_at, businesses(id, name, business_type, city, state)")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(6);
+      verificationQueue = vQueue || [];
+    } catch {}
+
+    // Real 6-month time-series aggregation from database timestamps
+    const buildLastSixMonthsBuckets = () => {
+      const buckets: { key: string; label: string; count: number }[] = [];
+      const now = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" });
+        buckets.push({ key, label, count: 0 });
+      }
+      return buckets;
+    };
+
+    try {
+      const bizBuckets = buildLastSixMonthsBuckets();
+      const { data: bizDates } = await insforge.database
+        .from("businesses")
+        .select("created_at")
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      (bizDates || []).forEach((b: any) => {
+        if (!b.created_at) return;
+        const k = String(b.created_at).slice(0, 7);
+        const bucket = bizBuckets.find((x) => x.key === k);
+        if (bucket) bucket.count += 1;
+      });
+      businessGrowth = bizBuckets.map((b) => ({ month: b.label, count: b.count }));
+    } catch {}
+
+    try {
+      const userBuckets = buildLastSixMonthsBuckets();
+      const { data: userDates } = await insforge.database
+        .from("users")
+        .select("created_at")
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      (userDates || []).forEach((u: any) => {
+        if (!u.created_at) return;
+        const k = String(u.created_at).slice(0, 7);
+        const bucket = userBuckets.find((x) => x.key === k);
+        if (bucket) bucket.count += 1;
+      });
+      userRegistrations = userBuckets.map((b) => ({ month: b.label, count: b.count }));
+    } catch {}
+
+    // Orders breakdown by status
+    ordersOverview = (orders || []).reduce((acc: Record<string, number>, o: any) => {
+      const st = o.status || "pending";
+      acc[st] = (acc[st] || 0) + 1;
+      return acc;
+    }, {});
+
+    // RFQ breakdown by status
+    try {
+      const { data: rfqStatuses } = await insforge.database
+        .from("rfqs")
+        .select("status")
+        .limit(2000);
+      rfqActivity = (rfqStatuses || []).reduce((acc: Record<string, number>, r: any) => {
+        const st = r.status || "submitted";
+        acc[st] = (acc[st] || 0) + 1;
+        return acc;
+      }, {});
     } catch {}
 
     return sendSuccess(res, {
@@ -241,14 +355,18 @@ const handleAdminMetrics = async (_req: any, res: any) => {
       totalEnquiries: (totalRfqs || 0) + (totalConciergeLeads || 0),
       quotationsSubmitted: quotationsSubmitted || 0,
       totalQuotations: quotationsSubmitted || 0,
+      pendingQuotations,
       totalBusinesses: totalBusinesses || 0,
       totalSuppliers: totalSuppliers || 0,
       totalManufacturers: totalManufacturers || 0,
       totalWholesalers: totalWholesalers || 0,
       totalDistributors: totalDistributors || 0,
+      totalBuyers: activeBuyers,
       activeBuyers,
+      totalRetailers: activeRetailers,
       activeRetailers,
       totalServiceProviders,
+      totalLogisticsPartners,
       totalTransporters,
       activeShipments,
       verifiedSuppliers: verifiedSuppliers || 0,
@@ -259,6 +377,7 @@ const handleAdminMetrics = async (_req: any, res: any) => {
       activeTerritories: activeTerritories || 0,
       totalUsers: totalUsers || 0,
       totalProducts: totalProducts || 0,
+      publishedProducts: activeProducts || 0,
       activeProducts: activeProducts || 0,
       archivedProducts: archivedProducts >= 0 ? archivedProducts : 0,
       pendingProductApprovals: pendingProductsCount || 0,
@@ -268,7 +387,13 @@ const handleAdminMetrics = async (_req: any, res: any) => {
       totalBusinessServices: totalBusinessServices || 0,
       totalServiceRequests: totalServiceRequests || 0,
       openTickets: openTickets || 0,
+      openComplaints: openTickets || 0,
       pendingComplaints: openTickets || 0,
+      businessGrowth,
+      userRegistrations,
+      ordersOverview,
+      rfqActivity,
+      verificationQueue,
       recentActivities,
     });
   } catch (err: any) {
@@ -1975,6 +2100,221 @@ router.get("/admin/employees/:id/activity", async (req, res) => {
     return sendSuccess(res, activities || []);
   } catch (err: any) {
     return sendError(res, err.message || "Failed to fetch employee activity.", 500, "SERVER_ERROR");
+  }
+});
+
+// ====================================================================
+// ECOSYSTEM-SPECIFIC ADMIN WORKSPACE ENDPOINTS (Manufacturer / Wholesaler / Distributor)
+// ====================================================================
+router.get(
+  "/admin/ecosystem/:type",
+  requireAdminModule("manufacturers", "wholesalers", "distributors", "marketplace", "verification", "procurement", "orders"),
+  async (req, res) => {
+    const type = String(req.params.type || "").toLowerCase();
+    if (!["manufacturer", "wholesaler", "distributor"].includes(type)) {
+      return sendError(res, "Unsupported ecosystem type.", 400, "INVALID_TYPE");
+    }
+
+    const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
+    const verification = typeof req.query.verification === "string" ? req.query.verification.trim() : "";
+
+    const insforge = getInsForgeClient();
+    if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
+
+    try {
+      let bizQuery = insforge.database
+        .from("businesses")
+        .select("*")
+        .eq("business_type", type)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (search) {
+        bizQuery = bizQuery.ilike("name", `%${search}%`);
+      }
+      if (verification && verification !== "all") {
+        bizQuery = bizQuery.eq("verification_level", verification);
+      }
+
+      const { data: businesses, error: bizError } = await bizQuery;
+      if (bizError) return sendError(res, bizError.message, 500, "DATABASE_ERROR");
+
+      const bizList = businesses || [];
+      const bizIds = bizList.map((b: any) => b.id);
+
+      let products: any[] = [];
+      let orders: any[] = [];
+      let rfqs: any[] = [];
+      let verifications: any[] = [];
+      let territories: any[] = [];
+      let distributorOffers: any[] = [];
+
+      if (bizIds.length > 0) {
+        try {
+          const { data: prods } = await insforge.database
+            .from("products")
+            .select("id, title, slug, moq, unit, indicative_price, is_active, moderation_status, business_id, created_at, businesses(name, city)")
+            .in("business_id", bizIds)
+            .order("created_at", { ascending: false })
+            .limit(80);
+          products = prods || [];
+        } catch {}
+
+        try {
+          const { data: ords } = await insforge.database
+            .from("orders")
+            .select("id, order_number, status, total_amount, created_at, supplier_business_id, buyer_business_id")
+            .in("supplier_business_id", bizIds)
+            .order("created_at", { ascending: false })
+            .limit(80);
+          orders = ords || [];
+        } catch {}
+
+        try {
+          const { data: verifs } = await insforge.database
+            .from("supplier_verifications")
+            .select("id, business_id, document_type, status, notes, created_at, businesses(name, city)")
+            .in("business_id", bizIds)
+            .order("created_at", { ascending: false })
+            .limit(50);
+          verifications = verifs || [];
+        } catch {}
+
+        if (type === "distributor") {
+          try {
+            const { data: terrs } = await insforge.database
+              .from("distributor_territories")
+              .select("*, businesses(name, city, state)")
+              .in("business_id", bizIds)
+              .limit(100);
+            territories = terrs || [];
+          } catch {}
+
+          try {
+            const { data: dOffers } = await insforge.database
+              .from("distributor_product_offers")
+              .select("*, businesses(name)")
+              .in("business_id", bizIds)
+              .limit(100);
+            distributorOffers = dOffers || [];
+          } catch {}
+        }
+      }
+
+      try {
+        const { data: rfqRows } = await insforge.database
+          .from("rfqs")
+          .select("id, rfq_number, title, status, target_budget, delivery_city, created_at")
+          .order("created_at", { ascending: false })
+          .limit(40);
+        rfqs = rfqRows || [];
+      } catch {}
+
+      const verifiedCount = bizList.filter((b: any) => b.verification_level && b.verification_level !== "unverified").length;
+      const pendingCount = bizList.length - verifiedCount;
+
+      return sendSuccess(res, {
+        type,
+        stats: {
+          total: bizList.length,
+          verified: verifiedCount,
+          pendingVerification: pendingCount,
+          totalProducts: products.length,
+          totalOrders: orders.length,
+          totalRfqs: rfqs.length,
+          totalTerritories: territories.length,
+          totalOffers: distributorOffers.length,
+        },
+        businesses: bizList,
+        products,
+        orders,
+        rfqs,
+        verifications,
+        territories,
+        distributorOffers,
+      });
+    } catch (err: any) {
+      return sendError(res, err.message || "Failed to load ecosystem overview.", 500, "SERVER_ERROR");
+    }
+  }
+);
+
+// ====================================================================
+// WAREHOUSE & INVENTORY GOVERNANCE (Live DB Records)
+// ====================================================================
+router.get("/admin/warehouse", async (_req, res) => {
+  const insforge = getInsForgeClient();
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
+
+  try {
+    let branches: any[] = [];
+    let products: any[] = [];
+    let orders: any[] = [];
+    let retailerLists: any[] = [];
+
+    try {
+      const { data } = await insforge.database
+        .from("business_branches")
+        .select("id, branch_name, city, state, address, is_active, created_at, businesses(name, business_type)")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      branches = data || [];
+    } catch {}
+
+    try {
+      const { data } = await insforge.database
+        .from("products")
+        .select("id, title, sku, moq, unit, indicative_price, is_active, moderation_status, updated_at, businesses(name, city, state)")
+        .order("updated_at", { ascending: false })
+        .limit(100);
+      products = data || [];
+    } catch {}
+
+    try {
+      const { data } = await insforge.database
+        .from("orders")
+        .select("id, order_number, status, total_amount, created_at, updated_at")
+        .order("updated_at", { ascending: false })
+        .limit(80);
+      orders = data || [];
+    } catch {}
+
+    try {
+      const { data } = await insforge.database
+        .from("retailer_purchase_lists")
+        .select("id, name, created_at")
+        .limit(50);
+      retailerLists = data || [];
+    } catch {}
+
+    const qcOrders = orders.filter((o: any) =>
+      ["qc", "quality_check", "production", "in_production", "processing", "ready_to_ship"].includes(
+        String(o.status || "").toLowerCase()
+      )
+    );
+
+    const stockMovements = orders.filter((o: any) =>
+      ["shipped", "dispatched", "in_transit", "delivered", "completed"].includes(
+        String(o.status || "").toLowerCase()
+      )
+    );
+
+    return sendSuccess(res, {
+      stats: {
+        totalWarehouses: branches.length,
+        trackedSkus: products.length,
+        activeInventoryItems: products.filter((p: any) => p.is_active).length,
+        qualityInspections: qcOrders.length,
+        stockMovements: stockMovements.length,
+        restockLists: retailerLists.length,
+      },
+      warehouses: branches,
+      inventoryRecords: products,
+      qualityInspections: qcOrders,
+      stockMovements,
+    });
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to load warehouse telemetry.", 500, "SERVER_ERROR");
   }
 });
 

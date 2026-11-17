@@ -1,13 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { UserProfile, Business, UserRole } from "@/types";
 import { insforge } from "@/lib/insforge";
+import { isAdminRole } from "@/lib/role-routing";
 
 interface AuthContextType {
   user: UserProfile | null;
   business: Business | null;
   isLoading: boolean;
   activeRole: UserRole;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string; user?: UserProfile; activeRole?: UserRole }>;
   register: (payload: {
     email: string;
     password: string;
@@ -83,7 +87,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (body.success && body.data.user) {
           const freshUser = body.data.user as UserProfile;
           const freshBusiness = (body.data.business as Business) || null;
-          const role = (localStorage.getItem("coverly_active_role") as UserRole) || freshUser.activeRole || "buyer";
+          const adminRoleFromUser = freshUser.roles?.find((r) => isAdminRole(r)) as UserRole | undefined;
+          const savedRole = localStorage.getItem("coverly_active_role") as UserRole | null;
+          const role: UserRole = adminRoleFromUser
+            ? (savedRole && isAdminRole(savedRole) ? savedRole : adminRoleFromUser)
+            : (savedRole && savedRole !== "guest" ? savedRole : (freshUser.activeRole || "buyer"));
 
           setUser(freshUser);
           setBusiness(freshBusiness);
@@ -92,6 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem("coverly_user_profile", JSON.stringify(freshUser));
           localStorage.setItem("coverly_user_id", freshUser.id);
           localStorage.setItem("auth_token", freshUser.id);
+          localStorage.setItem("coverly_active_role", role);
           if (freshBusiness) {
             localStorage.setItem("coverly_business_profile", JSON.stringify(freshBusiness));
           }
@@ -136,7 +145,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const loggedUser = body.data.user as UserProfile;
-      const role = (loggedUser.activeRole || loggedUser.roles?.[0] || "buyer") as UserRole;
+      const adminRoleInList = loggedUser.roles?.find((r) => isAdminRole(r)) as UserRole | undefined;
+      const role = (adminRoleInList || loggedUser.activeRole || loggedUser.roles?.[0] || "buyer") as UserRole;
       const normalizedUser: UserProfile = {
         ...loggedUser,
         roles: loggedUser.roles?.length ? loggedUser.roles : [role],
@@ -158,7 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem("coverly_business_profile", JSON.stringify(biz));
       }
 
-      return { success: true };
+      return { success: true, user: normalizedUser, activeRole: role };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
     }

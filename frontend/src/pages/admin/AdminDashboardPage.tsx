@@ -2,27 +2,26 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
-  TrendingUp,
-  ShoppingBag,
-  FileText,
-  Building2,
-  CheckCircle,
-  ShieldAlert,
-  ArrowRight,
-  FolderTree,
-  Briefcase,
   Users,
-  HelpCircle,
-  MessageSquare,
-  ShieldCheck,
-  Package,
-  UserCog,
-  Compass,
-  Truck,
+  Building2,
   Store,
+  ShoppingBag,
   Factory,
-  Clock,
+  Truck,
+  Briefcase,
+  CheckCircle,
+  Package,
+  FileText,
+  MessageSquare,
+  PackageCheck,
+  Navigation,
+  AlertTriangle,
   RefreshCw,
+  Clock,
+  ArrowRight,
+  BarChart3,
+  ShieldCheck,
+  ListChecks,
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
@@ -31,9 +30,11 @@ export const AdminDashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const loadMetrics = () => {
     setIsLoading(true);
+    setErrorMsg(null);
     const authHeaders = {
       "Content-Type": "application/json",
       "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
@@ -44,10 +45,12 @@ export const AdminDashboardPage: React.FC = () => {
       .then((data) => {
         if (data.success && data.data) {
           setMetrics(data.data);
+        } else {
+          setErrorMsg(data.error || "Unable to load live platform metrics.");
         }
       })
       .catch((err) => {
-        console.error("Failed to load metrics", err);
+        setErrorMsg(err.message || "Failed to connect to Admin API.");
       })
       .finally(() => setIsLoading(false));
   };
@@ -56,18 +59,79 @@ export const AdminDashboardPage: React.FC = () => {
     loadMetrics();
   }, [user]);
 
+  const kpiCards = [
+    { label: "Total Users", value: metrics?.totalUsers ?? 0, href: "/admin/users", icon: Users, accent: "text-blue-600" },
+    { label: "Total Businesses", value: metrics?.totalBusinesses ?? 0, href: "/admin/businesses", icon: Building2, accent: "text-stone-800" },
+    { label: "Total Buyers", value: metrics?.totalBuyers ?? metrics?.activeBuyers ?? 0, href: "/admin/buyers", icon: Store, accent: "text-emerald-700" },
+    { label: "Total Retailers", value: metrics?.totalRetailers ?? metrics?.activeRetailers ?? 0, href: "/admin/retailers", icon: ShoppingBag, accent: "text-teal-700" },
+    { label: "Total Manufacturers", value: metrics?.totalManufacturers ?? 0, href: "/admin/manufacturers", icon: Factory, accent: "text-indigo-700" },
+    { label: "Total Wholesalers", value: metrics?.totalWholesalers ?? 0, href: "/admin/wholesalers", icon: Building2, accent: "text-violet-700" },
+    { label: "Total Distributors", value: metrics?.totalDistributors ?? 0, href: "/admin/distributors", icon: Truck, accent: "text-amber-700" },
+    { label: "Service Providers", value: metrics?.totalServiceProviders ?? 0, href: "/admin/services", icon: Briefcase, accent: "text-purple-700" },
+    { label: "Logistics Partners", value: metrics?.totalLogisticsPartners ?? 0, href: "/admin/logistics", icon: Navigation, accent: "text-sky-700" },
+    { label: "Total Transporters", value: metrics?.totalTransporters ?? 0, href: "/admin/transporters", icon: Truck, accent: "text-cyan-700" },
+    { label: "Pending Verifications", value: metrics?.pendingVerifications ?? 0, href: "/admin/verifications", icon: CheckCircle, accent: "text-amber-600" },
+    { label: "Published Products", value: metrics?.publishedProducts ?? metrics?.activeProducts ?? 0, href: "/admin/products", icon: Package, accent: "text-emerald-600" },
+    { label: "Active RFQs", value: metrics?.activeRfqs ?? 0, href: "/admin/rfqs", icon: FileText, accent: "text-blue-700" },
+    { label: "Pending Quotations", value: metrics?.pendingQuotations ?? 0, href: "/admin/quotations", icon: MessageSquare, accent: "text-orange-600" },
+    { label: "Active Orders", value: metrics?.activeOrders ?? 0, href: "/admin/orders", icon: PackageCheck, accent: "text-emerald-800" },
+    { label: "Active Shipments", value: metrics?.activeShipments ?? 0, href: "/admin/shipments", icon: Truck, accent: "text-indigo-600" },
+    { label: "Open Complaints", value: metrics?.openComplaints ?? metrics?.openTickets ?? 0, href: "/admin/support", icon: AlertTriangle, accent: "text-red-600" },
+  ];
+
+  const businessGrowth: { month: string; count: number }[] = metrics?.businessGrowth || [];
+  const userRegistrations: { month: string; count: number }[] = metrics?.userRegistrations || [];
+  const ordersOverview: Record<string, number> = metrics?.ordersOverview || {};
+  const rfqActivity: Record<string, number> = metrics?.rfqActivity || {};
+  const verificationQueue: any[] = metrics?.verificationQueue || [];
   const recentActivities: any[] = metrics?.recentActivities || [];
 
+  const maxBizGrowth = Math.max(1, ...businessGrowth.map((b) => b.count));
+  const maxUserReg = Math.max(1, ...userRegistrations.map((u) => u.count));
+
+  const pendingActions = [
+    {
+      label: "Pending Business & KYC Verifications",
+      count: metrics?.pendingVerifications ?? 0,
+      href: "/admin/verifications",
+      tone: "text-amber-800 bg-amber-50 border-amber-200",
+    },
+    {
+      label: "Pending Product Moderation Approvals",
+      count: metrics?.pendingProducts ?? 0,
+      href: "/admin/products?status=pending",
+      tone: "text-blue-800 bg-blue-50 border-blue-200",
+    },
+    {
+      label: "Pending Quotations Awaiting Review",
+      count: metrics?.pendingQuotations ?? 0,
+      href: "/admin/quotations",
+      tone: "text-indigo-800 bg-indigo-50 border-indigo-200",
+    },
+    {
+      label: "Open Support Tickets & Complaints",
+      count: metrics?.openComplaints ?? 0,
+      href: "/admin/support",
+      tone: "text-red-800 bg-red-50 border-red-200",
+    },
+    {
+      label: "Pending Distributor Product Offers",
+      count: metrics?.pendingDistributorOffers ?? 0,
+      href: "/admin/distributors?tab=dealers",
+      tone: "text-stone-800 bg-stone-100 border-stone-200",
+    },
+  ];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-stone-900">
-            Executive Control Center
+            Admin Control Center Dashboard
           </h1>
           <p className="text-xs text-stone-500 mt-1">
-            Live platform metrics computed directly from InsForge PostgreSQL across all 13 connected B2B portals.
+            Real-time InsForge PostgreSQL telemetry across all COVERLY business ecosystems and platform operations.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -75,356 +139,280 @@ export const AdminDashboardPage: React.FC = () => {
             type="button"
             onClick={loadMetrics}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold rounded-lg transition shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold rounded-lg transition shadow-2xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh Live Telemetry
+            Refresh Live Metrics
           </button>
           <Link
-            to="/admin/portals"
+            to="/admin/analytics"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-lg transition shadow-xs"
           >
-            <Compass className="w-3.5 h-3.5 text-amber-400" />
-            Workspace & Portal Access
+            <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+            Reports & Analytics
           </Link>
         </div>
       </div>
 
-      {/* Primary KPI Grid (All Live Ecosystem Metrics) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. Total Users & Buyers */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">Registered Users</span>
-              <Users className="w-4 h-4 text-blue-600" />
+      {errorMsg && (
+        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* All 17 Live Database Metrics */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+        {kpiCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link
+              key={card.label}
+              to={card.href}
+              className="bg-white border border-stone-200 hover:border-stone-400 rounded-xl p-4 shadow-2xs transition flex flex-col justify-between group"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 leading-tight">
+                  {card.label}
+                </span>
+                <Icon className={`w-4 h-4 shrink-0 ${card.accent}`} />
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="text-2xl font-extrabold text-stone-950 font-mono">
+                  {isLoading ? "—" : card.value.toLocaleString("en-IN")}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-stone-300 group-hover:text-stone-700 transition" />
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Growth Charts Row (100% Real DB Timestamps) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Business Growth Chart */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-bold text-stone-900">Business Growth (Last 6 Months)</h2>
+              <p className="text-[11px] text-stone-500">New businesses onboarded per month</p>
             </div>
-            <div className="text-2xl font-extrabold text-stone-900">
-              {metrics?.totalUsers ?? 0}
+            <Link to="/admin/businesses" className="text-xs font-semibold text-amber-800 hover:underline">
+              Directory &rarr;
+            </Link>
+          </div>
+          {businessGrowth.length === 0 ? (
+            <div className="h-40 flex items-center justify-center text-xs text-stone-400">
+              No business registration data yet.
             </div>
-          </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>{metrics?.activeBuyers ?? 0} active buyers</span>
-            <span>{metrics?.activeRetailers ?? 0} retailers</span>
-          </div>
+          ) : (
+            <div className="h-44 flex items-end justify-between gap-3 pt-4 px-2">
+              {businessGrowth.map((b) => {
+                const heightPct = Math.max(8, Math.round((b.count / maxBizGrowth) * 100));
+                return (
+                  <div key={b.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <span className="text-[11px] font-bold font-mono text-stone-800">{b.count}</span>
+                    <div
+                      className="w-full max-w-[44px] bg-stone-900 rounded-t-md transition-all"
+                      style={{ height: `${heightPct}%` }}
+                      title={`${b.month}: ${b.count} businesses`}
+                    />
+                    <span className="text-[10px] font-medium text-stone-500">{b.month}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* 2. Total Businesses & Suppliers */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">Total Businesses</span>
-              <Building2 className="w-4 h-4 text-stone-700" />
+        {/* User Registration Chart */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-bold text-stone-900">User Registrations (Last 6 Months)</h2>
+              <p className="text-[11px] text-stone-500">New user accounts created per month</p>
             </div>
-            <div className="text-2xl font-extrabold text-stone-900">
-              {metrics?.totalBusinesses ?? 0}
+            <Link to="/admin/users" className="text-xs font-semibold text-amber-800 hover:underline">
+              All Users &rarr;
+            </Link>
+          </div>
+          {userRegistrations.length === 0 ? (
+            <div className="h-40 flex items-center justify-center text-xs text-stone-400">
+              No user registration data yet.
             </div>
-          </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>{metrics?.totalSuppliers ?? 0} suppliers</span>
-            <span className="text-emerald-700 font-semibold">{metrics?.verifiedSuppliers ?? 0} verified</span>
-          </div>
+          ) : (
+            <div className="h-44 flex items-end justify-between gap-3 pt-4 px-2">
+              {userRegistrations.map((u) => {
+                const heightPct = Math.max(8, Math.round((u.count / maxUserReg) * 100));
+                return (
+                  <div key={u.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <span className="text-[11px] font-bold font-mono text-stone-800">{u.count}</span>
+                    <div
+                      className="w-full max-w-[44px] bg-amber-600 rounded-t-md transition-all"
+                      style={{ height: `${heightPct}%` }}
+                      title={`${u.month}: ${u.count} users`}
+                    />
+                    <span className="text-[10px] font-medium text-stone-500">{u.month}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* 3. Manufacturers & Wholesalers */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">Supply Network</span>
-              <Factory className="w-4 h-4 text-indigo-600" />
-            </div>
-            <div className="text-2xl font-extrabold text-stone-900">
-              {(metrics?.totalManufacturers ?? 0) + (metrics?.totalWholesalers ?? 0)}
-            </div>
+      {/* Orders Overview, RFQ Activity & Pending Action List */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Orders Overview */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-stone-900">Orders Overview</h2>
+            <Link to="/admin/orders" className="text-xs font-semibold text-amber-800 hover:underline">
+              Manage &rarr;
+            </Link>
           </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>{metrics?.totalManufacturers ?? 0} mfg</span>
-            <span>{metrics?.totalWholesalers ?? 0} wholesalers</span>
-            <span>{metrics?.totalDistributors ?? 0} dist.</span>
-          </div>
-        </div>
-
-        {/* 4. Service Providers & Transporters */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">Services & Fleet</span>
-              <Truck className="w-4 h-4 text-purple-600" />
-            </div>
-            <div className="text-2xl font-extrabold text-stone-900">
-              {(metrics?.totalServiceProviders ?? 0) + (metrics?.totalTransporters ?? 0)}
-            </div>
-          </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>{metrics?.totalServiceProviders ?? 0} providers</span>
-            <span>{metrics?.totalTransporters ?? 0} transporters</span>
-          </div>
-        </div>
-
-        {/* 5. Active Products */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">Active Products</span>
-              <Package className="w-4 h-4 text-teal-600" />
-            </div>
-            <div className="text-2xl font-extrabold text-stone-900">
-              {metrics?.activeProducts ?? 0}
-            </div>
-          </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>{metrics?.totalProducts ?? 0} total catalog</span>
-            <span className="text-amber-700 font-medium">{metrics?.pendingProducts ?? 0} pending</span>
-          </div>
-        </div>
-
-        {/* 6. RFQs & Quotations */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">RFQs & Quotations</span>
-              <MessageSquare className="w-4 h-4 text-indigo-600" />
-            </div>
-            <div className="text-2xl font-extrabold text-stone-900">
-              {metrics?.totalRfqs ?? 0}
-            </div>
-          </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>{metrics?.totalQuotations ?? metrics?.quotationsSubmitted ?? 0} quotations</span>
-            <span>{metrics?.totalConciergeLeads ?? 0} guest leads</span>
-          </div>
-        </div>
-
-        {/* 7. Orders, Shipments & GMV */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">Active Orders & GMV</span>
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-            </div>
-            <div className="text-2xl font-extrabold text-stone-900">
+          <div className="text-xs text-stone-500 mb-3">
+            Total GMV:{" "}
+            <span className="font-mono font-bold text-stone-950">
               ₹{Number(metrics?.totalGmv || 0).toLocaleString("en-IN")}
-            </div>
+            </span>{" "}
+            ({metrics?.totalOrders ?? 0} total orders)
           </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>{metrics?.activeOrders ?? 0} active orders</span>
-            <span>{metrics?.activeShipments ?? 0} shipments</span>
+          <div className="space-y-2">
+            {Object.keys(ordersOverview).length === 0 ? (
+              <div className="text-xs text-stone-400 py-6 text-center">No orders recorded yet.</div>
+            ) : (
+              Object.entries(ordersOverview).map(([status, count]) => (
+                <div key={status} className="flex items-center justify-between text-xs py-1 border-b border-stone-100 last:border-0">
+                  <span className="capitalize text-stone-700 font-medium">{status.replace(/_/g, " ")}</span>
+                  <span className="font-mono font-bold text-stone-950 px-2 py-0.5 rounded bg-stone-100">{count}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
-        {/* 8. Compliance & Complaints */}
-        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-stone-500 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider">Pending Governance</span>
-              <ShieldCheck className="w-4 h-4 text-amber-600" />
-            </div>
-            <div className="text-2xl font-extrabold text-amber-900">
-              {metrics?.pendingVerifications ?? 0}
-            </div>
+        {/* RFQ Activity */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-stone-900">RFQ Activity</h2>
+            <Link to="/admin/rfqs" className="text-xs font-semibold text-amber-800 hover:underline">
+              All RFQs &rarr;
+            </Link>
           </div>
-          <div className="text-[11px] text-stone-500 mt-3 pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span>verifications</span>
-            <span className="text-red-700 font-semibold">{metrics?.pendingComplaints ?? metrics?.openTickets ?? 0} complaints</span>
+          <div className="text-xs text-stone-500 mb-3">
+            Total Enquiries:{" "}
+            <span className="font-mono font-bold text-stone-950">{metrics?.totalEnquiries ?? 0}</span>{" "}
+            ({metrics?.totalRfqs ?? 0} RFQs • {metrics?.quotationsSubmitted ?? 0} quotes)
+          </div>
+          <div className="space-y-2">
+            {Object.keys(rfqActivity).length === 0 ? (
+              <div className="text-xs text-stone-400 py-6 text-center">No RFQs submitted yet.</div>
+            ) : (
+              Object.entries(rfqActivity).map(([status, count]) => (
+                <div key={status} className="flex items-center justify-between text-xs py-1 border-b border-stone-100 last:border-0">
+                  <span className="capitalize text-stone-700 font-medium">{status.replace(/_/g, " ")}</span>
+                  <span className="font-mono font-bold text-stone-950 px-2 py-0.5 rounded bg-stone-100">{count}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Pending Action List */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center gap-2 mb-3">
+            <ListChecks className="w-4 h-4 text-amber-600" />
+            <h2 className="text-sm font-bold text-stone-900">Pending Action List</h2>
+          </div>
+          <div className="space-y-2">
+            {pendingActions.map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="flex items-center justify-between p-2.5 rounded-lg border border-stone-200 hover:bg-stone-50 transition text-xs"
+              >
+                <span className="font-medium text-stone-800 pr-2">{item.label}</span>
+                <span className={`font-mono font-bold px-2 py-0.5 rounded-full border shrink-0 ${item.tone}`}>
+                  {item.count}
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Portal Access Quick Banner */}
-      <div className="bg-stone-900 text-white rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 border border-stone-800">
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
-            Centralized Ecosystem Switchboard
-          </span>
-          <h2 className="text-lg font-bold text-white mt-1">
-            Preview & Test All 13 COVERLY User Portals Without Logging Out
-          </h2>
-          <p className="text-xs text-stone-300 mt-1 max-w-2xl">
-            Open the read-only Portal Preview Sandbox, inspect onboarding/login flows, or jump into Buyer, Retailer, Manufacturer, Transporter, and Service Provider workspaces directly.
-          </p>
-        </div>
-        <Link
-          to="/admin/portals"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs rounded-xl transition shrink-0 shadow-xs"
-        >
-          <Compass className="w-4 h-4" />
-          Open Portal Access Hub
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
-
-      {/* Main Split: Modules Grid + Recent Platform Activities */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Governance & Control Navigation */}
-        <div className="lg:col-span-2 space-y-3">
-          <h2 className="text-xs font-extrabold uppercase tracking-wider text-stone-500">
-            Core Platform Operations
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link
-              to="/admin/products"
-              className="bg-white border border-stone-200 hover:border-stone-400 rounded-xl p-4 shadow-2xs transition group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center mb-3">
-                  <ShoppingBag className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-sm text-stone-900 group-hover:text-blue-700 transition">
-                  Product Catalog Moderation
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Approve wholesale products, verify pricing tiers, and manage MOQ specs
-                </p>
-              </div>
-              <div className="mt-4 pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
-                <span>{metrics?.totalProducts ?? 0} products</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-              </div>
-            </Link>
-
-            <Link
-              to="/admin/verifications"
-              className="bg-white border border-stone-200 hover:border-stone-400 rounded-xl p-4 shadow-2xs transition group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center mb-3">
-                  <CheckCircle className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-sm text-stone-900 group-hover:text-amber-700 transition">
-                  Business Verification Queue
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Audit submitted GSTIN, PAN, IEC, and factory manufacturing licenses
-                </p>
-              </div>
-              <div className="mt-4 pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
-                <span className="text-amber-700 font-semibold">{metrics?.pendingVerifications ?? 0} pending</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-              </div>
-            </Link>
-
-            <Link
-              to="/admin/orders"
-              className="bg-white border border-stone-200 hover:border-stone-400 rounded-xl p-4 shadow-2xs transition group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
-                  <Package className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-sm text-stone-900 group-hover:text-emerald-700 transition">
-                  Orders & Fulfillment Desk
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Monitor PO production states, logistics dispatch, and completed deliveries
-                </p>
-              </div>
-              <div className="mt-4 pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
-                <span>{metrics?.totalOrders ?? 0} total orders</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-              </div>
-            </Link>
-
-            <Link
-              to="/admin/rfqs"
-              className="bg-white border border-stone-200 hover:border-stone-400 rounded-xl p-4 shadow-2xs transition group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center mb-3">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-sm text-stone-900 group-hover:text-indigo-700 transition">
-                  RFQs & Guest Sourcing Leads
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Oversee enterprise buying tenders, quotations, and concierge enquiries
-                </p>
-              </div>
-              <div className="mt-4 pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
-                <span>{metrics?.totalEnquiries ?? 0} total demands</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-              </div>
-            </Link>
-
-            <Link
-              to="/admin/users"
-              className="bg-white border border-stone-200 hover:border-stone-400 rounded-xl p-4 shadow-2xs transition group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-800 flex items-center justify-center mb-3">
-                  <Users className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-sm text-stone-900 group-hover:text-stone-700 transition">
-                  Users & Account Governance
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Manage platform user accounts, status controls, and assigned roles
-                </p>
-              </div>
-              <div className="mt-4 pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
-                <span>{metrics?.totalUsers ?? 0} accounts</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-              </div>
-            </Link>
-
-            <Link
-              to="/admin/employees"
-              className="bg-white border border-stone-200 hover:border-stone-400 rounded-xl p-4 shadow-2xs transition group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-800 flex items-center justify-center mb-3">
-                  <UserCog className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-sm text-stone-900 group-hover:text-purple-700 transition">
-                  Employees & RBAC Controls
-                </h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  Assign admin managers, procurement staff, finance permissions & limits
-                </p>
-              </div>
-              <div className="mt-4 pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
-                <span>Granular RBAC</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Right Column: Live Recent Platform Activity Feed */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-extrabold uppercase tracking-wider text-stone-500">
-              Recent Platform Activity
+      {/* Verification Queue & Recent Admin Activities */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Verification Queue */}
+        <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-2xs">
+          <div className="px-5 py-3.5 border-b border-stone-100 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-700" />
+              Live Verification Queue
             </h2>
-            <Link to="/admin/audit-logs" className="text-[11px] font-semibold text-blue-700 hover:underline">
+            <Link to="/admin/verifications" className="text-xs font-semibold text-amber-800 hover:underline">
+              Review All &rarr;
+            </Link>
+          </div>
+          <div className="divide-y divide-stone-100">
+            {verificationQueue.length === 0 ? (
+              <div className="p-8 text-center text-xs text-stone-500">
+                No pending business verifications in queue.
+              </div>
+            ) : (
+              verificationQueue.map((item) => (
+                <div key={item.id} className="px-5 py-3 flex items-center justify-between text-xs hover:bg-stone-50">
+                  <div>
+                    <div className="font-bold text-stone-900">
+                      {item.businesses?.name || item.business_id}
+                    </div>
+                    <div className="text-[11px] text-stone-500 capitalize">
+                      {String(item.businesses?.business_type || "business").replace(/_/g, " ")} •{" "}
+                      {String(item.document_type || "KYC Document").replace(/_/g, " ")}
+                    </div>
+                  </div>
+                  <Link
+                    to="/admin/verifications"
+                    className="px-2.5 py-1 rounded-md bg-stone-900 text-white text-[11px] font-semibold hover:bg-stone-800"
+                  >
+                    Review
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Recent Admin Activities */}
+        <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-2xs">
+          <div className="px-5 py-3.5 border-b border-stone-100 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-stone-700" />
+              Recent Admin Activities
+            </h2>
+            <Link to="/admin/audit-logs" className="text-xs font-semibold text-amber-800 hover:underline">
               Full Audit Trail &rarr;
             </Link>
           </div>
-
-          <div className="bg-white border border-stone-200 rounded-xl shadow-2xs divide-y divide-stone-100 overflow-hidden">
+          <div className="divide-y divide-stone-100">
             {recentActivities.length === 0 ? (
               <div className="p-8 text-center text-xs text-stone-500">
-                <Clock className="w-6 h-6 text-stone-300 mx-auto mb-2" />
-                No recent audit events recorded yet.
+                No administrative audit events recorded yet.
               </div>
             ) : (
               recentActivities.map((act) => (
-                <div key={act.id} className="p-3.5 hover:bg-stone-50/80 transition">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-mono font-bold text-stone-900 truncate">
-                      {act.action}
-                    </span>
-                    <span className="text-[10px] text-stone-400 shrink-0 font-mono">
-                      {new Date(act.created_at).toLocaleDateString()}
-                    </span>
+                <div key={act.id} className="px-5 py-3 flex items-center justify-between text-xs hover:bg-stone-50">
+                  <div className="min-w-0 pr-3">
+                    <div className="font-semibold text-stone-900 truncate">
+                      {String(act.action || "ADMIN_ACTION").replace(/_/g, " ")}
+                    </div>
+                    <div className="text-[11px] text-stone-500 truncate">
+                      {act.users?.full_name || act.users?.email || "Admin"} • {act.target_type || "platform"}
+                    </div>
                   </div>
-                  <div className="text-[11px] text-stone-500 mt-1 flex items-center justify-between">
-                    <span className="truncate">
-                      By: {act.users?.full_name || "Admin Actor"}
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-600 font-mono">
-                      {act.target_type}
-                    </span>
-                  </div>
+                  <span className="text-[10px] font-mono text-stone-400 shrink-0">
+                    {act.created_at ? new Date(act.created_at).toLocaleString() : ""}
+                  </span>
                 </div>
               ))
             )}

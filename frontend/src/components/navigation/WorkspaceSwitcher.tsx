@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { WORKSPACE_REGISTRY, getWorkspaceItem, WorkspaceItem } from "@/lib/role-routing";
+import { WORKSPACE_REGISTRY, getWorkspaceItem, isAdminRole, WorkspaceItem } from "@/lib/role-routing";
 import type { UserRole } from "@/types";
 import {
   ChevronDown,
@@ -57,13 +57,16 @@ export const WorkspaceSwitcher: React.FC<{ compact?: boolean }> = ({ compact = f
 
   const currentWorkspace = getWorkspaceItem(activeRole);
   const userRoles = (user.roles && user.roles.length > 0) ? user.roles : [activeRole || "buyer"];
-  const isAdmin = userRoles.some((r) => r.includes("admin"));
+  const isAdmin = isAdminRole(activeRole) || userRoles.some((r) => isAdminRole(r));
 
-  // Available workspaces: if admin, full platform switch; otherwise, roles assigned to user + base buyer role
+  // Admin operates inside the dedicated Admin Control Center — never show a Buyer/Supplier Workspace dropdown
+  if (isAdmin) return null;
+
+  // Available workspaces strictly scoped to user's assigned non-admin roles
   const availableWorkspaces: WorkspaceItem[] = Object.values(WORKSPACE_REGISTRY).filter((ws) => {
-    if (isAdmin) return true;
+    if (isAdminRole(ws.role)) return false;
     if (userRoles.includes(ws.role)) return true;
-    if (ws.role === "buyer") return true; // every user has standard buyer access
+    if (ws.role === "buyer") return true;
     return false;
   });
 

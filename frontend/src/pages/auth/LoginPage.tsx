@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { getWorkspaceRoute } from "@/lib/role-routing";
+import { getWorkspaceRoute, isAdminRole } from "@/lib/role-routing";
 import { Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
 import type { UserRole } from "@/types";
 
@@ -28,11 +28,23 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    if (redirect) {
-      navigate(redirect);
+    const resolvedRole =
+      res.activeRole ||
+      (localStorage.getItem("coverly_active_role") as UserRole) ||
+      "buyer";
+    const userIsAdmin =
+      isAdminRole(resolvedRole) ||
+      Boolean(res.user?.roles?.some((r) => isAdminRole(r)));
+
+    if (userIsAdmin) {
+      // Admin must NEVER land on Guest Marketplace (/), /products, or /access-denied
+      const safeAdminTarget =
+        redirect && redirect.startsWith("/admin") ? redirect : "/admin/dashboard";
+      navigate(safeAdminTarget, { replace: true });
+    } else if (redirect && redirect !== "/access-denied") {
+      navigate(redirect, { replace: true });
     } else {
-      const activeRole = (localStorage.getItem("coverly_active_role") as UserRole) || "buyer";
-      navigate(getWorkspaceRoute(activeRole));
+      navigate(getWorkspaceRoute(resolvedRole), { replace: true });
     }
   };
 

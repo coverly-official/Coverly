@@ -48,9 +48,8 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children }) 
 
   // Admin employee accessing an admin-protected route
   if (isUserAdmin && routeRequiresAdmin) {
-    // If the route allows any admin, or specifically matches this employee's role
+    // Only allow if employee's exact role is in allowedRoles (never blanket bypass for restricted employees)
     const hasAdminPerm =
-      allowedRoles.includes("admin" as UserRole) ||
       userRoles.some((r) => allowedRoles.includes(r as UserRole)) ||
       allowedRoles.includes(activeRole);
 

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { isAdminRole } from "@/lib/role-routing";
+import type { UserRole } from "@/types";
 import { ShieldCheck, Lock, Mail, ArrowRight } from "lucide-react";
 
 export const AdminLoginPage: React.FC = () => {
@@ -9,7 +11,7 @@ export const AdminLoginPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login } = useAuth();
+  const { login, logout, setActiveRole } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -24,8 +26,21 @@ export const AdminLoginPage: React.FC = () => {
       return;
     }
 
-    localStorage.setItem("coverly_active_role", "admin");
-    navigate("/admin/dashboard");
+    const userRoles = res.user?.roles || [];
+    const primaryAdminRole = (
+      userRoles.find((r) => isAdminRole(r)) ||
+      (isAdminRole(res.activeRole) ? res.activeRole : null)
+    ) as UserRole | null;
+
+    if (!primaryAdminRole) {
+      logout();
+      setErrorMsg("Access denied: This account does not hold administrative privileges.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    setActiveRole(primaryAdminRole);
+    navigate("/admin/dashboard", { replace: true });
   };
 
   return (

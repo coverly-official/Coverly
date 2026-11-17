@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AdminModuleGuard } from "@/components/auth/AdminModuleGuard";
 
 // Layouts
 import { PublicLayout } from "@/components/layout/PublicLayout";
@@ -10,6 +11,7 @@ import { AuthLayout } from "@/components/layout/AuthLayout";
 import { BuyerLayout } from "@/components/layout/BuyerLayout";
 import { SupplierLayout } from "@/components/layout/SupplierLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
+import { TransportLayout } from "@/components/layout/TransportLayout";
 
 // Public Pages
 import { HomePage } from "@/pages/public/HomePage";
@@ -106,8 +108,8 @@ import { AdminFinancePage } from "@/pages/admin/AdminFinancePage";
 import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
 import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
 import { AdminReviewsPage } from "@/pages/admin/AdminReviewsPage";
-import { AdminPortalsPage } from "@/pages/admin/AdminPortalsPage";
-import { AdminPortalPreviewPage } from "@/pages/admin/AdminPortalPreviewPage";
+import { AdminEcosystemEntityPage } from "@/pages/admin/AdminEcosystemEntityPage";
+import { AdminWarehousePage } from "@/pages/admin/AdminWarehousePage";
 import { ALL_ADMIN_ROLES } from "@/lib/role-routing";
 
 // Logistics Marketplace Pages
@@ -459,7 +461,7 @@ export const AppRouter: React.FC = () => {
             <Route path="profile" element={<ProviderDashboardPage />} />
           </Route>
 
-          {/* 6. Admin Governance Console (Screens 61–75) */}
+          {/* 6. Dedicated Admin Control Center (Completely Separate AdminLayout & RBAC Module Guards) */}
           <Route
             path="admin"
             element={
@@ -471,51 +473,351 @@ export const AppRouter: React.FC = () => {
             }
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="portals" element={<AdminPortalsPage />} />
-            <Route path="portals/:portalId/preview" element={<AdminPortalPreviewPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="orders" element={<AdminOrdersPage />} />
-            <Route path="quotations" element={<AdminQuotationsPage />} />
-            <Route path="products" element={<AdminProductsPage />} />
-            <Route path="categories" element={<AdminCategoriesPage />} />
-            <Route path="businesses" element={<AdminBusinessesPage />} />
-            <Route path="suppliers" element={<AdminBusinessesPage />} />
-            <Route path="rfqs" element={<AdminRfqsPage />} />
-            <Route path="enquiries" element={<AdminRfqsPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
-            <Route path="verifications" element={<AdminVerificationsPage />} />
-            <Route path="verification" element={<AdminVerificationsPage />} />
-            <Route path="services" element={<AdminServicesPage />} />
-            <Route path="business-services" element={<AdminServicesPage />} />
-            <Route path="audit-logs" element={<AdminAuditLogsPage />} />
-            <Route path="support" element={<AdminSupportPage />} />
-            <Route path="disputes" element={<AdminSupportPage />} />
-            <Route path="logistics" element={<AdminLogisticsPage />} />
-            <Route path="shipments" element={<AdminLogisticsPage />} />
-            <Route path="transporters" element={<AdminTransportersPage />} />
-            <Route path="sales-agents" element={<AdminSalesAgentsPage />} />
-            <Route path="raw-materials" element={<AdminRawMaterialsPage />} />
-            <Route path="packaging" element={<AdminPackagingPage />} />
-            <Route path="import-export" element={<AdminTradePage />} />
-            <Route path="trade" element={<AdminTradePage />} />
-            <Route path="buyers" element={<AdminBuyersPage />} />
-            <Route path="procurement" element={<AdminBuyersPage />} />
-            <Route path="retailers" element={<AdminRetailersPage />} />
-            <Route path="finance" element={<AdminFinancePage />} />
-            <Route path="analytics" element={<AdminAnalyticsPage />} />
-            <Route path="reviews" element={<AdminReviewsPage />} />
-            <Route path="employees" element={<AdminEmployeesPage />} />
-            <Route path="roles" element={<AdminEmployeesPage />} />
-            <Route path="settings" element={<AdminSettingsPage />} />
+            {/* A. Overview */}
+            <Route
+              path="dashboard"
+              element={
+                <AdminModuleGuard module="overview">
+                  <AdminDashboardPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="overview"
+              element={
+                <AdminModuleGuard module="overview">
+                  <AdminDashboardPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="activity"
+              element={
+                <AdminModuleGuard module="overview">
+                  <AdminAuditLogsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="analytics"
+              element={
+                <AdminModuleGuard module="overview">
+                  <AdminAnalyticsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="notifications"
+              element={
+                <AdminModuleGuard module="overview">
+                  <NotificationsPage />
+                </AdminModuleGuard>
+              }
+            />
+
+            {/* B. Business Ecosystem Management (12 Dedicated Admin Sections) */}
+            <Route
+              path="buyers"
+              element={
+                <AdminModuleGuard module="buyers">
+                  <AdminBuyersPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="retailers"
+              element={
+                <AdminModuleGuard module="retailers">
+                  <AdminRetailersPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="manufacturers"
+              element={
+                <AdminModuleGuard module="manufacturers">
+                  <AdminEcosystemEntityPage entityType="manufacturer" />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="wholesalers"
+              element={
+                <AdminModuleGuard module="wholesalers">
+                  <AdminEcosystemEntityPage entityType="wholesaler" />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="distributors"
+              element={
+                <AdminModuleGuard module="distributors">
+                  <AdminEcosystemEntityPage entityType="distributor" />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="raw-materials"
+              element={
+                <AdminModuleGuard module="raw_materials">
+                  <AdminRawMaterialsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="packaging"
+              element={
+                <AdminModuleGuard module="packaging">
+                  <AdminPackagingPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="import-export"
+              element={
+                <AdminModuleGuard module="import_export">
+                  <AdminTradePage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="trade"
+              element={
+                <AdminModuleGuard module="import_export">
+                  <AdminTradePage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="logistics"
+              element={
+                <AdminModuleGuard module="logistics">
+                  <AdminLogisticsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="shipments"
+              element={
+                <AdminModuleGuard module="logistics">
+                  <AdminLogisticsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="transporters"
+              element={
+                <AdminModuleGuard module="transporters">
+                  <AdminTransportersPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="services"
+              element={
+                <AdminModuleGuard module="services">
+                  <AdminServicesPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="business-services"
+              element={
+                <AdminModuleGuard module="services">
+                  <AdminServicesPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="sales-agents"
+              element={
+                <AdminModuleGuard module="sales_agents">
+                  <AdminSalesAgentsPage />
+                </AdminModuleGuard>
+              }
+            />
+
+            {/* C. Platform Operations */}
+            <Route
+              path="products"
+              element={
+                <AdminModuleGuard module="marketplace">
+                  <AdminProductsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="categories"
+              element={
+                <AdminModuleGuard module="marketplace">
+                  <AdminCategoriesPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="businesses"
+              element={
+                <AdminModuleGuard module="marketplace">
+                  <AdminBusinessesPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="suppliers"
+              element={
+                <AdminModuleGuard module="marketplace">
+                  <AdminBusinessesPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="reviews"
+              element={
+                <AdminModuleGuard module="marketplace">
+                  <AdminReviewsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="rfqs"
+              element={
+                <AdminModuleGuard module="procurement">
+                  <AdminRfqsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="enquiries"
+              element={
+                <AdminModuleGuard module="procurement">
+                  <AdminRfqsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="quotations"
+              element={
+                <AdminModuleGuard module="procurement">
+                  <AdminQuotationsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="procurement"
+              element={
+                <AdminModuleGuard module="procurement">
+                  <AdminBuyersPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <AdminModuleGuard module="orders">
+                  <AdminOrdersPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="warehouse"
+              element={
+                <AdminModuleGuard module="warehouse">
+                  <AdminWarehousePage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="finance"
+              element={
+                <AdminModuleGuard module="finance">
+                  <AdminFinancePage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <AdminModuleGuard module="users">
+                  <AdminUsersPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="verifications"
+              element={
+                <AdminModuleGuard module="verification">
+                  <AdminVerificationsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="verification"
+              element={
+                <AdminModuleGuard module="verification">
+                  <AdminVerificationsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="support"
+              element={
+                <AdminModuleGuard module="support">
+                  <AdminSupportPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="disputes"
+              element={
+                <AdminModuleGuard module="support">
+                  <AdminSupportPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="employees"
+              element={
+                <AdminModuleGuard module="system_admin">
+                  <AdminEmployeesPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="roles"
+              element={
+                <AdminModuleGuard module="system_admin">
+                  <AdminEmployeesPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <AdminModuleGuard module="system_admin">
+                  <AdminSettingsPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="audit-logs"
+              element={
+                <AdminModuleGuard module="system_admin">
+                  <AdminAuditLogsPage />
+                </AdminModuleGuard>
+              }
+            />
+            {/* Unknown /admin/* subpaths stay inside Admin Control Center */}
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
 
-          {/* Logistics Partner Portal */}
+          {/* Logistics Partner Portal (Dedicated TransportLayout) */}
           <Route
             path="logistics-partner"
             element={
               <ProtectedRoute>
-                <PartnerDashboardPage />
+                <TransportLayout>
+                  <PartnerDashboardPage />
+                </TransportLayout>
               </ProtectedRoute>
             }
           />
@@ -523,17 +825,21 @@ export const AppRouter: React.FC = () => {
             path="logistics-partner/*"
             element={
               <ProtectedRoute>
-                <PartnerDashboardPage />
+                <TransportLayout>
+                  <PartnerDashboardPage />
+                </TransportLayout>
               </ProtectedRoute>
             }
           />
 
-          {/* Transporter Portal */}
+          {/* Transporter Portal (Dedicated TransportLayout) */}
           <Route
             path="transporter"
             element={
               <ProtectedRoute>
-                <TransporterDashboardPage />
+                <TransportLayout>
+                  <TransporterDashboardPage />
+                </TransportLayout>
               </ProtectedRoute>
             }
           />
@@ -541,7 +847,9 @@ export const AppRouter: React.FC = () => {
             path="transporter/*"
             element={
               <ProtectedRoute>
-                <TransporterDashboardPage />
+                <TransportLayout>
+                  <TransporterDashboardPage />
+                </TransportLayout>
               </ProtectedRoute>
             }
           />
