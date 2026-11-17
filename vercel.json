@@ -4,6 +4,26 @@
   "installCommand": "npm install --include=dev",
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "{node_modules/@resvg/resvg-wasm/index_bg.wasm,node_modules/@vercel/og/dist/Geist-Regular.ttf}"
+    }
+  },
+  "headers": [
+    {
+      "source": "/og/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, s-maxage=604800, immutable"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api",
@@ -14,8 +34,8 @@
       "destination": "/api"
     },
     {
-      "source": "/((?!api(?:/|$)).*)",
-      "destination": "/index.html"
+      "source": "/((?!api(?:/|$)|assets(?:/|$)|og(?:/|$)|[^/]+\\.[^/]+$).*)",
+      "destination": "/api/render?__path=/$1"
     }
   ]
 }

@@ -32,6 +32,7 @@ import packagingRoutes from "./routes/packaging.js";
 import importExportRoutes from "./routes/import-export.js";
 import buyerRoutes from "./routes/buyers.js";
 import retailerRoutes from "./routes/retailers.js";
+import ogRoutes from "./routes/og.js";
 
 const currentDir = typeof import.meta !== "undefined" && import.meta.url
   ? path.dirname(fileURLToPath(import.meta.url))
@@ -99,5 +100,6 @@ app.use("/api", packagingRoutes);
 app.use("/api", importExportRoutes);
 app.use("/api", buyerRoutes);
 app.use("/api", retailerRoutes);
+app.use("/api", ogRoutes);
 
 export default app;

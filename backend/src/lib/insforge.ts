@@ -50,3 +50,18 @@ export function getInsForgeClient(): InsForgeClient | null {
     return createClient({ baseUrl, anonKey });
   }
 }
+
+/**
+ * Public unauthenticated client strictly constrained by InsForge RLS policies.
+ * Used for public Open Graph / social preview metadata generation so private
+ * records, internal documents, or unapproved listings can never be leaked.
+ */
+export function getPublicInsForgeClient(): InsForgeClient | null {
+  const { baseUrl, anonKey } = resolveCredentials();
+
+  if (!baseUrl || !anonKey) {
+    return null;
+  }
+
+  return createClient({ baseUrl, anonKey });
+}
