@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
 import {
   ShieldAlert,
   Users,
@@ -14,6 +15,13 @@ import {
   Settings,
   Briefcase,
   Building,
+  Truck,
+  UserCheck,
+  Factory,
+  Layers,
+  Globe,
+  Store,
+  UserCog,
 } from "lucide-react";
 
 export const AdminLayout: React.FC = () => {
@@ -22,19 +30,24 @@ export const AdminLayout: React.FC = () => {
 
   const navLinks = [
     { label: "Dashboard", href: "/admin/dashboard", icon: BarChart },
-    { label: "Users", href: "/admin/users", icon: Users },
-    { label: "Businesses", href: "/admin/users", icon: Building },
-    { label: "Products", href: "/supplier/products", icon: ShoppingBag },
+    { label: "Products", href: "/admin/products", icon: ShoppingBag },
+    { label: "Categories", href: "/admin/categories", icon: List },
+    { label: "Businesses", href: "/admin/businesses", icon: Building },
+    { label: "RFQs & Enquiries", href: "/admin/rfqs", icon: FileText },
     { label: "Verifications", href: "/admin/verifications", icon: CheckCircle },
-    { label: "Categories", href: "/categories", icon: List },
-    { label: "RFQs", href: "/buyer/rfqs", icon: FileText },
-    { label: "Quotations", href: "/supplier/quotations", icon: Briefcase },
-    { label: "Orders", href: "/buyer/orders", icon: ShoppingBag },
     { label: "Business Services", href: "/admin/services", icon: Briefcase },
-    { label: "Reports", href: "/admin/dashboard", icon: BarChart },
-    { label: "Support", href: "/admin/support", icon: HelpCircle },
-    { label: "Audit Logs", href: "/admin/audit-logs", icon: List },
-    { label: "Settings", href: "/admin/dashboard", icon: Settings },
+    { label: "Logistics Hub", href: "/admin/logistics", icon: Truck },
+    { label: "Transporters & Fleet", href: "/admin/transporters", icon: Truck },
+    { label: "Sales & Reps", href: "/admin/sales-agents", icon: UserCheck },
+    { label: "Raw Materials", href: "/admin/raw-materials", icon: Factory },
+    { label: "Packaging Hub", href: "/admin/packaging", icon: Layers },
+    { label: "Import & Export", href: "/admin/import-export", icon: Globe },
+    { label: "Buyers & POs", href: "/admin/buyers", icon: Building },
+    { label: "Retailers", href: "/admin/retailers", icon: Store },
+    { label: "Employees & RBAC", href: "/admin/employees", icon: UserCog },
+    { label: "Users", href: "/admin/users", icon: Users },
+    { label: "Support Tickets", href: "/admin/support", icon: HelpCircle },
+    { label: "Audit Logs", href: "/admin/audit-logs", icon: ShieldAlert },
   ];
 
   return (
@@ -99,8 +112,11 @@ export const AdminLayout: React.FC = () => {
               ← View Public Site
             </Link>
           </div>
-          <div className="text-xs font-mono bg-stone-100 px-2 py-1 rounded text-stone-600 border border-stone-200">
-            SYSTEM STATUS: HEALTHY
+          <div className="flex items-center gap-3">
+            <WorkspaceSwitcher />
+            <div className="text-xs font-mono bg-stone-100 px-2 py-1 rounded text-stone-600 border border-stone-200">
+              SYSTEM STATUS: HEALTHY
+            </div>
           </div>
         </header>
 

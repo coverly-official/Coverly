@@ -12,21 +12,29 @@ import {
   ChevronRight,
   Send,
   MapPin,
+  Star,
+  Package,
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 export const ServiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [service, setService] = useState<BusinessService | null>(null);
+  const [service, setService] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<any | null>(null);
 
   useEffect(() => {
     setIsLoading(true);
     fetch(`${API_BASE}/business-services/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setService(data.data);
+        if (data.success) {
+          setService(data.data);
+          if (data.data?.packages && data.data.packages.length > 0) {
+            setSelectedPackage(data.data.packages[0]);
+          }
+        }
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
@@ -60,6 +68,8 @@ export const ServiceDetailPage: React.FC = () => {
 
   const provider = service.businesses;
   const profile = service.provider_profile;
+  const packages = service.packages || [];
+  const reviews = service.reviews || [];
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -101,18 +111,63 @@ export const ServiceDetailPage: React.FC = () => {
                 Detailed Scope of Work
               </h3>
               <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-line">
-                {service.full_description || "Comprehensive end-to-end execution compliant with regulatory standards. Request a custom quotation to align scope, deliverables, and service turnaround."}
+                {service.full_description || "Comprehensive end-to-end execution compliant with regulatory standards. Request a formal quotation to align scope, deliverables, and service turnaround."}
               </p>
             </div>
 
-            {/* Deliverables Checklist */}
+            {/* Multi-Tier Package Selection if available */}
+            {packages.length > 0 ? (
+              <div className="mb-8 space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-900">
+                  Available Service Packages ({packages.length})
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {packages.map((pkg: any) => {
+                    const isSelected = selectedPackage?.id === pkg.id;
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => setSelectedPackage(pkg)}
+                        className={`p-4 rounded-xl border cursor-pointer transition flex flex-col justify-between ${
+                          isSelected
+                            ? "border-stone-900 bg-stone-50 ring-2 ring-stone-900/10"
+                            : "border-stone-200 bg-white hover:border-stone-400"
+                        }`}
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-stone-200 text-stone-800">
+                            {pkg.package_tier}
+                          </span>
+                          <div className="font-bold text-sm text-stone-900 mt-2">{pkg.name}</div>
+                          <div className="text-lg font-black text-stone-900 mt-1">
+                            ₹{Number(pkg.price).toLocaleString("en-IN")}
+                          </div>
+                          {pkg.description && (
+                            <p className="text-[11px] text-stone-500 mt-1 line-clamp-2">{pkg.description}</p>
+                          )}
+                        </div>
+
+                        <div className="mt-3 pt-3 border-t border-stone-200/60 text-[10px] text-stone-500 flex items-center justify-between">
+                          <span>{pkg.turnaround_days} Days</span>
+                          <span className={isSelected ? "font-bold text-stone-900" : ""}>
+                            {isSelected ? "Selected ✓" : "Select"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Included Milestone Deliverables */}
             {service.deliverables && service.deliverables.length > 0 && (
               <div className="mb-8 p-5 bg-stone-50 border border-stone-200/80 rounded-xl">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-900 mb-3">
                   Included Milestone Deliverables
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-stone-700">
-                  {service.deliverables.map((d, idx) => (
+                  {service.deliverables.map((d: string, idx: number) => (
                     <div key={idx} className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span>{d}</span>
@@ -125,25 +180,34 @@ export const ServiceDetailPage: React.FC = () => {
             {/* Turnaround Time */}
             <div className="flex items-center gap-2 text-xs text-stone-600 pt-4 border-t border-stone-100">
               <Clock className="w-4 h-4 text-stone-400" />
-              <span>Standard Execution Schedule: <strong>{service.turnaround_days} Business Days</strong></span>
+              <span>Standard Execution Schedule: <strong>{selectedPackage ? selectedPackage.turnaround_days : service.turnaround_days} Business Days</strong></span>
             </div>
           </div>
 
-          {/* Portfolio Samples if available */}
-          {service.portfolio && service.portfolio.length > 0 && (
-            <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs">
-              <h3 className="text-base font-bold text-stone-900 mb-4">
-                Work Portfolio & Previous Deliverables ({service.portfolio.length})
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {service.portfolio.map((item) => (
-                  <div key={item.id} className="border border-stone-200 rounded-xl overflow-hidden text-xs">
-                    <img src={item.image_url} alt={item.title} className="w-full h-32 object-cover" />
-                    <div className="p-2.5">
-                      <div className="font-semibold text-stone-900 truncate">{item.title}</div>
-                      {item.description && (
-                        <div className="text-[11px] text-stone-500 truncate mt-0.5">{item.description}</div>
-                      )}
+          {/* Verified Customer Reviews Section */}
+          {reviews.length > 0 && (
+            <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+                <h3 className="text-sm font-extrabold text-stone-900 flex items-center gap-2">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  Verified Client Reviews ({reviews.length})
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {reviews.map((rev: any) => (
+                  <div key={rev.id} className="p-3.5 bg-stone-50 rounded-xl space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-stone-900">{rev.users?.full_name || "Verified Client"}</span>
+                      <div className="flex text-amber-500">
+                        {[...Array(rev.rating || 5)].map((_, i) => (
+                          <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-stone-600 leading-relaxed">{rev.review_text}</p>
+                    <div className="text-[10px] text-stone-400 font-mono">
+                      {new Date(rev.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 ))}
@@ -161,7 +225,16 @@ export const ServiceDetailPage: React.FC = () => {
             </div>
 
             <div className="mb-6">
-              {service.pricing_model === "custom_quote" ? (
+              {selectedPackage ? (
+                <div>
+                  <div className="text-3xl font-extrabold text-stone-900">
+                    ₹{Number(selectedPackage.price).toLocaleString("en-IN")}
+                  </div>
+                  <div className="text-xs text-stone-500 mt-0.5">
+                    Package: <strong>{selectedPackage.name}</strong> ({selectedPackage.turnaround_days} Days)
+                  </div>
+                </div>
+              ) : service.pricing_model === "custom_quote" ? (
                 <div>
                   <div className="text-2xl font-extrabold text-stone-900">Custom Quotation</div>
                   <div className="text-xs text-stone-500 mt-0.5">Price determined by your specific project scope</div>
@@ -179,8 +252,10 @@ export const ServiceDetailPage: React.FC = () => {
             </div>
 
             <Link
-              to={`/services/request?service_id=${service.id}&provider_business_id=${service.business_id}&title=${encodeURIComponent(service.title)}`}
-              className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-stone-900 text-white font-semibold text-xs rounded-xl hover:bg-stone-800 transition shadow-xs"
+              to={`/services/request?service_id=${service.id}&provider_business_id=${service.business_id}&title=${encodeURIComponent(
+                selectedPackage ? `${service.title} (${selectedPackage.name})` : service.title
+              )}`}
+              className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-stone-900 text-white font-semibold text-xs rounded-xl hover:bg-stone-800 transition shadow-xs text-center"
             >
               Send Service Inquiry
               <Send className="w-3.5 h-3.5" />

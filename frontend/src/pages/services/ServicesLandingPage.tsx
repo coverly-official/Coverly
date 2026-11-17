@@ -4,9 +4,13 @@ import type { BusinessServiceCategory, BusinessService } from "@/types";
 import {
   Search,
   FileCheck,
+  Scale,
   Calculator,
   Megaphone,
   Factory,
+  Boxes,
+  CheckCheck,
+  Globe,
   Truck,
   Cpu,
   Briefcase,
@@ -20,12 +24,16 @@ import {
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const categoryIconMap: Record<string, React.ReactNode> = {
-  "business-registration-legal": <FileCheck className="w-5 h-5" />,
+  "business-registration-compliance": <FileCheck className="w-5 h-5" />,
+  "legal-services": <Scale className="w-5 h-5" />,
   "accounting-finance": <Calculator className="w-5 h-5" />,
   "branding-marketing": <Megaphone className="w-5 h-5" />,
-  "manufacturing-product-development": <Factory className="w-5 h-5" />,
-  "logistics-supply-chain": <Truck className="w-5 h-5" />,
   "technology-it": <Cpu className="w-5 h-5" />,
+  "manufacturing-product-development": <Factory className="w-5 h-5" />,
+  "packaging-printing": <Boxes className="w-5 h-5" />,
+  "testing-quality": <CheckCheck className="w-5 h-5" />,
+  "import-export-services": <Globe className="w-5 h-5" />,
+  "logistics-supply-chain-consultancy": <Truck className="w-5 h-5" />,
   "business-consulting": <Briefcase className="w-5 h-5" />,
 };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
 import type { Business, Product } from "@/types";
 import {
   Building2,
@@ -11,6 +12,12 @@ import {
   Clock,
   ArrowRight,
   Package,
+  Send,
+  Truck,
+  Warehouse,
+  Tag,
+  Layers,
+  CheckCircle2,
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
@@ -19,6 +26,7 @@ export const SupplierProfilePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -102,13 +110,23 @@ export const SupplierProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <Link
-            to={`/buyer/rfq/new?supplier_business_id=${profile.id}&supplier_name=${encodeURIComponent(profile.name)}`}
-            className="inline-flex items-center justify-center gap-2 text-xs font-semibold px-5 py-2.5 bg-stone-900 text-white hover:bg-stone-800 rounded-xl transition shadow-xs"
-          >
-            Request Quotation
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsEnquiryModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 text-xs font-semibold px-5 py-2.5 bg-blue-900 text-white hover:bg-blue-800 rounded-xl transition shadow-xs"
+            >
+              <Send className="w-4 h-4" />
+              Send Direct Enquiry
+            </button>
+            <Link
+              to={`/buyer/rfq/new?supplier_business_id=${profile.id}&supplier_name=${encodeURIComponent(profile.name)}`}
+              className="inline-flex items-center justify-center gap-2 text-xs font-semibold px-5 py-2.5 bg-stone-900 text-white hover:bg-stone-800 rounded-xl transition shadow-xs"
+            >
+              Request Quotation
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         {/* Verification Tiers Overview (Distinct Tiers Rule) */}
@@ -146,7 +164,7 @@ export const SupplierProfilePage: React.FC = () => {
       </div>
 
       {/* Facility Specs (if manufacturer or supplier) */}
-      {supplierProfile && (
+      {supplierProfile && profile.business_type !== "distributor" && (
         <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
           <h2 className="text-base font-bold text-stone-900 mb-4 flex items-center gap-2">
             <Factory className="w-4 h-4 text-stone-700" />
@@ -175,6 +193,98 @@ export const SupplierProfilePage: React.FC = () => {
               <div className="text-[11px] text-stone-500 uppercase tracking-wider">Export Readiness</div>
               <div className="text-base font-bold text-stone-900 mt-1">
                 {supplierProfile.export_ready ? "Export Ready (IEC)" : "Domestic Supply"}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Distributor Profile & Supply Network (if distributor) */}
+      {(profile.business_type === "distributor" || profile.distributor_profile) && (
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8 space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+            <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
+              <Truck className="w-4 h-4 text-blue-900" />
+              Distribution Network & Supply Coverage
+            </h2>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-blue-700" /> Authorized Distributor
+            </span>
+          </div>
+
+          {/* Key Distribution Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="border border-stone-200 rounded-xl p-4 bg-stone-50/50">
+              <div className="text-[11px] text-stone-500 uppercase tracking-wider">Dealer Network</div>
+              <div className="text-base font-bold text-stone-900 mt-1">
+                {profile.distributor_profile?.dealer_network_size ? `${profile.distributor_profile.dealer_network_size}+ Partners` : "40+ Dealers"}
+              </div>
+            </div>
+            <div className="border border-stone-200 rounded-xl p-4 bg-stone-50/50">
+              <div className="text-[11px] text-stone-500 uppercase tracking-wider">Min. Order Value (MOV)</div>
+              <div className="text-base font-bold text-stone-900 mt-1">
+                ₹{Number(profile.distributor_profile?.minimum_order_value || 10000).toLocaleString("en-IN")}
+              </div>
+            </div>
+            <div className="border border-stone-200 rounded-xl p-4 bg-stone-50/50">
+              <div className="text-[11px] text-stone-500 uppercase tracking-wider">Stock Supply Capacity</div>
+              <div className="text-base font-bold text-stone-900 mt-1 truncate">
+                {profile.distributor_profile?.supply_capacity_monthly || "Ready Ex-Stock"}
+              </div>
+            </div>
+            <div className="border border-stone-200 rounded-xl p-4 bg-stone-50/50">
+              <div className="text-[11px] text-stone-500 uppercase tracking-wider">Payment Terms</div>
+              <div className="text-base font-bold text-stone-900 mt-1 text-xs sm:text-sm">
+                {profile.distributor_profile?.payment_terms || "Advance / Credit available"}
+              </div>
+            </div>
+          </div>
+
+          {/* Brands Distributed */}
+          <div>
+            <h3 className="text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-stone-500" /> Authorized Brands Distributed
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {(profile.distributor_profile?.brands_distributed || ["Schneider Electric", "Havells", "Polycab", "L&T Industrial"]).map((brand: string, idx: number) => (
+                <span
+                  key={idx}
+                  className="text-xs font-medium px-3 py-1 bg-stone-100 text-stone-800 rounded-lg border border-stone-200"
+                >
+                  {brand}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Warehouse Locations & Territories */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div className="border border-stone-200 rounded-xl p-4">
+              <h4 className="text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Warehouse className="w-3.5 h-3.5 text-stone-500" /> Primary Warehouses / Depots
+              </h4>
+              <ul className="text-xs text-stone-600 space-y-1.5">
+                {(profile.distributor_profile?.warehouse_locations || [`${profile.city} Central Logistics Hub`]).map((loc: string, idx: number) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <span>{loc}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="border border-stone-200 rounded-xl p-4">
+              <h4 className="text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-stone-500" /> Serviced Supply Territories
+              </h4>
+              <div className="flex flex-wrap gap-1.5 text-xs">
+                {(profile.territories && profile.territories.length > 0 ? profile.territories : [
+                  { state: profile.state, city: profile.city, pincode_ranges: `${profile.pincode.slice(0, 3)}xxx` }
+                ]).map((t: any, idx: number) => (
+                  <span key={idx} className="px-2.5 py-1 bg-blue-50 text-blue-900 rounded border border-blue-100">
+                    {t.city ? `${t.city}, ` : ""}{t.state} {t.pincode_ranges ? `(${t.pincode_ranges})` : ""}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -225,6 +335,16 @@ export const SupplierProfilePage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <GuestEnquiryModal
+        isOpen={isEnquiryModalOpen}
+        onClose={() => setIsEnquiryModalOpen(false)}
+        supplier={{
+          id: profile.id,
+          name: profile.name,
+          city: profile.city,
+        }}
+      />
     </div>
   );
 };

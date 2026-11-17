@@ -39,6 +39,13 @@ import { QuotationComparePage } from "@/pages/buyer/QuotationComparePage";
 import { BuyerOrdersPage } from "@/pages/buyer/BuyerOrdersPage";
 import { BuyerOrderDetailPage } from "@/pages/buyer/BuyerOrderDetailPage";
 import { SavedSuppliersPage } from "@/pages/buyer/SavedSuppliersPage";
+import { SavedProductsPage } from "@/pages/buyer/SavedProductsPage";
+import { SourcingListsPage } from "@/pages/buyer/SourcingListsPage";
+import { BuyerTeamPage } from "@/pages/buyer/BuyerTeamPage";
+import { PurchaseRequestsPage } from "@/pages/buyer/PurchaseRequestsPage";
+import { PurchaseOrdersPage } from "@/pages/buyer/PurchaseOrdersPage";
+import { InvoicesExpensesPage } from "@/pages/buyer/InvoicesExpensesPage";
+import { BuyerDocumentsPage } from "@/pages/buyer/BuyerDocumentsPage";
 import { BuyerProfilePage } from "@/pages/buyer/BuyerProfilePage";
 import { BuyerSettingsPage } from "@/pages/buyer/BuyerSettingsPage";
 import { BuyerSupportPage } from "@/pages/buyer/BuyerSupportPage";
@@ -85,6 +92,79 @@ import { AdminVerificationsPage } from "@/pages/admin/AdminVerificationsPage";
 import { AdminAuditLogsPage } from "@/pages/admin/AdminAuditLogsPage";
 import { AdminSupportPage } from "@/pages/admin/AdminSupportPage";
 import { AdminServicesPage } from "@/pages/admin/AdminServicesPage";
+import { AdminProductsPage } from "@/pages/admin/AdminProductsPage";
+import { AdminCategoriesPage } from "@/pages/admin/AdminCategoriesPage";
+import { AdminBusinessesPage } from "@/pages/admin/AdminBusinessesPage";
+import { AdminRfqsPage } from "@/pages/admin/AdminRfqsPage";
+import { AdminLogisticsPage } from "@/pages/admin/AdminLogisticsPage";
+import { AdminTransportersPage } from "@/pages/admin/AdminTransportersPage";
+import { AdminBuyersPage } from "@/pages/admin/AdminBuyersPage";
+import { AdminEmployeesPage } from "@/pages/admin/AdminEmployeesPage";
+
+// Logistics Marketplace Pages
+import { LogisticsHomePage } from "@/pages/logistics/LogisticsHomePage";
+import { LogisticsDirectoryPage } from "@/pages/logistics/LogisticsDirectoryPage";
+import { LogisticsCompanyDetailPage } from "@/pages/logistics/LogisticsCompanyDetailPage";
+import { LogisticsBookingPage } from "@/pages/logistics/LogisticsBookingPage";
+import { LogisticsTrackingPage } from "@/pages/logistics/LogisticsTrackingPage";
+import { PartnerDashboardPage } from "@/pages/logistics-partner/PartnerDashboardPage";
+
+// Transporter Marketplace Pages
+import { TransporterHomePage } from "@/pages/transporters/TransporterHomePage";
+import { TransporterDirectoryPage } from "@/pages/transporters/TransporterDirectoryPage";
+import { TransporterDetailPage } from "@/pages/transporters/TransporterDetailPage";
+import { VehicleBookingPage } from "@/pages/transporters/VehicleBookingPage";
+import { TripTrackingPage } from "@/pages/transporters/TripTrackingPage";
+import { TransporterDashboardPage } from "@/pages/transporters/TransporterDashboardPage";
+
+// Sales Agent Marketplace & Console
+import { SalesAgentDirectoryPage } from "@/pages/sales-agent/SalesAgentDirectoryPage";
+import { SalesAgentDetailPage } from "@/pages/sales-agent/SalesAgentDetailPage";
+import { SubmitBusinessRequirementPage } from "@/pages/sales-agent/SubmitBusinessRequirementPage";
+import { AgentDashboardPage } from "@/pages/sales-agent/AgentDashboardPage";
+import { AdminSalesAgentsPage } from "@/pages/admin/AdminSalesAgentsPage";
+
+// Raw Material Marketplace Pages
+import { RawMaterialsHomePage } from "@/pages/raw-materials/RawMaterialsHomePage";
+import { RawMaterialsProductListPage } from "@/pages/raw-materials/RawMaterialsProductListPage";
+import { RawMaterialDetailPage } from "@/pages/raw-materials/RawMaterialDetailPage";
+import { RawMaterialSuppliersDirectoryPage } from "@/pages/raw-materials/RawMaterialSuppliersDirectoryPage";
+import { RawMaterialSupplierDetailPage } from "@/pages/raw-materials/RawMaterialSupplierDetailPage";
+import { BulkRfqPage } from "@/pages/raw-materials/BulkRfqPage";
+import { RawMaterialSupplierDashboardPage } from "@/pages/raw-materials/RawMaterialSupplierDashboardPage";
+import { AdminRawMaterialsPage } from "@/pages/admin/AdminRawMaterialsPage";
+
+// Packaging Marketplace Pages
+import { PackagingHomePage } from "@/pages/packaging/PackagingHomePage";
+import { PackagingProductListPage } from "@/pages/packaging/PackagingProductListPage";
+import { PackagingProductDetailPage } from "@/pages/packaging/PackagingProductDetailPage";
+import { PackagingSuppliersDirectoryPage } from "@/pages/packaging/PackagingSuppliersDirectoryPage";
+import { PackagingSupplierDetailPage } from "@/pages/packaging/PackagingSupplierDetailPage";
+import { CustomRequirementRfqPage } from "@/pages/packaging/CustomRequirementRfqPage";
+import { PackagingSupplierDashboardPage } from "@/pages/packaging/PackagingSupplierDashboardPage";
+import { AdminPackagingPage } from "@/pages/admin/AdminPackagingPage";
+
+// Import & Export International Trade Marketplace Pages
+import { ImportExportHomePage } from "@/pages/import-export/ImportExportHomePage";
+import { InternationalProductListPage } from "@/pages/import-export/InternationalProductListPage";
+import { InternationalProductDetailPage } from "@/pages/import-export/InternationalProductDetailPage";
+import { ExporterDirectoryPage } from "@/pages/import-export/ExporterDirectoryPage";
+import { ImporterDirectoryPage } from "@/pages/import-export/ImporterDirectoryPage";
+import { TradePartyDetailPage } from "@/pages/import-export/TradePartyDetailPage";
+import { SubmitTradeRequirementPage } from "@/pages/import-export/SubmitTradeRequirementPage";
+import { TradeDashboardPage } from "@/pages/import-export/TradeDashboardPage";
+import { AdminTradePage } from "@/pages/admin/AdminTradePage";
+
+// Retailer Marketplace Pages
+import { RetailerLayout } from "@/components/layout/RetailerLayout";
+import { RetailerDashboardPage } from "@/pages/retailer/RetailerDashboardPage";
+import { RetailerProfilePage } from "@/pages/retailer/RetailerProfilePage";
+import { RetailerBranchesPage } from "@/pages/retailer/RetailerBranchesPage";
+import { RetailerPurchaseListsPage } from "@/pages/retailer/RetailerPurchaseListsPage";
+import { RetailerReorderPage } from "@/pages/retailer/RetailerReorderPage";
+import { RetailerWholesaleCatalogPage } from "@/pages/retailer/RetailerWholesaleCatalogPage";
+import { RetailerOrdersPage } from "@/pages/retailer/RetailerOrdersPage";
+import { AdminRetailersPage } from "@/pages/admin/AdminRetailersPage";
 
 // Shared Pages
 import { NotificationsPage } from "@/pages/shared/NotificationsPage";
@@ -106,6 +186,9 @@ export const AppRouter: React.FC = () => {
             <Route path="wholesalers" element={<DirectoriesPage />} />
             <Route path="distributors" element={<DirectoriesPage />} />
             <Route path="suppliers/:slug" element={<SupplierProfilePage />} />
+            <Route path="manufacturers/:slug" element={<SupplierProfilePage />} />
+            <Route path="distributors/:slug" element={<SupplierProfilePage />} />
+            <Route path="wholesalers/:slug" element={<SupplierProfilePage />} />
             <Route path="about" element={<AboutPage />} />
             <Route path="contact" element={<ContactPage />} />
             <Route path="how-it-works" element={<HowCoverlyWorksPage />} />
@@ -137,6 +220,61 @@ export const AppRouter: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* Public Logistics Marketplace */}
+            <Route path="logistics" element={<LogisticsHomePage />} />
+            <Route path="logistics/companies" element={<LogisticsDirectoryPage />} />
+            <Route path="logistics/companies/:slug" element={<LogisticsCompanyDetailPage />} />
+            <Route path="logistics/book" element={<LogisticsBookingPage />} />
+            <Route path="logistics/quote" element={<LogisticsBookingPage />} />
+            <Route path="logistics/track" element={<LogisticsTrackingPage />} />
+            <Route path="track" element={<LogisticsTrackingPage />} />
+
+            {/* Public Transporter Marketplace */}
+            <Route path="transporters" element={<TransporterHomePage />} />
+            <Route path="transporters/directory" element={<TransporterDirectoryPage />} />
+            <Route path="transporters/book" element={<VehicleBookingPage />} />
+            <Route path="transporters/track" element={<TripTrackingPage />} />
+            <Route path="transporters/track/:trackingNumber" element={<TripTrackingPage />} />
+            <Route path="transporters/:slug" element={<TransporterDetailPage />} />
+
+            {/* Public Sales Agent Network & Direct Sourcing */}
+            <Route path="sales-agents" element={<SalesAgentDirectoryPage />} />
+            <Route path="sales-agents/requirement" element={<SubmitBusinessRequirementPage />} />
+            <Route path="sales-agents/:slug" element={<SalesAgentDetailPage />} />
+            <Route path="sales-agent/:slug" element={<SalesAgentDetailPage />} />
+
+            {/* Public Raw Material Supplier Marketplace */}
+            <Route path="raw-materials" element={<RawMaterialsHomePage />} />
+            <Route path="raw-materials/products" element={<RawMaterialsProductListPage />} />
+            <Route path="raw-materials/products/:slug" element={<RawMaterialDetailPage />} />
+            <Route path="raw-materials/suppliers" element={<RawMaterialSuppliersDirectoryPage />} />
+            <Route path="raw-materials/suppliers/:id" element={<RawMaterialSupplierDetailPage />} />
+            <Route path="raw-materials/rfq" element={<BulkRfqPage />} />
+            <Route path="raw-materials/supplier-register" element={<RawMaterialSupplierDashboardPage />} />
+
+            {/* Public Packaging Supplier Marketplace */}
+            <Route path="packaging" element={<PackagingHomePage />} />
+            <Route path="packaging/products" element={<PackagingProductListPage />} />
+            <Route path="packaging/products/:slug" element={<PackagingProductDetailPage />} />
+            <Route path="packaging/suppliers" element={<PackagingSuppliersDirectoryPage />} />
+            <Route path="packaging/suppliers/:id" element={<PackagingSupplierDetailPage />} />
+            <Route path="packaging/rfq" element={<CustomRequirementRfqPage />} />
+            <Route path="packaging/supplier-register" element={<PackagingSupplierDashboardPage />} />
+
+            {/* Public Import & Export International Trade Marketplace */}
+            <Route path="import-export" element={<ImportExportHomePage />} />
+            <Route path="import-export/products" element={<InternationalProductListPage />} />
+            <Route path="import-export/products/:slug" element={<InternationalProductDetailPage />} />
+            <Route path="import-export/exporters" element={<ExporterDirectoryPage />} />
+            <Route path="import-export/importers" element={<ImporterDirectoryPage />} />
+            <Route path="import-export/parties/:id" element={<TradePartyDetailPage />} />
+            <Route path="import-export/rfq" element={<SubmitTradeRequirementPage />} />
+            <Route path="import-export/dashboard" element={<TradeDashboardPage />} />
+            <Route path="import-export/register" element={<TradeDashboardPage />} />
+
+            {/* Public Wholesale Discovery for Retailers */}
+            <Route path="wholesale" element={<RetailerWholesaleCatalogPage />} />
           </Route>
 
           {/* 2. Authentication & Onboarding (Screens 13–19) */}
@@ -179,9 +317,46 @@ export const AppRouter: React.FC = () => {
             <Route path="orders" element={<BuyerOrdersPage />} />
             <Route path="orders/:id" element={<BuyerOrderDetailPage />} />
             <Route path="saved" element={<SavedSuppliersPage />} />
+            <Route path="saved-suppliers" element={<SavedSuppliersPage />} />
+            <Route path="saved-products" element={<SavedProductsPage />} />
+            <Route path="sourcing-lists" element={<SourcingListsPage />} />
+            <Route path="team" element={<BuyerTeamPage />} />
+            <Route path="purchase-requests" element={<PurchaseRequestsPage />} />
+            <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+            <Route path="invoices" element={<InvoicesExpensesPage />} />
+            <Route path="documents" element={<BuyerDocumentsPage />} />
             <Route path="profile" element={<BuyerProfilePage />} />
             <Route path="settings" element={<BuyerSettingsPage />} />
             <Route path="support" element={<BuyerSupportPage />} />
+          </Route>
+
+          {/* Retailer Workspace */}
+          <Route
+            path="retailer"
+            element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={["retailer", "buyer", "buyer_supplier", "admin"]}>
+                  <RetailerLayout />
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/retailer/dashboard" replace />} />
+            <Route path="dashboard" element={<RetailerDashboardPage />} />
+            <Route path="profile" element={<RetailerProfilePage />} />
+            <Route path="branches" element={<RetailerBranchesPage />} />
+            <Route path="purchase-lists" element={<RetailerPurchaseListsPage />} />
+            <Route path="reorder" element={<RetailerReorderPage />} />
+            <Route path="wholesale" element={<RetailerWholesaleCatalogPage />} />
+            <Route path="products" element={<RetailerWholesaleCatalogPage />} />
+            <Route path="orders" element={<RetailerOrdersPage />} />
+            <Route path="rfqs" element={<BuyerRfqsPage />} />
+            <Route path="saved-products" element={<SavedProductsPage />} />
+            <Route path="saved-suppliers" element={<SavedSuppliersPage />} />
+            <Route path="documents" element={<BuyerDocumentsPage />} />
+            <Route path="analytics" element={<RetailerOrdersPage />} />
+            <Route path="support" element={<BuyerSupportPage />} />
+            <Route path="settings" element={<BuyerSettingsPage />} />
           </Route>
 
           {/* 4. Supplier Workspace (Screens 41–60) */}
@@ -216,6 +391,14 @@ export const AppRouter: React.FC = () => {
             <Route path="analytics" element={<SupplierAnalyticsPage />} />
             <Route path="settings" element={<SupplierSettingsPage />} />
           </Route>
+
+          {/* Alias /manufacturer, /distributor, /wholesaler to Supplier Workspace */}
+          <Route path="manufacturer" element={<Navigate to="/supplier/dashboard" replace />} />
+          <Route path="manufacturer/*" element={<Navigate to="/supplier" replace />} />
+          <Route path="distributor" element={<Navigate to="/supplier/dashboard" replace />} />
+          <Route path="distributor/*" element={<Navigate to="/supplier" replace />} />
+          <Route path="wholesaler" element={<Navigate to="/supplier/dashboard" replace />} />
+          <Route path="wholesaler/*" element={<Navigate to="/supplier" replace />} />
 
           {/* 5. Provider Workspace (Business Services) */}
           <Route
@@ -268,12 +451,86 @@ export const AppRouter: React.FC = () => {
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="products" element={<AdminProductsPage />} />
+            <Route path="categories" element={<AdminCategoriesPage />} />
+            <Route path="businesses" element={<AdminBusinessesPage />} />
+            <Route path="rfqs" element={<AdminRfqsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="verifications" element={<AdminVerificationsPage />} />
             <Route path="services" element={<AdminServicesPage />} />
             <Route path="audit-logs" element={<AdminAuditLogsPage />} />
             <Route path="support" element={<AdminSupportPage />} />
+            <Route path="logistics" element={<AdminLogisticsPage />} />
+            <Route path="transporters" element={<AdminTransportersPage />} />
+            <Route path="sales-agents" element={<AdminSalesAgentsPage />} />
+            <Route path="raw-materials" element={<AdminRawMaterialsPage />} />
+            <Route path="packaging" element={<AdminPackagingPage />} />
+            <Route path="import-export" element={<AdminTradePage />} />
+            <Route path="trade" element={<AdminTradePage />} />
+            <Route path="buyers" element={<AdminBuyersPage />} />
+            <Route path="retailers" element={<AdminRetailersPage />} />
+            <Route path="employees" element={<AdminEmployeesPage />} />
           </Route>
+
+          {/* Logistics Partner Portal */}
+          <Route
+            path="logistics-partner"
+            element={
+              <ProtectedRoute>
+                <PartnerDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="logistics-partner/*"
+            element={
+              <ProtectedRoute>
+                <PartnerDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Transporter Portal */}
+          <Route
+            path="transporter"
+            element={
+              <ProtectedRoute>
+                <TransporterDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="transporter/*"
+            element={
+              <ProtectedRoute>
+                <TransporterDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Sales Agent Portal & Aliases */}
+          <Route path="agent/dashboard" element={<AgentDashboardPage />} />
+          <Route path="agent/*" element={<AgentDashboardPage />} />
+          <Route path="sales-agent/dashboard" element={<Navigate to="/agent/dashboard" replace />} />
+          <Route path="sales-agents/dashboard" element={<Navigate to="/agent/dashboard" replace />} />
+
+          {/* Raw Material Supplier Portal & Aliases */}
+          <Route path="raw-material-supplier/dashboard" element={<RawMaterialSupplierDashboardPage />} />
+          <Route path="raw-material-supplier/*" element={<RawMaterialSupplierDashboardPage />} />
+          <Route path="raw-materials/supplier/dashboard" element={<Navigate to="/raw-material-supplier/dashboard" replace />} />
+
+          {/* Packaging Supplier Portal & Aliases */}
+          <Route path="packaging-supplier/dashboard" element={<PackagingSupplierDashboardPage />} />
+          <Route path="packaging-supplier/*" element={<PackagingSupplierDashboardPage />} />
+          <Route path="packaging/supplier/dashboard" element={<Navigate to="/packaging-supplier/dashboard" replace />} />
+
+          {/* Logistics & Transporter Aliases */}
+          <Route path="logistics/partner/dashboard" element={<Navigate to="/logistics-partner" replace />} />
+          <Route path="transporters/dashboard" element={<Navigate to="/transporter" replace />} />
+
+          {/* International Trade Portal (Importer & Exporter) */}
+          <Route path="trade/dashboard" element={<TradeDashboardPage />} />
+          <Route path="trade/*" element={<TradeDashboardPage />} />
 
           {/* 7. Fallback 404 */}
           <Route path="*" element={<NotFoundPage />} />

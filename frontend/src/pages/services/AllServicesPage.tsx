@@ -15,6 +15,7 @@ export const AllServicesPage: React.FC = () => {
   const selectedSubcategory = searchParams.get("subcategory") || "";
   const searchQuery = searchParams.get("search") || "";
   const cityFilter = searchParams.get("city") || "";
+  const pricingFilter = searchParams.get("pricing_model") || "";
   const sortBy = searchParams.get("sort") || "newest";
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export const AllServicesPage: React.FC = () => {
     if (selectedSubcategory) params.set("subcategory", selectedSubcategory);
     if (searchQuery) params.set("search", searchQuery);
     if (cityFilter) params.set("city", cityFilter);
+    if (pricingFilter) params.set("pricing_model", pricingFilter);
     if (sortBy) params.set("sort", sortBy);
 
     fetch(`${API_BASE}/business-services?${params.toString()}`)
@@ -42,7 +44,7 @@ export const AllServicesPage: React.FC = () => {
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, [selectedCategory, selectedSubcategory, searchQuery, cityFilter, sortBy]);
+  }, [selectedCategory, selectedSubcategory, searchQuery, cityFilter, pricingFilter, sortBy]);
 
   const activeCategoryObj = categories.find((c) => c.id === selectedCategory || c.slug === selectedCategory);
 
@@ -98,6 +100,26 @@ export const AllServicesPage: React.FC = () => {
                 {c.name}
               </option>
             ))}
+          </select>
+
+          <select
+            value={pricingFilter}
+            onChange={(e) => {
+              const next = new URLSearchParams(searchParams);
+              if (e.target.value) next.set("pricing_model", e.target.value);
+              else next.delete("pricing_model");
+              setSearchParams(next);
+            }}
+            className="text-xs sm:text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700"
+          >
+            <option value="">All Pricing Models</option>
+            <option value="fixed">Fixed Price</option>
+            <option value="starting_at">Starting At</option>
+            <option value="hourly">Hourly Rate</option>
+            <option value="daily">Daily Rate</option>
+            <option value="monthly">Monthly Retainer</option>
+            <option value="per_project">Per Project</option>
+            <option value="custom_quote">Custom Quote</option>
           </select>
 
           <select

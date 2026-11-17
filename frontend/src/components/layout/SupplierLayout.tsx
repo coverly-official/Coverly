@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
 import {
   LayoutDashboard,
   Building,
@@ -85,35 +86,11 @@ export const SupplierLayout: React.FC = () => {
           </nav>
         </div>
 
-        {/* Dual Role Switcher & User Profile */}
+        {/* Workspace Switcher & User Profile */}
         <div className="p-4 border-t border-stone-200/80 space-y-3">
-          {user?.roles.includes("buyer_supplier") && (
-            <div className="bg-stone-200/70 p-2 rounded-lg">
-              <div className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider mb-1">
-                Workspace
-              </div>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => {
-                    setActiveRole("buyer");
-                    navigate("/buyer/dashboard");
-                  }}
-                  className="flex-1 py-1 rounded text-xs text-stone-600 hover:text-stone-900"
-                >
-                  Buyer
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveRole("manufacturer");
-                    navigate("/supplier/dashboard");
-                  }}
-                  className="flex-1 py-1 rounded text-xs font-semibold bg-white text-stone-900 shadow-xs"
-                >
-                  Supplier
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="w-full">
+            <WorkspaceSwitcher />
+          </div>
 
           <div className="flex items-center justify-between pt-1">
             <div className="truncate">
@@ -141,6 +118,7 @@ export const SupplierLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <WorkspaceSwitcher />
             <Link
               to="/supplier/products/new"
               className="text-xs font-medium text-white bg-stone-900 hover:bg-stone-800 px-3 py-1.5 rounded-lg shadow-sm transition"
