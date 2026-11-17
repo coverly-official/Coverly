@@ -141,12 +141,14 @@ const handleAdminMetrics = async (_req: any, res: any) => {
       .from("service_requests")
       .select("*", { count: "exact", head: true });
 
-    // 7. Orders & Support
+    // 7. Orders, Ecosystem Participants, Shipments & Recent Activities
     const { data: orders } = await insforge.database
       .from("orders")
       .select("total_amount, status");
 
     const totalOrders = orders?.length || 0;
+    const activeOrders =
+      orders?.filter((o: any) => !["completed", "cancelled", "delivered"].includes(o.status)).length || 0;
     const totalGmv = orders?.reduce((acc: number, curr: any) => acc + (Number(curr.total_amount) || 0), 0) || 0;
 
     const { count: openTickets } = await insforge.database
@@ -154,18 +156,101 @@ const handleAdminMetrics = async (_req: any, res: any) => {
       .select("*", { count: "exact", head: true })
       .eq("status", "open");
 
+    const { count: totalWholesalers } = await insforge.database
+      .from("businesses")
+      .select("*", { count: "exact", head: true })
+      .eq("business_type", "wholesaler");
+
+    let activeBuyers = 0;
+    let activeRetailers = 0;
+    let totalServiceProviders = 0;
+    let totalTransporters = 0;
+    let activeShipments = 0;
+    let recentActivities: any[] = [];
+
+    try {
+      const { count: buyerRoles } = await insforge.database
+        .from("user_roles")
+        .select("*", { count: "exact", head: true })
+        .in("role", ["buyer", "buyer_supplier"]);
+      activeBuyers = buyerRoles || 0;
+    } catch {}
+
+    try {
+      const { count: retailerBiz } = await insforge.database
+        .from("businesses")
+        .select("*", { count: "exact", head: true })
+        .eq("business_type", "retailer");
+      const { count: retailerRoles } = await insforge.database
+        .from("user_roles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "retailer");
+      activeRetailers = Math.max(retailerBiz || 0, retailerRoles || 0);
+    } catch {}
+
+    try {
+      const { count: spCount } = await insforge.database
+        .from("service_provider_profiles")
+        .select("*", { count: "exact", head: true });
+      const { count: spRoles } = await insforge.database
+        .from("user_roles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "service_provider");
+      totalServiceProviders = Math.max(spCount || 0, spRoles || 0);
+    } catch {}
+
+    try {
+      const { count: trCount } = await insforge.database
+        .from("transporter_profiles")
+        .select("*", { count: "exact", head: true });
+      const { count: trRoles } = await insforge.database
+        .from("user_roles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "transporter");
+      totalTransporters = Math.max(trCount || 0, trRoles || 0);
+    } catch {}
+
+    try {
+      const { count: logBookings } = await insforge.database
+        .from("logistics_bookings")
+        .select("*", { count: "exact", head: true })
+        .not("status", "in", '("delivered","completed","cancelled")');
+      const { count: trips } = await insforge.database
+        .from("transport_trips")
+        .select("*", { count: "exact", head: true })
+        .not("status", "in", '("delivered","completed","cancelled")');
+      activeShipments = (logBookings || 0) + (trips || 0);
+    } catch {}
+
+    try {
+      const { data: logs } = await insforge.database
+        .from("audit_logs")
+        .select("id, action, target_type, target_id, metadata, created_at, admin_id, users!admin_id(full_name, email)")
+        .order("created_at", { ascending: false })
+        .limit(8);
+      recentActivities = logs || [];
+    } catch {}
+
     return sendSuccess(res, {
       totalGmv,
       totalOrders,
+      activeOrders,
       totalRfqs: totalRfqs || 0,
       activeRfqs: activeRfqs || 0,
       totalConciergeLeads: totalConciergeLeads || 0,
       totalEnquiries: (totalRfqs || 0) + (totalConciergeLeads || 0),
       quotationsSubmitted: quotationsSubmitted || 0,
+      totalQuotations: quotationsSubmitted || 0,
       totalBusinesses: totalBusinesses || 0,
       totalSuppliers: totalSuppliers || 0,
       totalManufacturers: totalManufacturers || 0,
+      totalWholesalers: totalWholesalers || 0,
       totalDistributors: totalDistributors || 0,
+      activeBuyers,
+      activeRetailers,
+      totalServiceProviders,
+      totalTransporters,
+      activeShipments,
       verifiedSuppliers: verifiedSuppliers || 0,
       verifiedManufacturers: verifiedManufacturers || 0,
       verifiedDistributors: verifiedDistributors || 0,
@@ -183,6 +268,8 @@ const handleAdminMetrics = async (_req: any, res: any) => {
       totalBusinessServices: totalBusinessServices || 0,
       totalServiceRequests: totalServiceRequests || 0,
       openTickets: openTickets || 0,
+      pendingComplaints: openTickets || 0,
+      recentActivities,
     });
   } catch (err: any) {
     return sendError(res, err.message || "Failed to aggregate admin metrics.", 500, "SERVER_ERROR");

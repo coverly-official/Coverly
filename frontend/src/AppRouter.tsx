@@ -106,6 +106,8 @@ import { AdminFinancePage } from "@/pages/admin/AdminFinancePage";
 import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
 import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
 import { AdminReviewsPage } from "@/pages/admin/AdminReviewsPage";
+import { AdminPortalsPage } from "@/pages/admin/AdminPortalsPage";
+import { AdminPortalPreviewPage } from "@/pages/admin/AdminPortalPreviewPage";
 import { ALL_ADMIN_ROLES } from "@/lib/role-routing";
 
 // Logistics Marketplace Pages
@@ -470,6 +472,9 @@ export const AppRouter: React.FC = () => {
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="portals" element={<AdminPortalsPage />} />
+            <Route path="portals/:portalId/preview" element={<AdminPortalPreviewPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
             <Route path="orders" element={<AdminOrdersPage />} />
             <Route path="quotations" element={<AdminQuotationsPage />} />
             <Route path="products" element={<AdminProductsPage />} />
