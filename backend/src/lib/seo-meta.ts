@@ -305,15 +305,31 @@ export async function resolvePageMeta(
         const isUuid = UUID_REGEX.test(slugOrId);
         let q = insforge.database
           .from("businesses")
-          .select("id, name, slug, business_type, description, city, state, verification_level, logo_url, banner_url")
+          .select("id, name, legal_name, slug, business_type, city, state, verification_level")
           .eq("is_active", true);
         q = isUuid ? q.eq("id", slugOrId) : q.eq("slug", slugOrId);
 
         const { data: biz } = await q.single();
         if (biz) {
-          const realImg =
-            resolvePublicImageUrl((biz as any).banner_url) ||
-            resolvePublicImageUrl((biz as any).logo_url);
+          // Optionally check if this business has an approved public product photo
+          let realImg: string | null = null;
+          try {
+            const { data: bizProd } = await insforge.database
+              .from("products")
+              .select("product_images(image_url, sort_order)")
+              .eq("business_id", biz.id)
+              .eq("is_active", true)
+              .limit(3);
+            for (const p of bizProd || []) {
+              const imgs = Array.isArray((p as any).product_images) ? (p as any).product_images : [];
+              const found = imgs.map((im: any) => resolvePublicImageUrl(im?.image_url)).find(Boolean);
+              if (found) {
+                realImg = found;
+                break;
+              }
+            }
+          } catch {}
+
           const roleLabel = formatBusinessTypeLabel(biz.business_type || routeSegment.replace(/s$/, ""));
           const location = [biz.city, biz.state].filter(Boolean).join(", ") || "India";
           const verifiedLabel =
@@ -334,8 +350,9 @@ export async function resolvePageMeta(
           return makeMeta({
             title: `${biz.name} — ${roleLabel} | COVERLY`,
             description: cleanDescription(
-              (biz as any).description,
-              `Connect directly with ${biz.name}, a ${roleLabel.toLowerCase()} based in ${location}. Browse products and request bulk B2B quotations on COVERLY.`
+              biz.legal_name && biz.legal_name !== biz.name
+                ? `${biz.name} (${biz.legal_name}) — ${roleLabel} based in ${location}. Browse verified products and request bulk B2B quotations on COVERLY.`
+                : `Connect directly with ${biz.name}, a ${roleLabel.toLowerCase()} based in ${location}. Browse verified products and request bulk B2B quotations on COVERLY.`
             ),
             image: ogImage,
             imageAlt: `${biz.name} — ${roleLabel} on COVERLY`,
