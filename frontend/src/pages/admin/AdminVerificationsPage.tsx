@@ -10,9 +10,16 @@ export const AdminVerificationsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
 
+  const getAuthHeaders = () => ({
+    "Content-Type": "application/json",
+    "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
+  });
+
   const fetchVerifications = () => {
     setIsLoading(true);
-    fetch(`${API_BASE}/admin/verifications?status=${statusFilter}`)
+    fetch(`${API_BASE}/admin/verifications?status=${statusFilter}`, {
+      headers: getAuthHeaders(),
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setVerifications(Array.isArray(data.data) ? data.data : (data.data?.items || []));
@@ -32,7 +39,7 @@ export const AdminVerificationsPage: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE}/admin/verifications/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           status,
           reviewer_id: user.id,

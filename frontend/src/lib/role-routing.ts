@@ -142,6 +142,13 @@ export const WORKSPACE_REGISTRY: Record<string, WorkspaceItem> = {
     route: "/buyer/invoices",
     description: "3-way match, vendor invoice verification & payment release",
   },
+  super_admin: {
+    role: "super_admin",
+    label: "Super Admin Control Center",
+    category: "internal",
+    route: "/admin/dashboard",
+    description: "Supreme platform governance, security, audit & role hierarchy",
+  },
   admin: {
     role: "admin",
     label: "Admin Control Center",
@@ -163,6 +170,41 @@ export const WORKSPACE_REGISTRY: Record<string, WorkspaceItem> = {
     route: "/admin/verifications",
     description: "GSTIN, IEC, MSME & company document checks",
   },
+  verification_manager: {
+    role: "verification_manager",
+    label: "Verification Manager Desk",
+    category: "internal",
+    route: "/admin/verifications",
+    description: "Enterprise compliance, vendor licenses & factory audits",
+  },
+  marketplace_manager: {
+    role: "marketplace_manager",
+    label: "Marketplace Manager Desk",
+    category: "internal",
+    route: "/admin/products",
+    description: "Product moderation, categories, listings & supplier directory",
+  },
+  procurement_operations_manager: {
+    role: "procurement_operations_manager",
+    label: "Procurement Ops Manager",
+    category: "internal",
+    route: "/admin/rfqs",
+    description: "Cross-marketplace RFQs, bulk tenders & guest sourcing leads",
+  },
+  order_operations_manager: {
+    role: "order_operations_manager",
+    label: "Order Operations Manager",
+    category: "internal",
+    route: "/admin/orders",
+    description: "Fulfillment monitoring, PO tracking & dispute escalations",
+  },
+  logistics_operations_manager: {
+    role: "logistics_operations_manager",
+    label: "Logistics Ops Manager",
+    category: "internal",
+    route: "/admin/logistics",
+    description: "Transporter fleets, waybills, consignment telemetry",
+  },
   support_admin: {
     role: "support_admin",
     label: "Support Admin Console",
@@ -170,10 +212,58 @@ export const WORKSPACE_REGISTRY: Record<string, WorkspaceItem> = {
     route: "/admin/support",
     description: "Dispute resolution, tickets & mediation",
   },
+  support_executive: {
+    role: "support_executive",
+    label: "Support Executive Desk",
+    category: "internal",
+    route: "/admin/support",
+    description: "Customer service tickets, mediation & complaints",
+  },
+  compliance_manager: {
+    role: "compliance_manager",
+    label: "Compliance Manager Desk",
+    category: "internal",
+    route: "/admin/audit-logs",
+    description: "Regulatory compliance, tamper logs & safety audits",
+  },
+  quality_operations_manager: {
+    role: "quality_operations_manager",
+    label: "Quality Ops Manager Desk",
+    category: "internal",
+    route: "/admin/verifications",
+    description: "Product quality reviews, supplier standards & inspections",
+  },
+};
+
+export const ALL_ADMIN_ROLES: UserRole[] = [
+  "super_admin",
+  "admin",
+  "verification_admin",
+  "verification_manager",
+  "marketplace_manager",
+  "procurement_operations_manager",
+  "order_operations_manager",
+  "logistics_operations_manager",
+  "finance_admin",
+  "support_admin",
+  "support_executive",
+  "compliance_manager",
+  "quality_operations_manager",
+];
+
+export const isAdminRole = (role?: string | null): boolean => {
+  if (!role) return false;
+  return (
+    ALL_ADMIN_ROLES.includes(role as UserRole) ||
+    role.includes("admin") ||
+    role.endsWith("_admin") ||
+    role === "super_admin"
+  );
 };
 
 export const getWorkspaceRoute = (role?: UserRole | null): string => {
   if (!role) return "/buyer/dashboard";
+  if (isAdminRole(role)) return "/admin/dashboard";
   const item = WORKSPACE_REGISTRY[role];
   return item ? item.route : "/buyer/dashboard";
 };

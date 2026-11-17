@@ -177,7 +177,7 @@ export const AgentDashboardPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
 
     fetch(`${API_BASE}/sales-agent/dashboard`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -224,7 +224,7 @@ export const AgentDashboardPage: React.FC = () => {
     if (!selectedLeadForStatus) return;
 
     try {
-      const token = localStorage.getItem("auth_token") || "";
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
       await fetch(`${API_BASE}/sales-agent/leads/${selectedLeadForStatus.id}/status`, {
         method: "PATCH",
         headers: {
@@ -262,7 +262,7 @@ export const AgentDashboardPage: React.FC = () => {
     if (!selectedLeadForFollowup) return;
 
     try {
-      const token = localStorage.getItem("auth_token") || "";
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
       const res = await fetch(
         `${API_BASE}/sales-agent/leads/${selectedLeadForFollowup.id}/followups`,
         {
@@ -308,7 +308,7 @@ export const AgentDashboardPage: React.FC = () => {
     if (!selectedLeadForConversion) return;
 
     try {
-      const token = localStorage.getItem("auth_token") || "";
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
       const res = await fetch(
         `${API_BASE}/sales-agent/leads/${selectedLeadForConversion.id}/convert`,
         {

@@ -237,7 +237,7 @@ export const AdminRawMaterialsPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
 
     Promise.all([
       fetch(`${API_BASE}/admin/raw-materials/metrics`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()).catch(() => null),
@@ -272,7 +272,7 @@ export const AdminRawMaterialsPage: React.FC = () => {
     e.preventDefault();
     if (!selectedSupplierForVerify) return;
 
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
     try {
       await fetch(`${API_BASE}/admin/raw-materials/suppliers/${selectedSupplierForVerify.id}/verify`, {
         method: "PATCH",
@@ -302,7 +302,7 @@ export const AdminRawMaterialsPage: React.FC = () => {
     e.preventDefault();
     if (!selectedProductForMod) return;
 
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
     try {
       await fetch(`${API_BASE}/admin/raw-materials/products/${selectedProductForMod.id}/moderate`, {
         method: "PATCH",

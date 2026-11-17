@@ -100,6 +100,13 @@ import { AdminLogisticsPage } from "@/pages/admin/AdminLogisticsPage";
 import { AdminTransportersPage } from "@/pages/admin/AdminTransportersPage";
 import { AdminBuyersPage } from "@/pages/admin/AdminBuyersPage";
 import { AdminEmployeesPage } from "@/pages/admin/AdminEmployeesPage";
+import { AdminOrdersPage } from "@/pages/admin/AdminOrdersPage";
+import { AdminQuotationsPage } from "@/pages/admin/AdminQuotationsPage";
+import { AdminFinancePage } from "@/pages/admin/AdminFinancePage";
+import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
+import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
+import { AdminReviewsPage } from "@/pages/admin/AdminReviewsPage";
+import { ALL_ADMIN_ROLES } from "@/lib/role-routing";
 
 // Logistics Marketplace Pages
 import { LogisticsHomePage } from "@/pages/logistics/LogisticsHomePage";
@@ -193,7 +200,6 @@ export const AppRouter: React.FC = () => {
             <Route path="contact" element={<ContactPage />} />
             <Route path="how-it-works" element={<HowCoverlyWorksPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="access-denied" element={<AccessDeniedPage />} />
 
             {/* Public Business Services Marketplace */}
             <Route path="services" element={<ServicesLandingPage />} />
@@ -277,6 +283,9 @@ export const AppRouter: React.FC = () => {
             <Route path="wholesale" element={<RetailerWholesaleCatalogPage />} />
           </Route>
 
+          {/* Standalone Access Denied & Security Clearance (No Public Guest Header) */}
+          <Route path="access-denied" element={<AccessDeniedPage />} />
+
           {/* 2. Authentication & Onboarding (Screens 13–19) */}
           <Route path="auth" element={<AuthLayout />}>
             <Route path="login" element={<LoginPage />} />
@@ -310,20 +319,30 @@ export const AppRouter: React.FC = () => {
           >
             <Route index element={<Navigate to="/buyer/dashboard" replace />} />
             <Route path="dashboard" element={<BuyerDashboardPage />} />
+            <Route path="business" element={<BuyerProfilePage />} />
+            <Route path="products" element={<SavedProductsPage />} />
+            <Route path="suppliers" element={<SavedSuppliersPage />} />
+            <Route path="enquiries" element={<BuyerRfqsPage />} />
+            <Route path="quotations" element={<BuyerRfqsPage />} />
+            <Route path="compare" element={<QuotationComparePage />} />
             <Route path="rfqs" element={<BuyerRfqsPage />} />
             <Route path="rfq/new" element={<RfqCreatePage />} />
             <Route path="rfqs/:id" element={<RfqDetailPage />} />
             <Route path="rfqs/:id/compare" element={<QuotationComparePage />} />
+            <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
             <Route path="orders" element={<BuyerOrdersPage />} />
             <Route path="orders/:id" element={<BuyerOrderDetailPage />} />
+            <Route path="logistics" element={<BuyerOrdersPage />} />
+            <Route path="inventory" element={<SourcingListsPage />} />
             <Route path="saved" element={<SavedSuppliersPage />} />
             <Route path="saved-suppliers" element={<SavedSuppliersPage />} />
             <Route path="saved-products" element={<SavedProductsPage />} />
             <Route path="sourcing-lists" element={<SourcingListsPage />} />
             <Route path="team" element={<BuyerTeamPage />} />
+            <Route path="branches" element={<RetailerBranchesPage />} />
             <Route path="purchase-requests" element={<PurchaseRequestsPage />} />
-            <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
             <Route path="invoices" element={<InvoicesExpensesPage />} />
+            <Route path="reports" element={<InvoicesExpensesPage />} />
             <Route path="documents" element={<BuyerDocumentsPage />} />
             <Route path="profile" element={<BuyerProfilePage />} />
             <Route path="settings" element={<BuyerSettingsPage />} />
@@ -443,7 +462,7 @@ export const AppRouter: React.FC = () => {
             path="admin"
             element={
               <ProtectedRoute>
-                <RoleGuard allowedRoles={["admin", "verification_admin", "support_admin"]}>
+                <RoleGuard allowedRoles={ALL_ADMIN_ROLES}>
                   <AdminLayout />
                 </RoleGuard>
               </ProtectedRoute>
@@ -451,16 +470,24 @@ export const AppRouter: React.FC = () => {
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="quotations" element={<AdminQuotationsPage />} />
             <Route path="products" element={<AdminProductsPage />} />
             <Route path="categories" element={<AdminCategoriesPage />} />
             <Route path="businesses" element={<AdminBusinessesPage />} />
+            <Route path="suppliers" element={<AdminBusinessesPage />} />
             <Route path="rfqs" element={<AdminRfqsPage />} />
+            <Route path="enquiries" element={<AdminRfqsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="verifications" element={<AdminVerificationsPage />} />
+            <Route path="verification" element={<AdminVerificationsPage />} />
             <Route path="services" element={<AdminServicesPage />} />
+            <Route path="business-services" element={<AdminServicesPage />} />
             <Route path="audit-logs" element={<AdminAuditLogsPage />} />
             <Route path="support" element={<AdminSupportPage />} />
+            <Route path="disputes" element={<AdminSupportPage />} />
             <Route path="logistics" element={<AdminLogisticsPage />} />
+            <Route path="shipments" element={<AdminLogisticsPage />} />
             <Route path="transporters" element={<AdminTransportersPage />} />
             <Route path="sales-agents" element={<AdminSalesAgentsPage />} />
             <Route path="raw-materials" element={<AdminRawMaterialsPage />} />
@@ -468,8 +495,14 @@ export const AppRouter: React.FC = () => {
             <Route path="import-export" element={<AdminTradePage />} />
             <Route path="trade" element={<AdminTradePage />} />
             <Route path="buyers" element={<AdminBuyersPage />} />
+            <Route path="procurement" element={<AdminBuyersPage />} />
             <Route path="retailers" element={<AdminRetailersPage />} />
+            <Route path="finance" element={<AdminFinancePage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="reviews" element={<AdminReviewsPage />} />
             <Route path="employees" element={<AdminEmployeesPage />} />
+            <Route path="roles" element={<AdminEmployeesPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
           </Route>
 
           {/* Logistics Partner Portal */}

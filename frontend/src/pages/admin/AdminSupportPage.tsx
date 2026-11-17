@@ -9,7 +9,13 @@ export const AdminSupportPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/tickets`)
+    const userId = localStorage.getItem("coverly_user_id") || "";
+    fetch(`${API_BASE}/tickets`, {
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setTickets(Array.isArray(data.data) ? data.data : (data.data?.items || []));

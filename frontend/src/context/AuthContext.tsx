@@ -90,6 +90,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setActiveRoleState(role);
 
           localStorage.setItem("coverly_user_profile", JSON.stringify(freshUser));
+          localStorage.setItem("coverly_user_id", freshUser.id);
+          localStorage.setItem("auth_token", freshUser.id);
           if (freshBusiness) {
             localStorage.setItem("coverly_business_profile", JSON.stringify(freshBusiness));
           }
@@ -149,6 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveRole(role);
 
       localStorage.setItem("coverly_user_id", normalizedUser.id);
+      localStorage.setItem("auth_token", body.data.accessToken || normalizedUser.id);
       localStorage.setItem("coverly_user_profile", JSON.stringify(normalizedUser));
       localStorage.setItem("coverly_active_role", role);
       if (biz) {
@@ -211,6 +214,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       insforge.auth.signOut().catch(() => {});
     } catch {}
     localStorage.removeItem("coverly_user_id");
+    localStorage.removeItem("auth_token");
     localStorage.removeItem("coverly_user_profile");
     localStorage.removeItem("coverly_business_profile");
     localStorage.removeItem("coverly_active_role");

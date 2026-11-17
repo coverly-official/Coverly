@@ -19,10 +19,19 @@ export type UserRole =
   | "procurement_manager"
   | "purchase_staff"
   | "finance_accounts_staff"
-  | "finance_admin"
+  | "super_admin"
   | "admin"
   | "verification_admin"
-  | "support_admin";
+  | "verification_manager"
+  | "marketplace_manager"
+  | "procurement_operations_manager"
+  | "order_operations_manager"
+  | "logistics_operations_manager"
+  | "finance_admin"
+  | "support_admin"
+  | "support_executive"
+  | "compliance_manager"
+  | "quality_operations_manager";
 
 export type VerificationTier =
   | "unverified"

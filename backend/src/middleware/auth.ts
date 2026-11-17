@@ -145,6 +145,42 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
 }
 
 /**
+ * Complete set of administrative and platform governance employee roles.
+ */
+export const ALL_ADMIN_ROLES = [
+  "admin",
+  "super_admin",
+  "verification_admin",
+  "verification_manager",
+  "marketplace_manager",
+  "procurement_operations_manager",
+  "order_operations_manager",
+  "logistics_operations_manager",
+  "finance_admin",
+  "finance_accounts_staff",
+  "support_admin",
+  "support_executive",
+  "compliance_manager",
+  "quality_operations_manager",
+];
+
+export function isPlatformAdmin(user?: AuthenticatedUser | null): boolean {
+  if (!user) return false;
+  const roles = Array.isArray(user.roles) ? user.roles : [];
+  const activeRole = typeof user.activeRole === "string" ? user.activeRole : "";
+  return (
+    roles.some(
+      (r) =>
+        ALL_ADMIN_ROLES.includes(r) ||
+        (typeof r === "string" && (r.includes("admin") || r.endsWith("_admin"))) ||
+        r === "super_admin"
+    ) ||
+    ALL_ADMIN_ROLES.includes(activeRole) ||
+    (activeRole ? activeRole.includes("admin") : false)
+  );
+}
+
+/**
  * Restricts access to users having at least one of the specified roles.
  * Full admin role is always granted access.
  */
@@ -155,7 +191,7 @@ export function requireRole(...allowedRoles: string[]) {
     }
 
     const hasRole =
-      req.user.roles.includes("admin") ||
+      isPlatformAdmin(req.user) ||
       req.user.roles.some((r) => allowedRoles.includes(r)) ||
       allowedRoles.includes(req.user.activeRole);
 
@@ -173,17 +209,14 @@ export function requireRole(...allowedRoles: string[]) {
 }
 
 /**
- * Restricts access to administrative roles: admin, verification_admin, or support_admin.
+ * Restricts access to administrative roles.
  */
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.user) {
     return sendError(res, "Authentication required.", 401, "UNAUTHORIZED");
   }
 
-  const adminRoles = ["admin", "verification_admin", "support_admin"];
-  const isAdmin = req.user.roles.some((r) => adminRoles.includes(r));
-
-  if (!isAdmin) {
+  if (!isPlatformAdmin(req.user)) {
     return sendError(res, "Administrative privilege required.", 403, "FORBIDDEN");
   }
 
@@ -200,7 +233,7 @@ export function requireBusinessMember(allowedRolesInBusiness: string[] = ["owner
     }
 
     // Admins bypass business membership checks
-    if (req.user.roles.includes("admin")) {
+    if (isPlatformAdmin(req.user)) {
       return next();
     }
 

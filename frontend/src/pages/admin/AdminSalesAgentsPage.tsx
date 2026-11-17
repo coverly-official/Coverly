@@ -212,7 +212,7 @@ export const AdminSalesAgentsPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
 
     Promise.all([
       fetch(`${API_BASE}/admin/sales-agents/metrics`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -258,7 +258,7 @@ export const AdminSalesAgentsPage: React.FC = () => {
     if (!selectedAgentForVerify) return;
 
     try {
-      const token = localStorage.getItem("auth_token") || "";
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
       await fetch(`${API_BASE}/admin/sales-agents/${selectedAgentForVerify.id}/verify`, {
         method: "PATCH",
         headers: {
@@ -293,7 +293,7 @@ export const AdminSalesAgentsPage: React.FC = () => {
     if (!selectedLeadForAssign || !targetAgentId) return;
 
     try {
-      const token = localStorage.getItem("auth_token") || "";
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
       await fetch(`${API_BASE}/admin/sales-agents/leads/${selectedLeadForAssign.id}/assign`, {
         method: "PATCH",
         headers: {
@@ -326,7 +326,7 @@ export const AdminSalesAgentsPage: React.FC = () => {
 
   const handleApproveCommission = async (commissionId: string, status: "approved" | "rejected") => {
     try {
-      const token = localStorage.getItem("auth_token") || "";
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
       await fetch(`${API_BASE}/admin/sales-agents/commissions/${commissionId}/approve`, {
         method: "PATCH",
         headers: {
@@ -351,7 +351,7 @@ export const AdminSalesAgentsPage: React.FC = () => {
     if (!selectedCommissionForPayout || !payoutRef) return;
 
     try {
-      const token = localStorage.getItem("auth_token") || "";
+      const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
       await fetch(
         `${API_BASE}/admin/sales-agents/commissions/${selectedCommissionForPayout.id}/payout`,
         {

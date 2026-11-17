@@ -12,6 +12,7 @@ import {
   List,
   LogOut,
   BarChart,
+  BarChart3,
   Settings,
   Briefcase,
   Building,
@@ -22,6 +23,9 @@ import {
   Globe,
   Store,
   UserCog,
+  CreditCard,
+  Star,
+  PackageCheck,
 } from "lucide-react";
 
 export const AdminLayout: React.FC = () => {
@@ -30,11 +34,13 @@ export const AdminLayout: React.FC = () => {
 
   const navLinks = [
     { label: "Dashboard", href: "/admin/dashboard", icon: BarChart },
-    { label: "Products", href: "/admin/products", icon: ShoppingBag },
-    { label: "Categories", href: "/admin/categories", icon: List },
-    { label: "Businesses", href: "/admin/businesses", icon: Building },
+    { label: "Orders & Fulfillment", href: "/admin/orders", icon: PackageCheck },
+    { label: "Quotations & Bids", href: "/admin/quotations", icon: FileText },
+    { label: "Products Catalog", href: "/admin/products", icon: ShoppingBag },
+    { label: "Categories Taxonomy", href: "/admin/categories", icon: List },
+    { label: "Businesses & Suppliers", href: "/admin/businesses", icon: Building },
     { label: "RFQs & Enquiries", href: "/admin/rfqs", icon: FileText },
-    { label: "Verifications", href: "/admin/verifications", icon: CheckCircle },
+    { label: "Verifications Queue", href: "/admin/verifications", icon: CheckCircle },
     { label: "Business Services", href: "/admin/services", icon: Briefcase },
     { label: "Logistics Hub", href: "/admin/logistics", icon: Truck },
     { label: "Transporters & Fleet", href: "/admin/transporters", icon: Truck },
@@ -43,11 +49,15 @@ export const AdminLayout: React.FC = () => {
     { label: "Packaging Hub", href: "/admin/packaging", icon: Layers },
     { label: "Import & Export", href: "/admin/import-export", icon: Globe },
     { label: "Buyers & POs", href: "/admin/buyers", icon: Building },
-    { label: "Retailers", href: "/admin/retailers", icon: Store },
+    { label: "Retailers Hub", href: "/admin/retailers", icon: Store },
+    { label: "Finance & GMV", href: "/admin/finance", icon: CreditCard },
+    { label: "Analytics & Telemetry", href: "/admin/analytics", icon: BarChart3 },
+    { label: "Customer Reviews", href: "/admin/reviews", icon: Star },
     { label: "Employees & RBAC", href: "/admin/employees", icon: UserCog },
-    { label: "Users", href: "/admin/users", icon: Users },
-    { label: "Support Tickets", href: "/admin/support", icon: HelpCircle },
+    { label: "User Governance", href: "/admin/users", icon: Users },
+    { label: "Support & Disputes", href: "/admin/support", icon: HelpCircle },
     { label: "Audit Logs", href: "/admin/audit-logs", icon: ShieldAlert },
+    { label: "Platform Settings", href: "/admin/settings", icon: Settings },
   ];
 
   return (

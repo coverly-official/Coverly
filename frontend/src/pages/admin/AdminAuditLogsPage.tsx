@@ -8,7 +8,13 @@ export const AdminAuditLogsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/audit-logs`)
+    const userId = localStorage.getItem("coverly_user_id") || "";
+    fetch(`${API_BASE}/admin/audit-logs`, {
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setLogs(Array.isArray(data.data) ? data.data : (data.data?.items || []));

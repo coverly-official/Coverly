@@ -10,12 +10,19 @@ export const AdminUsersPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  const getAuthHeaders = () => ({
+    "Content-Type": "application/json",
+    "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
+  });
+
   const fetchUsers = () => {
     setIsLoading(true);
     const params = new URLSearchParams();
     if (search) params.set("search", search);
 
-    fetch(`${API_BASE}/admin/users?${params.toString()}`)
+    fetch(`${API_BASE}/admin/users?${params.toString()}`, {
+      headers: getAuthHeaders(),
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setUsers(Array.isArray(data.data) ? data.data : (data.data?.items || []));
@@ -39,7 +46,7 @@ export const AdminUsersPage: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE}/admin/users/${targetUser.id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           is_active: newStatus,
           admin_id: user.id,

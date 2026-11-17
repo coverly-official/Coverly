@@ -40,7 +40,7 @@ export const AdminBuyersPage: React.FC = () => {
 
   const getHeaders = () => ({
     "Content-Type": "application/json",
-    ...(user ? { "x-user-id": user.id } : {}),
+    "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
   });
 
   const loadData = async () => {

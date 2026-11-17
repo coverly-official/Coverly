@@ -52,7 +52,7 @@ export const AdminPackagingPage: React.FC = () => {
     try {
       const headers = {
         "Content-Type": "application/json",
-        ...(user ? { "x-user-id": user.id } : {}),
+        "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
       };
 
       const [statsRes, supRes, prodRes] = await Promise.all([
@@ -94,7 +94,7 @@ export const AdminPackagingPage: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(user ? { "x-user-id": user.id } : {}),
+          "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
         },
         body: JSON.stringify({
           action: actionType,
@@ -123,7 +123,7 @@ export const AdminPackagingPage: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(user ? { "x-user-id": user.id } : {}),
+          "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
         },
         body: JSON.stringify({
           action,

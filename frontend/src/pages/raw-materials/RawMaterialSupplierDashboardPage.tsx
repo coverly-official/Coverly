@@ -207,7 +207,7 @@ export const RawMaterialSupplierDashboardPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
 
     fetch(`${API_BASE}/raw-material-supplier/dashboard`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -229,7 +229,7 @@ export const RawMaterialSupplierDashboardPage: React.FC = () => {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
 
     try {
       const res = await fetch(`${API_BASE}/raw-material-supplier/products`, {
@@ -299,7 +299,7 @@ export const RawMaterialSupplierDashboardPage: React.FC = () => {
     e.preventDefault();
     if (!selectedRfqForQuote) return;
 
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
     try {
       await fetch(
         `${API_BASE}/raw-material-supplier/rfqs/${selectedRfqForQuote.raw_material_rfqs.id}/quote`,
@@ -338,7 +338,7 @@ export const RawMaterialSupplierDashboardPage: React.FC = () => {
     e.preventDefault();
     if (!selectedOrderForUpdate) return;
 
-    const token = localStorage.getItem("auth_token") || "";
+    const token = localStorage.getItem("auth_token") || localStorage.getItem("coverly_user_id") || "";
     try {
       await fetch(`${API_BASE}/raw-material-supplier/orders/${selectedOrderForUpdate.id}/status`, {
         method: "PATCH",
