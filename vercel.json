@@ -4,11 +4,6 @@
   "installCommand": "npm install --include=dev",
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/index.ts": {
-      "includeFiles": "{node_modules/@resvg/resvg-wasm/index_bg.wasm,node_modules/@vercel/og/dist/Geist-Regular.ttf}"
-    }
-  },
   "headers": [
     {
       "source": "/og/(.*)",
@@ -25,6 +20,14 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/og-image",
+      "destination": "/api/og-image"
+    },
+    {
+      "source": "/api/render",
+      "destination": "/api/render"
+    },
     {
       "source": "/api",
       "destination": "/api"
