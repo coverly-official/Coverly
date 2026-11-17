@@ -4,6 +4,11 @@
   "installCommand": "npm install --include=dev",
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/og-image.ts": {
+      "includeFiles": "api/_assets/**"
+    }
+  },
   "headers": [
     {
       "source": "/og/(.*)",
@@ -33,7 +38,7 @@
       "destination": "/api"
     },
     {
-      "source": "/api/(.*)",
+      "source": "/api/((?!og-image(?:/|$)|render(?:/|$)).*)",
       "destination": "/api"
     },
     {

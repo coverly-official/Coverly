@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import satori from "satori";
 import { Resvg, initWasm } from "@resvg/resvg-wasm";
 
@@ -107,7 +107,6 @@ const PALETTES: Record<OgCardTheme, ThemePalette> = {
   },
 };
 
-const require = createRequire(import.meta.url);
 let wasmInitialized = false;
 let cachedFontBuffer: ArrayBuffer | null = null;
 
@@ -118,37 +117,40 @@ function findExistingFile(candidates: string[]): string {
   throw new Error(`Required OG asset not found in candidates: ${candidates.join(", ")}`);
 }
 
-async function ensureInitialized(): Promise<ArrayBuffer> {
+async function ensureInitialized(customAssets?: {
+  wasmBytes?: Buffer | Uint8Array;
+  fontBytes?: Buffer | Uint8Array;
+}): Promise<ArrayBuffer> {
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
   if (!wasmInitialized) {
-    let resolvedWasm = "";
-    try {
-      resolvedWasm = path.join(path.dirname(require.resolve("@resvg/resvg-wasm")), "index_bg.wasm");
-    } catch {}
-    const wasmPath = findExistingFile([
-      resolvedWasm,
-      path.resolve(process.cwd(), "node_modules/@resvg/resvg-wasm/index_bg.wasm"),
-      path.resolve(process.cwd(), "../node_modules/@resvg/resvg-wasm/index_bg.wasm"),
-    ]);
-    const wasmBytes = fs.readFileSync(wasmPath);
+    const wasmBytes =
+      customAssets?.wasmBytes ||
+      fs.readFileSync(
+        findExistingFile([
+          path.resolve(currentDir, "../../../api/_assets/resvg.wasm"),
+          path.resolve(process.cwd(), "api/_assets/resvg.wasm"),
+          path.resolve(process.cwd(), "../api/_assets/resvg.wasm"),
+        ])
+      );
     await initWasm(wasmBytes);
     wasmInitialized = true;
   }
 
   if (!cachedFontBuffer) {
-    let resolvedFont = "";
-    try {
-      resolvedFont = path.join(path.dirname(require.resolve("@vercel/og")), "Geist-Regular.ttf");
-    } catch {}
-    const fontPath = findExistingFile([
-      resolvedFont,
-      path.resolve(process.cwd(), "node_modules/@vercel/og/dist/Geist-Regular.ttf"),
-      path.resolve(process.cwd(), "../node_modules/@vercel/og/dist/Geist-Regular.ttf"),
-    ]);
-    const fontNodeBuf = fs.readFileSync(fontPath);
+    const fontNodeBuf =
+      customAssets?.fontBytes ||
+      fs.readFileSync(
+        findExistingFile([
+          path.resolve(currentDir, "../../../api/_assets/Geist-Regular.ttf"),
+          path.resolve(process.cwd(), "api/_assets/Geist-Regular.ttf"),
+          path.resolve(process.cwd(), "../api/_assets/Geist-Regular.ttf"),
+        ])
+      );
     cachedFontBuffer = fontNodeBuf.buffer.slice(
       fontNodeBuf.byteOffset,
       fontNodeBuf.byteOffset + fontNodeBuf.byteLength
-    );
+    ) as ArrayBuffer;
   }
 
   return cachedFontBuffer;
@@ -175,8 +177,11 @@ function el(type: string, props: Record<string, any>, ...children: any[]) {
   };
 }
 
-export async function generateOgPngBuffer(params: OgImageParams): Promise<Buffer> {
-  const fontData = await ensureInitialized();
+export async function generateOgPngBuffer(
+  params: OgImageParams,
+  customAssets?: { wasmBytes?: Buffer | Uint8Array; fontBytes?: Buffer | Uint8Array }
+): Promise<Buffer> {
+  const fontData = await ensureInitialized(customAssets);
 
   const rawType = String(params.type || "home").toLowerCase();
   const themeKey: OgCardTheme = (rawType in PALETTES ? rawType : "home") as OgCardTheme;
