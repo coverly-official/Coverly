@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getInsForgeClient } from "../lib/insforge.js";
+import { getInsForgeClient, getPublicInsForgeClient } from "../lib/insforge.js";
 import { authenticateUser } from "../middleware/auth.js";
 import { sendSuccess, sendError } from "../utils/response.js";
 
@@ -92,7 +92,8 @@ router.post("/auth/register", async (req, res) => {
   const assignedRole = role && PUBLIC_PERMITTED_ROLES.includes(role) ? role : "buyer";
 
   const insforge = getInsForgeClient();
-  if (!insforge) {
+  const authClient = getPublicInsForgeClient() || getInsForgeClient();
+  if (!insforge || !authClient) {
     return sendError(res, "InsForge database is not configured.", 503, "SERVICE_UNAVAILABLE");
   }
 
@@ -110,8 +111,8 @@ router.post("/auth/register", async (req, res) => {
       return sendError(res, "An account with this email address already exists.", 409, "ACCOUNT_EXISTS");
     }
 
-    // 2. Register with InsForge Auth
-    const { data: authData, error: authError } = await insforge.auth.signUp({
+    // 2. Register with InsForge Auth on a dedicated authClient so the admin db client is never mutated
+    const { data: authData, error: authError } = await authClient.auth.signUp({
       email: normalizedEmail,
       password,
     });
@@ -236,15 +237,16 @@ router.post("/auth/login", async (req, res) => {
   }
 
   const insforge = getInsForgeClient();
-  if (!insforge) {
+  const authClient = getPublicInsForgeClient() || getInsForgeClient();
+  if (!insforge || !authClient) {
     return sendError(res, "InsForge database is not configured.", 503, "SERVICE_UNAVAILABLE");
   }
 
   try {
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 1. Sign in with InsForge Auth
-    const { data: authData, error: authError } = await insforge.auth.signInWithPassword({
+    // 1. Sign in with InsForge Auth using a dedicated authClient so admin db client stays unpolluted
+    const { data: authData, error: authError } = await authClient.auth.signInWithPassword({
       email: normalizedEmail,
       password,
     });

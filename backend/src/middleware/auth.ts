@@ -20,34 +20,44 @@ declare global {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function extractUserIdFromTokenOrHeader(authHeader?: string, xUserId?: string): string | null {
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7).trim();
+    if (UUID_RE.test(token)) {
+      return token;
+    }
+    // Extract `sub` UUID from InsForge JWT payload when Bearer token is a JWT
+    const parts = token.split(".");
+    if (parts.length === 3) {
+      try {
+        const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+        if (typeof payload?.sub === "string" && UUID_RE.test(payload.sub)) {
+          return payload.sub;
+        }
+      } catch {
+        // Fallback to x-user-id
+      }
+    }
+  }
+
+  if (xUserId && UUID_RE.test(xUserId.trim())) {
+    return xUserId.trim();
+  }
+
+  return null;
+}
+
 /**
- * Validates authentication via Bearer token or x-user-id header.
+ * Validates authentication via Bearer token (JWT or user UUID) or x-user-id header.
  * Verifies account existence, active status, and assigns roles.
  */
 export async function authenticateUser(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"];
   const xUserId = req.headers["x-user-id"] as string | undefined;
 
-  let userId: string | null = null;
-
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.substring(7).trim();
-    // Validate with InsForge if token provided
-    const insforge = getInsForgeClient();
-    if (insforge) {
-      try {
-        // Query user from session/token
-        // If the token matches user UUID or JWT
-        userId = token;
-      } catch {
-        // Fallback
-      }
-    }
-  }
-
-  if (!userId && xUserId) {
-    userId = xUserId.trim();
-  }
+  const userId = extractUserIdFromTokenOrHeader(authHeader, xUserId);
 
   if (!userId) {
     return sendError(res, "Authentication required. Please provide a valid session or token.", 401, "UNAUTHORIZED");
@@ -105,7 +115,7 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
   const authHeader = req.headers["authorization"];
   const xUserId = req.headers["x-user-id"] as string | undefined;
 
-  const userId = (authHeader?.startsWith("Bearer ") ? authHeader.substring(7).trim() : null) || xUserId?.trim();
+  const userId = extractUserIdFromTokenOrHeader(authHeader, xUserId);
   if (!userId) return next();
 
   const insforge = getInsForgeClient();
