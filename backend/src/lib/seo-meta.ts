@@ -201,6 +201,31 @@ export const LEGAL_PAGE_META: Record<string, { title: string; description: strin
     description:
       "How to submit complaints, regulatory notices or privacy grievances and review COVERLY's resolution timelines.",
   },
+  "/kyc-privacy-notice": {
+    title: "KYC Privacy Notice | COVERLY",
+    description:
+      "How COVERLY collects, validates, privately stores, and governs identity and business verification documents across all 12 B2B roles.",
+  },
+  "/identity-verification-consent": {
+    title: "Identity Verification Consent | COVERLY",
+    description:
+      "Explicit document-specific legal consent terms recorded before submitting identity or business KYC documents on COVERLY.",
+  },
+  "/aadhaar-offline-verification-notice": {
+    title: "Aadhaar Offline Verification Notice | COVERLY",
+    description:
+      "Voluntary Aadhaar Offline XML/QR disclosure, non-Aadhaar alternative Government IDs, and zero raw Aadhaar number retention on COVERLY.",
+  },
+  "/document-retention-policy": {
+    title: "KYC Document Retention Policy | COVERLY",
+    description:
+      "Retention lifecycles, unsubmitted file removal, audit log minimization, and secure deletion of private KYC documents on COVERLY.",
+  },
+  "/verification-terms": {
+    title: "Verification Terms & Badge Governance | COVERLY",
+    description:
+      "Meaning and scope of individual COVERLY verification badges, resubmission rules, expiry, and anti-fraud enforcement.",
+  },
 };
 
 export const TRUST_GUIDE_META: Record<string, { title: string; description: string }> = {
