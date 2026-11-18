@@ -5,14 +5,21 @@ import { sendSuccess, sendError } from "../utils/response.js";
 
 const router = Router();
 
-// Permitted roles for public user registration
+// Permitted roles for public user registration (all 12 COVERLY business roles + dual role)
 const PUBLIC_PERMITTED_ROLES = [
   "buyer",
+  "retailer",
   "manufacturer",
   "wholesaler",
   "distributor",
-  "buyer_supplier",
+  "raw_material_supplier",
+  "packaging_supplier",
+  "importer_exporter",
+  "logistics_partner",
+  "transporter",
   "service_provider",
+  "sales_agent",
+  "buyer_supplier",
 ];
 
 // POST /api/auth/register
@@ -20,33 +27,62 @@ router.post("/auth/register", async (req, res) => {
   const {
     email,
     password,
+    confirm_password,
     full_name,
     role,
     phone,
+    account_type,
+    business_type,
+    country,
+    state,
+    city,
     terms_accepted,
+    privacy_accepted,
     terms_version,
     privacy_version,
     marketing_consent,
+    website_url_hp,
   } = req.body as {
     email?: string;
     password?: string;
+    confirm_password?: string;
     full_name?: string;
     role?: string;
     phone?: string;
+    account_type?: string;
+    business_type?: string;
+    country?: string;
+    state?: string;
+    city?: string;
     terms_accepted?: boolean;
+    privacy_accepted?: boolean;
     terms_version?: string;
     privacy_version?: string;
     marketing_consent?: boolean;
+    website_url_hp?: string;
   };
+
+  // Anti-bot honeypot field check
+  if (website_url_hp && String(website_url_hp).trim().length > 0) {
+    return sendError(res, "Invalid registration submission detected.", 400, "BOT_DETECTED");
+  }
 
   if (!email?.trim() || !password || !full_name?.trim()) {
     return sendError(res, "Email, password, and full name are required.", 400, "VALIDATION_FAILED");
   }
 
-  if (terms_accepted === false) {
+  if (password.length < 8) {
+    return sendError(res, "Password must be at least 8 characters long.", 400, "WEAK_PASSWORD");
+  }
+
+  if (confirm_password !== undefined && confirm_password !== password) {
+    return sendError(res, "Password and confirm password do not match.", 400, "PASSWORD_MISMATCH");
+  }
+
+  if (terms_accepted === false || privacy_accepted === false) {
     return sendError(
       res,
-      "Acceptance of the Terms & Conditions and Privacy Policy is required to register.",
+      "Separate acceptance of the Terms & Conditions and Privacy Policy is required to register.",
       400,
       "CONSENT_REQUIRED"
     );
@@ -115,15 +151,44 @@ router.post("/auth/register", async (req, res) => {
       },
     ]);
 
-    // 5. Record legal consent version & timestamp in audit log (best-effort, non-blocking)
+    // 5. Record legal consent version & timestamp in audit log + verification_profiles + verification_consents (best-effort, non-blocking)
     const consentRecord = {
       terms_accepted: true,
+      privacy_accepted: true,
       terms_version: terms_version || "2026-11-18-v1",
       privacy_version: privacy_version || "2026-11-18-v1",
       marketing_consent: Boolean(marketing_consent),
+      account_type: account_type || assignedRole,
+      business_type: business_type || null,
+      country: country?.trim() || "India",
+      state: state?.trim() || null,
+      city: city?.trim() || null,
       accepted_at: new Date().toISOString(),
     };
     try {
+      await insforge.database.from("verification_profiles").insert([
+        {
+          user_id: userId,
+          business_id: null,
+          role_code: assignedRole === "buyer_supplier" ? "manufacturer" : assignedRole,
+          business_type: business_type || null,
+          overall_status: "not_started",
+          completion_percent: 0,
+        },
+      ]);
+      await insforge.database.from("verification_consents").insert([
+        {
+          user_id: userId,
+          document_type: "account_registration",
+          consent_text_version: `registration-${consentRecord.terms_version}`,
+          privacy_policy_version: consentRecord.privacy_version,
+          terms_version: consentRecord.terms_version,
+          verification_method: "account_signup",
+          provider_identity: "coverly_platform",
+          alternative_route_disclosed: false,
+          accepted_at: consentRecord.accepted_at,
+        },
+      ]);
       await insforge.database.from("audit_logs").insert([
         {
           admin_id: userId,
@@ -134,7 +199,7 @@ router.post("/auth/register", async (req, res) => {
         },
       ]);
     } catch {
-      // Non-blocking if RLS restricts direct audit inserts for new registrants
+      // Non-blocking if RLS restricts direct inserts for new registrants
     }
 
     return sendSuccess(

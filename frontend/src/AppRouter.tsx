@@ -189,6 +189,10 @@ import { LegalDocumentPage } from "@/pages/legal/LegalDocumentPage";
 import { SeoLandingPage } from "@/pages/public/SeoLandingPage";
 import { TrustGuidesPage } from "@/pages/public/TrustGuidesPage";
 
+// Centralized Verification Center
+import { VerificationCenterPage } from "@/pages/account/VerificationCenterPage";
+import { AccountVerificationShell } from "@/pages/account/AccountVerificationShell";
+
 export const AppRouter: React.FC = () => {
   return (
     <AppErrorBoundary>
@@ -329,10 +333,25 @@ export const AppRouter: React.FC = () => {
             <Route path="intellectual-property-policy" element={<LegalDocumentPage />} />
             <Route path="account-deletion-policy" element={<LegalDocumentPage />} />
             <Route path="grievance-redressal-policy" element={<LegalDocumentPage />} />
+            <Route path="kyc-privacy-notice" element={<LegalDocumentPage />} />
+            <Route path="identity-verification-consent" element={<LegalDocumentPage />} />
+            <Route path="aadhaar-offline-verification-notice" element={<LegalDocumentPage />} />
+            <Route path="document-retention-policy" element={<LegalDocumentPage />} />
+            <Route path="verification-terms" element={<LegalDocumentPage />} />
 
             {/* Branded Animated 404 Route */}
             <Route path="404" element={<NotFoundPage />} />
           </Route>
+
+          {/* Centralized Account Verification Center (All 12 Eligible Roles) */}
+          <Route
+            path="account/verification"
+            element={
+              <ProtectedRoute>
+                <AccountVerificationShell />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Standalone Access Denied & Security Clearance (No Public Guest Header) */}
           <Route path="access-denied" element={<AccessDeniedPage />} />
@@ -395,6 +414,7 @@ export const AppRouter: React.FC = () => {
             <Route path="invoices" element={<InvoicesExpensesPage />} />
             <Route path="reports" element={<InvoicesExpensesPage />} />
             <Route path="documents" element={<BuyerDocumentsPage />} />
+            <Route path="verification" element={<VerificationCenterPage />} />
             <Route path="profile" element={<BuyerProfilePage />} />
             <Route path="settings" element={<BuyerSettingsPage />} />
             <Route path="support" element={<BuyerSupportPage />} />
@@ -424,6 +444,7 @@ export const AppRouter: React.FC = () => {
             <Route path="saved-products" element={<SavedProductsPage />} />
             <Route path="saved-suppliers" element={<SavedSuppliersPage />} />
             <Route path="documents" element={<BuyerDocumentsPage />} />
+            <Route path="verification" element={<VerificationCenterPage />} />
             <Route path="analytics" element={<RetailerOrdersPage />} />
             <Route path="support" element={<BuyerSupportPage />} />
             <Route path="settings" element={<BuyerSettingsPage />} />
@@ -455,7 +476,7 @@ export const AppRouter: React.FC = () => {
             <Route path="rfqs" element={<SupplierIncomingRfqsPage />} />
             <Route path="rfqs/:id/quote" element={<SubmitQuotePage />} />
             <Route path="orders" element={<SupplierOrdersPage />} />
-            <Route path="verification" element={<SupplierVerificationPage />} />
+            <Route path="verification" element={<VerificationCenterPage />} />
             <Route path="profile" element={<SupplierBusinessProfilePage />} />
             <Route path="quotations" element={<SupplierQuotationsPage />} />
             <Route path="analytics" element={<SupplierAnalyticsPage />} />
@@ -505,6 +526,7 @@ export const AppRouter: React.FC = () => {
             <Route path="inquiries" element={<ProviderInquiriesPage />} />
             <Route path="inquiries/:id/quote" element={<ProviderQuoteBuilderPage />} />
             <Route path="projects" element={<ProviderActiveProjectsPage />} />
+            <Route path="verification" element={<VerificationCenterPage />} />
             <Route path="profile" element={<ProviderDashboardPage />} />
           </Route>
 

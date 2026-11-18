@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { VerificationBanner } from "@/components/verification/VerificationBanner";
 import { Truck, Navigation, LogOut, ShieldCheck } from "lucide-react";
 
 export const TransportLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -32,6 +33,13 @@ export const TransportLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
           >
             Console Home
           </Link>
+          <Link
+            to="/account/verification"
+            className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Verification Center
+          </Link>
           <span className="text-xs text-stone-400">|</span>
           <span className="text-xs font-medium text-stone-700 hidden sm:inline">
             {user?.full_name || user?.email}
@@ -47,6 +55,7 @@ export const TransportLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
         </div>
       </header>
       <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+        <VerificationBanner />
         {children || <Outlet />}
       </main>
     </div>

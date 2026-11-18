@@ -2,6 +2,7 @@ import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
+import { VerificationBanner } from "@/components/verification/VerificationBanner";
 import {
   LayoutDashboard,
   Store,
@@ -20,6 +21,7 @@ import {
   Bell,
   Settings,
   LifeBuoy,
+  ShieldCheck,
 } from "lucide-react";
 
 export const RetailerLayout: React.FC = () => {
@@ -41,6 +43,7 @@ export const RetailerLayout: React.FC = () => {
     { label: "Store Branches", href: "/retailer/branches", icon: GitBranch },
     { label: "Procurement Analytics", href: "/retailer/analytics", icon: BarChart3 },
     { label: "Compliance Documents", href: "/retailer/documents", icon: FolderOpen },
+    { label: "Verification Center", href: "/retailer/verification", icon: ShieldCheck },
     { label: "Notifications", href: "/notifications", icon: Bell },
     { label: "Settings", href: "/retailer/settings", icon: Settings },
     { label: "Support", href: "/retailer/support", icon: LifeBuoy },
@@ -127,6 +130,7 @@ export const RetailerLayout: React.FC = () => {
         </header>
 
         <main className="p-6 md:p-8 flex-1">
+          <VerificationBanner />
           <Outlet />
         </main>
       </div>

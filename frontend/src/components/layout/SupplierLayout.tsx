@@ -2,6 +2,7 @@ import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
+import { VerificationBanner } from "@/components/verification/VerificationBanner";
 import {
   LayoutDashboard,
   Building,
@@ -136,6 +137,7 @@ export const SupplierLayout: React.FC = () => {
 
         <main className="flex-1 p-6 md:p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto">
+            <VerificationBanner />
             <Outlet />
           </div>
         </main>

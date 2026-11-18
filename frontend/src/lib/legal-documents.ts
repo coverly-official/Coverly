@@ -486,6 +486,128 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
       },
     ],
   },
+  {
+    slug: "kyc-privacy-notice",
+    path: "/kyc-privacy-notice",
+    title: "KYC Privacy Notice",
+    category: "Rights & Compliance",
+    summary:
+      "How COVERLY collects, validates, privately stores, and governs identity and business verification documents across all 12 ecosystem roles.",
+    version: DOC_VERSION,
+    lastUpdated: DOC_DATE,
+    sections: [
+      {
+        heading: "1. Private Storage & Data Minimization",
+        body: [
+          `This KYC Privacy Notice supplements ${LEGAL_PLACEHOLDERS.entityName}'s Privacy Policy for documents submitted via the COVERLY Verification Center.`,
+          "Uploaded verification files are stored exclusively in private non-public storage (kyc-private), validated via server-side MIME/magic-bytes checks, and accessible only to the submitting account owner and authorized compliance reviewers. Every document inspection is logged.",
+        ],
+      },
+      {
+        heading: "2. Honest Manual Review & Contact OTP Security",
+        body: [
+          "Document verification is performed via COVERLY Manual Compliance Review unless an authorized licensed verification provider is explicitly configured and disclosed. Plaintext OTP codes are never stored or logged; only salted HMAC-SHA256 hashes are persisted.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "identity-verification-consent",
+    path: "/identity-verification-consent",
+    title: "Identity Verification Consent",
+    category: "Rights & Compliance",
+    summary:
+      "Explicit document-specific legal consent terms recorded before submitting identity or business KYC documents.",
+    version: DOC_VERSION,
+    lastUpdated: DOC_DATE,
+    sections: [
+      {
+        heading: "1. Voluntary Document-Specific Consent",
+        body: [
+          "COVERLY records explicit consent version, verification method, and UTC timestamp before any KYC document enters compliance review. Unregistered proprietorships and small buyers are never forced to submit inapplicable GSTIN or incorporation certificates.",
+        ],
+      },
+      {
+        heading: "2. Authenticity & Withdrawal",
+        body: [
+          "Users represent that submitted documents are genuine and authorized. Consent may be withdrawn at any time via COVERLY's privacy request channel, subject to applicable statutory audit retention.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "aadhaar-offline-verification-notice",
+    path: "/aadhaar-offline-verification-notice",
+    title: "Aadhaar Offline Verification Notice",
+    category: "Rights & Compliance",
+    summary:
+      "Voluntary Aadhaar Offline XML/QR disclosure, non-Aadhaar alternative IDs, and zero raw Aadhaar number retention.",
+    version: DOC_VERSION,
+    lastUpdated: DOC_DATE,
+    sections: [
+      {
+        heading: "1. Strictly Voluntary with Non-Aadhaar Alternatives",
+        body: [
+          "Aadhaar Offline XML / Secure QR submission on COVERLY is 100% voluntary. Users may verify identity using alternative Government IDs (PAN, Passport, Driving Licence, or Voter ID) with identical badge eligibility.",
+        ],
+      },
+      {
+        heading: "2. Zero Raw 12-Digit Aadhaar Storage",
+        body: [
+          "COVERLY does not collect, log, or store raw 12-digit Aadhaar numbers or biometrics, and does not scrape government portals. Only masked reference indicators and verification outcome metadata are retained.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "document-retention-policy",
+    path: "/document-retention-policy",
+    title: "KYC Document Retention Policy",
+    category: "Rights & Compliance",
+    summary:
+      "Retention lifecycles, unsubmitted file removal, audit log minimization, and secure deletion of private KYC documents.",
+    version: DOC_VERSION,
+    lastUpdated: DOC_DATE,
+    sections: [
+      {
+        heading: "1. Purpose-Bound Retention",
+        body: [
+          "Unsubmitted files may be removed immediately by the user. Submitted KYC documents are retained only while necessary for active verification, renewal, dispute defense, and Indian statutory compliance.",
+        ],
+      },
+      {
+        heading: "2. Secure Erasure",
+        body: [
+          "Upon verified account deletion or expiration of statutory holds, private storage objects in kyc-private are permanently deleted while minimal non-sensitive audit metadata is retained where legally mandated.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "verification-terms",
+    path: "/verification-terms",
+    title: "Verification Terms & Badge Governance",
+    category: "Marketplace Terms",
+    summary:
+      "Meaning and scope of individual COVERLY verification badges, resubmission rules, expiry, and anti-fraud enforcement.",
+    version: DOC_VERSION,
+    lastUpdated: DOC_DATE,
+    sections: [
+      {
+        heading: "1. Granular Verification Badges",
+        body: [
+          "COVERLY displays individual badges (Mobile Verified, Email Verified, Identity Verified, PAN Verified, GST Verified, Udyam Verified, Business Verified) reflecting only checks actually verified.",
+          "Badges confirm document compliance review at the time of approval and do not constitute a government endorsement, credit rating, or commercial guarantee.",
+        ],
+      },
+      {
+        heading: "2. Rejection, Expiry & Anti-Abuse",
+        body: [
+          "Rejected or incomplete submissions receive explicit feedback and support structured resubmission. Forged files, executable uploads, or OTP endpoint abuse will result in automated blocking and account enforcement.",
+        ],
+      },
+    ],
+  },
 ];
 
 export function getLegalDocumentByPath(pathname: string): LegalDocument | undefined {

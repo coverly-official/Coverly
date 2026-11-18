@@ -15,13 +15,21 @@ interface AuthContextType {
   register: (payload: {
     email: string;
     password: string;
+    confirm_password?: string;
     full_name: string;
     role?: string;
     phone?: string;
+    account_type?: string;
+    business_type?: string;
+    country?: string;
+    state?: string;
+    city?: string;
     terms_accepted?: boolean;
+    privacy_accepted?: boolean;
     terms_version?: string;
     privacy_version?: string;
     marketing_consent?: boolean;
+    website_url_hp?: string;
   }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   setActiveRole: (role: UserRole) => void;
@@ -181,13 +189,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (payload: {
     email: string;
     password: string;
+    confirm_password?: string;
     full_name: string;
     role?: string;
     phone?: string;
+    account_type?: string;
+    business_type?: string;
+    country?: string;
+    state?: string;
+    city?: string;
     terms_accepted?: boolean;
+    privacy_accepted?: boolean;
     terms_version?: string;
     privacy_version?: string;
     marketing_consent?: boolean;
+    website_url_hp?: string;
   }) => {
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {

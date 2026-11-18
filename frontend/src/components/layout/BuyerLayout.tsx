@@ -2,6 +2,7 @@ import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
+import { VerificationBanner } from "@/components/verification/VerificationBanner";
 import {
   LayoutDashboard,
   Search,
@@ -24,6 +25,7 @@ import {
   Heart,
   ListOrdered,
   LifeBuoy,
+  ShieldCheck,
 } from "lucide-react";
 
 export const BuyerLayout: React.FC = () => {
@@ -47,6 +49,7 @@ export const BuyerLayout: React.FC = () => {
     { label: "Business Services", href: "/services", icon: Briefcase },
     { label: "Team Management", href: "/buyer/team", icon: Users },
     { label: "Documents Vault", href: "/buyer/documents", icon: FolderOpen },
+    { label: "Verification Center", href: "/buyer/verification", icon: ShieldCheck },
     { label: "Notifications", href: "/notifications", icon: Bell },
     { label: "Business Profile", href: "/buyer/profile", icon: Building2 },
     { label: "Settings", href: "/buyer/settings", icon: Settings },
@@ -139,6 +142,7 @@ export const BuyerLayout: React.FC = () => {
           </div>
         </header>
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+          <VerificationBanner />
           <Outlet />
         </div>
       </main>
