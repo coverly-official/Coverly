@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
+import { WholesaleCategoryCard } from "@/components/marketplace/WholesaleCategoryCard";
 import type { Product, Category, Business, BusinessService } from "@/types";
 import {
   Search,
@@ -255,45 +256,26 @@ export const HomePage: React.FC = () => {
 
       {/* 2. POPULAR PRODUCT CATEGORIES GRID */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-7 gap-4">
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-widest text-blue-900 mb-1">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#1D4ED8] mb-1.5">
               Top Industrial Verticals
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">
+            <h2 className="text-2xl sm:text-[32px] font-extrabold tracking-tight text-slate-950 leading-tight">
               Browse Wholesale Product Categories
             </h2>
           </div>
           <Link
             to="/categories"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-900 hover:text-blue-700 transition"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#1D4ED8] hover:text-blue-800 transition"
           >
-            View All {categories.length} Categories <ArrowRight className="w-3.5 h-3.5" />
+            View All {categories.length || 15} Categories <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {categories.slice(0, 12).map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/products?category=${cat.id}`}
-              className="group p-4 bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-blue-700 hover:shadow-md transition text-center flex flex-col items-center justify-between"
-            >
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center group-hover:scale-110 transition-transform mb-3">
-                <Package className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-stone-900 group-hover:text-blue-900 transition line-clamp-1">
-                  {cat.label || cat.name}
-                </h3>
-                <div className="text-[10px] text-stone-500 font-medium mt-1">
-                  Standard MOQ: {cat.default_qty || 100} {cat.unit || "units"}
-                </div>
-              </div>
-              <span className="mt-2 text-[10px] font-semibold text-blue-700 opacity-0 group-hover:opacity-100 transition flex items-center gap-0.5">
-                Explore <ChevronRight className="w-3 h-3" />
-              </span>
-            </Link>
+            <WholesaleCategoryCard key={cat.id} category={cat} />
           ))}
         </div>
       </section>
