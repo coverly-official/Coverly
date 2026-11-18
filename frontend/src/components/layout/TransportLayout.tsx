@@ -2,6 +2,7 @@ import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { VerificationBanner } from "@/components/verification/VerificationBanner";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
 import { Truck, Navigation, LogOut, ShieldCheck } from "lucide-react";
 
 export const TransportLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -13,16 +14,17 @@ export const TransportLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
     <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900 font-sans antialiased">
       <header className="h-14 border-b border-stone-200 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-950 text-white flex items-center justify-center">
-            {isLogistics ? <Navigation className="w-4 h-4 text-amber-400" /> : <Truck className="w-4 h-4 text-amber-400" />}
-          </div>
+          <Link to="/" className="hover:opacity-90 transition">
+            <CoverlyLogo variant="horizontal" size="sm" />
+          </Link>
+          <span className="text-stone-300">|</span>
           <div>
-            <div className="text-sm font-bold text-stone-900 leading-tight">
-              {isLogistics ? "COVERLY Logistics Partner Console" : "COVERLY Transporter Fleet Workspace"}
+            <div className="text-xs font-bold text-stone-900 leading-tight">
+              {isLogistics ? "Logistics Partner Console" : "Transporter Fleet Workspace"}
             </div>
             <div className="text-[10px] text-stone-500 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-600" />
-              Dedicated Fleet & Dispatch Portal
+              Dedicated Dispatch Portal
             </div>
           </div>
         </div>

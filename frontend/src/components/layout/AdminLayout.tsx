@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
 import {
   canAccessAdminModule,
   formatAdminRoleLabel,
@@ -621,19 +622,9 @@ export const AdminLayout: React.FC = () => {
       <aside className="w-68 border-r border-stone-200 bg-[#F4F1EA] flex-col justify-between hidden lg:flex shrink-0 h-screen sticky top-0">
         <div className="flex flex-col h-full overflow-hidden">
           {/* Admin Brand Header */}
-          <div className="h-16 flex items-center px-4 border-b border-stone-200/90 gap-2.5 shrink-0 bg-white/60">
-            <Link to="/admin/dashboard" className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-stone-950 flex items-center justify-center text-amber-400 font-black text-sm tracking-wider shadow-sm shrink-0">
-                C
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-extrabold text-sm tracking-tight text-stone-950 leading-tight truncate">
-                  COVERLY ADMIN
-                </span>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-amber-700 truncate">
-                  Control Center
-                </span>
-              </div>
+          <div className="h-16 flex items-center px-4 border-b border-stone-200/90 gap-2.5 shrink-0 bg-white/80">
+            <Link to="/admin/dashboard" className="flex items-center min-w-0 hover:opacity-90 transition">
+              <CoverlyLogo variant="horizontal" size="sm" subtitle="Admin Center" />
             </Link>
             <span className="ml-auto text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-900 text-emerald-400 font-mono shrink-0">
               Live
@@ -804,10 +795,7 @@ export const AdminLayout: React.FC = () => {
           />
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#FAF9F5] shadow-2xl border-r border-stone-200">
             <div className="h-16 flex items-center justify-between px-4 border-b border-stone-200 bg-white">
-              <div className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
-                <span className="font-extrabold text-sm text-stone-950">COVERLY Admin Center</span>
-              </div>
+              <CoverlyLogo variant="horizontal" size="sm" subtitle="Admin Center" />
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(false)}

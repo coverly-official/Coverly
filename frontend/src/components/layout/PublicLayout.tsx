@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
 import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
 import { getWorkspaceRoute, isAdminRole } from "@/lib/role-routing";
 import {
   Search,
@@ -138,18 +139,8 @@ export const PublicLayout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between gap-4 md:gap-6">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-              <div className="w-9 h-9 rounded-xl bg-blue-950 flex items-center justify-center text-white font-extrabold text-base tracking-wider shadow-sm group-hover:bg-blue-900 transition">
-                C
-              </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-xl tracking-tight text-blue-950 leading-none">
-                  COVERLY
-                </span>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-700 mt-0.5">
-                  B2B Sourcing
-                </span>
-              </div>
+            <Link to="/" className="flex items-center shrink-0 group hover:opacity-95 transition">
+              <CoverlyLogo variant="horizontal" size="md" subtitle="B2B Sourcing" />
             </Link>
 
             {/* Universal Search Bar (IndiaMART / Justdial Inspired) */}
@@ -403,12 +394,9 @@ export const PublicLayout: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 pb-10 border-b border-stone-800">
             {/* Brand column */}
             <div className="md:col-span-2 pr-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center text-white font-bold text-sm">
-                  C
-                </div>
-                <span className="text-white font-extrabold text-xl tracking-tight">COVERLY</span>
-              </div>
+              <Link to="/" className="inline-block mb-3.5 hover:opacity-95 transition">
+                <CoverlyLogo variant="stacked" theme="dark" size="md" />
+              </Link>
               <p className="text-xs text-stone-400 leading-relaxed mb-4 max-w-sm">
                 India's wholesale discovery, supplier verification & transparent landed-cost procurement marketplace. Connecting MSMEs, manufacturers, and bulk buyers with zero brokerage.
               </p>

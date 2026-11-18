@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,28 +25,7 @@ export function Navbar() {
           className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral rounded-md py-1"
           aria-label="Coverly Home"
         >
-          <div className="w-8 h-8 rounded-xl bg-coral flex items-center justify-center shadow-soft transition-transform group-hover:scale-105">
-            {/* Simple flame/stack mark */}
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="w-5 h-5 text-white"
-              aria-hidden="true"
-            >
-              <path
-                d="M12 2C12 2 15 5.5 15 8.5C15 10.2 13.7 11.5 12 11.5C10.3 11.5 9 10.2 9 8.5C9 6.5 10.2 4.5 12 2Z"
-                fill="currentColor"
-                fillOpacity="0.9"
-              />
-              <path
-                d="M12 8C14.5 8 18 11.5 18 16C18 19.3 15.3 22 12 22C8.7 22 6 19.3 6 16C6 11.5 9.5 8 12 8Z"
-                fill="currentColor"
-              />
-            </svg>
-          </div>
-          <span className="font-heading font-bold text-xl tracking-tight text-ink">
-            Coverly
-          </span>
+          <CoverlyLogo variant="horizontal" size="md" />
         </a>
 
         {/* Desktop Nav Links */}

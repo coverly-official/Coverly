@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminRole } from "@/lib/role-routing";
 import type { UserRole } from "@/types";
-import { ShieldCheck, Lock, Mail, ArrowRight } from "lucide-react";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
+import { Lock, Mail, ArrowRight } from "lucide-react";
 
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -46,11 +47,11 @@ export const AdminLoginPage: React.FC = () => {
   return (
     <div>
       <div className="mb-6 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-stone-900 text-white mb-3 shadow-sm">
-          <ShieldCheck className="w-6 h-6 text-emerald-400" />
-        </div>
+        <Link to="/" className="inline-flex justify-center mb-3 hover:opacity-95 transition">
+          <CoverlyLogo variant="stacked" size="lg" />
+        </Link>
         <h2 className="text-xl font-bold text-stone-900 tracking-tight">COVERLY Admin Portal</h2>
-        <p className="text-xs text-stone-500 mt-1">Platform Governance, Verification & Support Queue</p>
+        <p className="text-xs text-stone-500 mt-1">Platform Governance, Verification &amp; Support Queue</p>
       </div>
 
       {errorMsg && (

@@ -1,5 +1,6 @@
 import { useState, useId, FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
 import { categories } from "@/data/categories";
 import { PLACEHOLDERS } from "@/data/placeholders";
 import { submitConciergeLead } from "@/lib/api";
@@ -339,10 +340,7 @@ export function Footer() {
         <div className="pt-8 border-t border-[rgba(34,37,42,0.06)] flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Brand & Mission */}
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-coral flex items-center justify-center text-white">
-              <span className="font-bold text-xs">C</span>
-            </div>
-            <span className="font-heading font-bold text-ink">Coverly</span>
+            <CoverlyLogo variant="horizontal" size="sm" />
             <span className="text-xs text-ink-secondary">
               Modern Wholesale Marketplace for Indian MSMEs
             </span>

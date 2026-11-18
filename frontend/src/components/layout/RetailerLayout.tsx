@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
 import { VerificationBanner } from "@/components/verification/VerificationBanner";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
 import {
   LayoutDashboard,
   Store,
@@ -55,14 +56,11 @@ export const RetailerLayout: React.FC = () => {
       <aside className="w-64 border-r border-stone-200 bg-[#F4F1EA]/80 flex flex-col justify-between hidden md:flex shrink-0">
         <div className="overflow-y-auto max-h-[calc(100vh-140px)]">
           {/* Brand header */}
-          <div className="h-16 flex items-center px-6 border-b border-stone-200/80 gap-3 sticky top-0 bg-[#F4F1EA] z-10">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-900 flex items-center justify-center text-white font-bold text-xs">
-                C
-              </div>
-              <span className="font-semibold text-base tracking-tight">COVERLY</span>
+          <div className="h-16 flex items-center justify-between px-4 border-b border-stone-200/80 gap-2 sticky top-0 bg-[#F4F1EA] z-10">
+            <Link to="/" className="flex items-center hover:opacity-90 transition">
+              <CoverlyLogo variant="horizontal" size="sm" />
             </Link>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-200">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-200 shrink-0">
               Retailer
             </span>
           </div>

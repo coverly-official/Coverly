@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { isAdminRole, getWorkspaceRoute } from "@/lib/role-routing";
+import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
 import {
   ShieldAlert,
   ArrowLeft,
@@ -23,18 +24,11 @@ export const AccessDeniedPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col items-center justify-center p-4 sm:p-6 font-sans antialiased text-stone-900">
       {/* Top Brand Header */}
-      <div className="mb-6 flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-blue-950 flex items-center justify-center text-white font-extrabold text-base tracking-wider shadow-sm">
-          C
-        </div>
-        <div className="flex flex-col">
-          <span className="font-extrabold text-xl tracking-tight text-blue-950 leading-none">
-            COVERLY
-          </span>
-          <span className="text-[9px] font-bold uppercase tracking-widest text-blue-700 mt-0.5">
-            Security & Access Control
-          </span>
-        </div>
+      <div className="mb-6 flex flex-col items-center">
+        <CoverlyLogo variant="stacked" size="md" />
+        <span className="text-[10px] font-bold uppercase tracking-widest text-blue-700 mt-1.5">
+          Security &amp; Access Control
+        </span>
       </div>
 
       {/* Main Card */}
