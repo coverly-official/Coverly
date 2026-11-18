@@ -3,6 +3,7 @@ import { Link, Navigate, Outlet, useNavigate, useLocation } from "react-router-d
 import { useAuth } from "@/context/AuthContext";
 import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
+import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
 import { getWorkspaceRoute, isAdminRole } from "@/lib/role-routing";
 import {
   Search,
@@ -448,7 +449,7 @@ export const PublicLayout: React.FC = () => {
             {/* Quick Actions & Governance */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-3">
-                Procurement
+                Guides &amp; Legal Center
               </h4>
               <ul className="space-y-2 text-xs text-stone-400">
                 <li>
@@ -456,35 +457,44 @@ export const PublicLayout: React.FC = () => {
                     Post Sourcing Requirement
                   </button>
                 </li>
-                <li><Link to="/how-it-works" className="hover:text-white transition">How Sourcing Works</Link></li>
-                <li><Link to="/transporters" className="hover:text-white transition">Book Commercial Trucks</Link></li>
-                <li><Link to="/transporters/track" className="hover:text-white transition">Track Transport Trip</Link></li>
-                <li><Link to="/transporter" className="hover:text-white transition">Transporter Portal</Link></li>
-                <li><Link to="/sales-agents" className="hover:text-white transition">Sales Representatives</Link></li>
-                <li><Link to="/agent/dashboard" className="hover:text-white transition">Agent Portal</Link></li>
-                <li><Link to="/raw-materials" className="hover:text-white transition">Raw Material Marketplace</Link></li>
-                <li><Link to="/raw-materials/suppliers" className="hover:text-white transition">Mill & Supplier Directory</Link></li>
-                <li><Link to="/raw-materials/rfq" className="hover:text-amber-400 transition font-semibold">Bulk Raw Material RFQ</Link></li>
-                <li><Link to="/raw-material-supplier/dashboard" className="hover:text-white transition">Raw Material Supplier Portal</Link></li>
-                <li><Link to="/auth/login" className="hover:text-white transition">Buyer & Supplier Sign In</Link></li>
-                <li><Link to="/admin/login" className="hover:text-white transition">Admin Portal</Link></li>
+                <li><Link to="/buyer-guide" className="hover:text-white transition">Buyer Sourcing Guide</Link></li>
+                <li><Link to="/supplier-guide" className="hover:text-white transition">Supplier Guide</Link></li>
+                <li><Link to="/verification-info" className="hover:text-white transition">Verification Information</Link></li>
+                <li><Link to="/help-center" className="hover:text-white transition">Help Center</Link></li>
+                <li><Link to="/faq" className="hover:text-white transition">Frequently Asked Questions</Link></li>
+                <li><Link to="/legal" className="hover:text-amber-300 text-amber-400 font-semibold transition">Legal Center (All Policies)</Link></li>
+                <li><Link to="/grievance-redressal-policy" className="hover:text-white transition">Grievance Redressal</Link></li>
+                <li><Link to="/account-deletion-policy" className="hover:text-white transition">Account Deletion &amp; Data Rights</Link></li>
                 <li><Link to="/contact" className="hover:text-white transition">Contact Support Desk</Link></li>
+                <li><Link to="/admin/login" className="hover:text-white transition">Admin Control Center</Link></li>
               </ul>
             </div>
           </div>
 
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-3">
             <div>
-              © {new Date().getFullYear()} COVERLY Sourcing Technologies. All trade names and registered trademarks are properties of their respective owners.
+              © {new Date().getFullYear()} COVERLY. B2B discovery &amp; sourcing marketplace intermediary.
             </div>
-            <div className="flex gap-4">
-              <span className="hover:text-stone-300 transition cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-stone-300 transition cursor-pointer">Terms of Platform Use</span>
-              <span className="hover:text-stone-300 transition cursor-pointer">Anti-Spam Policy</span>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link to="/legal" className="hover:text-stone-200 transition font-semibold text-stone-300">Legal Center</Link>
+              <Link to="/privacy-policy" className="hover:text-stone-200 transition">Privacy Policy</Link>
+              <Link to="/terms-and-conditions" className="hover:text-stone-200 transition">Terms &amp; Conditions</Link>
+              <Link to="/cookie-policy" className="hover:text-stone-200 transition">Cookie Policy</Link>
+              <Link to="/disclaimer" className="hover:text-stone-200 transition">Disclaimer</Link>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("coverly:open-cookie-settings"))}
+                className="hover:text-amber-300 transition underline"
+              >
+                Cookie Preferences
+              </button>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Privacy & Cookie Consent Control */}
+      <CookieConsentBanner />
     </div>
   );
 };

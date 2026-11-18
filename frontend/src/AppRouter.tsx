@@ -181,12 +181,20 @@ import { AdminRetailersPage } from "@/pages/admin/AdminRetailersPage";
 import { NotificationsPage } from "@/pages/shared/NotificationsPage";
 import { AccessDeniedPage } from "@/pages/shared/AccessDeniedPage";
 import { NotFoundPage } from "@/pages/shared/NotFoundPage";
+import { AppErrorBoundary } from "@/components/errors/AppErrorBoundary";
+
+// Legal Center, Trust Guides & SEO Landing Pages
+import { LegalCenterPage } from "@/pages/legal/LegalCenterPage";
+import { LegalDocumentPage } from "@/pages/legal/LegalDocumentPage";
+import { SeoLandingPage } from "@/pages/public/SeoLandingPage";
+import { TrustGuidesPage } from "@/pages/public/TrustGuidesPage";
 
 export const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
+    <AppErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
           {/* 1. Public Portal (Screens 1–12) & Business Services */}
           <Route element={<PublicLayout />}>
             <Route index element={<HomePage />} />
@@ -285,6 +293,45 @@ export const AppRouter: React.FC = () => {
 
             {/* Public Wholesale Discovery for Retailers */}
             <Route path="wholesale" element={<RetailerWholesaleCatalogPage />} />
+
+            {/* High-Intent B2B SEO Landing Pages */}
+            <Route path="verified-manufacturers-india" element={<SeoLandingPage />} />
+            <Route path="wholesale-suppliers-india" element={<SeoLandingPage />} />
+            <Route path="industrial-raw-material-suppliers" element={<SeoLandingPage />} />
+            <Route path="packaging-material-manufacturers" element={<SeoLandingPage />} />
+            <Route path="b2b-procurement-platform" element={<SeoLandingPage />} />
+            <Route path="bulk-product-sourcing" element={<SeoLandingPage />} />
+            <Route path="indian-wholesale-marketplace" element={<SeoLandingPage />} />
+            <Route path="business-services-for-manufacturers" element={<SeoLandingPage />} />
+            <Route path="b2b-logistics-transport-services" element={<SeoLandingPage />} />
+
+            {/* Trust, Help & Verification Guides */}
+            <Route path="buyer-guide" element={<TrustGuidesPage />} />
+            <Route path="supplier-guide" element={<TrustGuidesPage />} />
+            <Route path="help-center" element={<TrustGuidesPage />} />
+            <Route path="faq" element={<TrustGuidesPage />} />
+            <Route path="verification-info" element={<TrustGuidesPage />} />
+
+            {/* Dedicated Public Legal Center (15 Compliance Routes) */}
+            <Route path="legal" element={<LegalCenterPage />} />
+            <Route path="privacy-policy" element={<LegalDocumentPage />} />
+            <Route path="terms-and-conditions" element={<LegalDocumentPage />} />
+            <Route path="cookie-policy" element={<LegalDocumentPage />} />
+            <Route path="disclaimer" element={<LegalDocumentPage />} />
+            <Route path="acceptable-use-policy" element={<LegalDocumentPage />} />
+            <Route path="buyer-terms" element={<LegalDocumentPage />} />
+            <Route path="supplier-terms" element={<LegalDocumentPage />} />
+            <Route path="business-services-terms" element={<LegalDocumentPage />} />
+            <Route path="shipping-and-logistics-policy" element={<LegalDocumentPage />} />
+            <Route path="cancellation-policy" element={<LegalDocumentPage />} />
+            <Route path="returns-and-disputes-policy" element={<LegalDocumentPage />} />
+            <Route path="refund-policy" element={<LegalDocumentPage />} />
+            <Route path="intellectual-property-policy" element={<LegalDocumentPage />} />
+            <Route path="account-deletion-policy" element={<LegalDocumentPage />} />
+            <Route path="grievance-redressal-policy" element={<LegalDocumentPage />} />
+
+            {/* Branded Animated 404 Route */}
+            <Route path="404" element={<NotFoundPage />} />
           </Route>
 
           {/* Standalone Access Denied & Security Clearance (No Public Guest Header) */}
@@ -878,10 +925,13 @@ export const AppRouter: React.FC = () => {
           <Route path="trade/dashboard" element={<TradeDashboardPage />} />
           <Route path="trade/*" element={<TradeDashboardPage />} />
 
-          {/* 7. Fallback 404 */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+          {/* 7. Fallback 404 (Branded Animated COVERLY 404 inside PublicLayout) */}
+          <Route element={<PublicLayout />}>
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </AppErrorBoundary>
   );
 };

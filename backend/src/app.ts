@@ -100,4 +100,23 @@ app.use("/api", importExportRoutes);
 app.use("/api", buyerRoutes);
 app.use("/api", retailerRoutes);
 
+// Standardized JSON 404 for unknown API endpoints (never return HTML for APIs)
+app.use("/api", (_req, res) => {
+  return res.status(404).json({
+    success: false,
+    error: "API endpoint not found.",
+    code: "NOT_FOUND",
+  });
+});
+
+// Sanitized global error handler (never expose raw stack traces to clients)
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const status = typeof err?.status === "number" && err.status >= 400 && err.status < 600 ? err.status : 500;
+  return res.status(status).json({
+    success: false,
+    error: status >= 500 ? "An unexpected internal error occurred. Please try again later." : err?.message || "Request failed.",
+    code: status >= 500 ? "INTERNAL_SERVER_ERROR" : "REQUEST_ERROR",
+  });
+});
+
 export default app;

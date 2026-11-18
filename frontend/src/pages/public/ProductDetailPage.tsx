@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
+import { NotFoundPage } from "@/pages/shared/NotFoundPage";
 import type { Product } from "@/types";
 import {
   Building2,
@@ -75,23 +76,7 @@ export const ProductDetailPage: React.FC = () => {
   }
 
   if (!product) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-4">
-        <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto text-stone-400">
-          <Package className="w-8 h-8" />
-        </div>
-        <h2 className="text-xl font-bold text-stone-900">Wholesale Product Not Found</h2>
-        <p className="text-xs text-stone-500 max-w-sm mx-auto">
-          The product listing you requested does not exist or has been archived by the supplier.
-        </p>
-        <Link
-          to="/products"
-          className="inline-flex px-5 py-2.5 bg-blue-900 text-white rounded-xl text-xs font-semibold hover:bg-blue-800 transition"
-        >
-          Browse All Products
-        </Link>
-      </div>
-    );
+    return <NotFoundPage resourceLabel="wholesale product listing" />;
   }
 
   const images = product.images || product.product_images || [];

@@ -11,15 +11,35 @@ backend/dist/
 # Testing & coverage
 coverage/
 
-# Environment files
+# Environment files (NEVER commit)
 .env
-.env*.local
-.env.production
+.env.local
 .env.development
+.env.production
+.env.*.local
 frontend/.env
-frontend/.env*.local
+frontend/.env.local
+frontend/.env.*.local
 backend/.env
-backend/.env*.local
+backend/.env.local
+backend/.env.*.local
+
+# Credentials, certificates, keys & sensitive dumps
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.jks
+credentials.json
+service-account*.json
+*.sql.bak
+*.dump
+*.backup
+kyc-uploads/
+user-exports/
+production-logs/
+logs/
 
 # Vercel
 .vercel
@@ -35,7 +55,6 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 desktop.ini
-*.pem
 
 # Editor configurations
 .vscode/

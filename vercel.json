@@ -22,9 +22,34 @@
           "value": "*"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
     }
   ],
   "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
     {
       "source": "/api/og-image",
       "destination": "/api/og-image"
@@ -34,15 +59,19 @@
       "destination": "/api/render"
     },
     {
+      "source": "/api/sitemap",
+      "destination": "/api/sitemap"
+    },
+    {
       "source": "/api",
       "destination": "/api"
     },
     {
-      "source": "/api/((?!og-image(?:/|$)|render(?:/|$)).*)",
+      "source": "/api/((?!og-image(?:/|$)|render(?:/|$)|sitemap(?:/|$)).*)",
       "destination": "/api"
     },
     {
-      "source": "/((?!api(?:/|$)|assets(?:/|$)|og(?:/|$)|[^/]+\\.[^/]+$).*)",
+      "source": "/((?!api(?:/|$)|assets(?:/|$)|og(?:/|$)|robots\\.txt$|sitemap\\.xml$|[^/]+\\.[^/]+$).*)",
       "destination": "/api/render?__path=/$1"
     }
   ]

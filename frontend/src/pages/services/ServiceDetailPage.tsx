@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import type { BusinessService } from "@/types";
+import { NotFoundPage } from "@/pages/shared/NotFoundPage";
 import {
   Building2,
   ShieldCheck,
@@ -53,17 +54,7 @@ export const ServiceDetailPage: React.FC = () => {
   }
 
   if (!service) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-xl font-bold text-stone-900 mb-2">Service Listing Not Found</h2>
-        <p className="text-xs text-stone-500 mb-6">
-          The service listing you requested is unavailable or has been archived.
-        </p>
-        <Link to="/services/all" className="text-xs font-semibold px-4 py-2 bg-stone-900 text-white rounded-lg">
-          Browse All Services
-        </Link>
-      </div>
-    );
+    return <NotFoundPage resourceLabel="business service listing" />;
   }
 
   const provider = service.businesses;

@@ -1,0 +1,44 @@
+User-agent: *
+Allow: /
+Allow: /products
+Allow: /categories
+Allow: /manufacturers
+Allow: /wholesalers
+Allow: /distributors
+Allow: /suppliers/
+Allow: /services
+Allow: /logistics
+Allow: /transporters
+Allow: /raw-materials
+Allow: /packaging
+Allow: /import-export
+Allow: /sales-agents
+Allow: /wholesale
+Allow: /legal
+Allow: /privacy-policy
+Allow: /terms-and-conditions
+
+# Private workspaces & administrative routes must never be crawled or indexed
+Disallow: /admin
+Disallow: /admin/
+Disallow: /buyer
+Disallow: /buyer/
+Disallow: /retailer
+Disallow: /retailer/
+Disallow: /supplier
+Disallow: /supplier/
+Disallow: /provider
+Disallow: /provider/
+Disallow: /auth
+Disallow: /auth/
+Disallow: /access-denied
+Disallow: /logistics-partner
+Disallow: /transporter
+Disallow: /agent
+Disallow: /trade
+Disallow: /raw-material-supplier
+Disallow: /packaging-supplier
+Disallow: /services/my-requests
+Disallow: /api/
+
+Sitemap: https://coverly-indol.vercel.app/sitemap.xml

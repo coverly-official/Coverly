@@ -18,6 +18,10 @@ interface AuthContextType {
     full_name: string;
     role?: string;
     phone?: string;
+    terms_accepted?: boolean;
+    terms_version?: string;
+    privacy_version?: string;
+    marketing_consent?: boolean;
   }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   setActiveRole: (role: UserRole) => void;
@@ -180,6 +184,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     full_name: string;
     role?: string;
     phone?: string;
+    terms_accepted?: boolean;
+    terms_version?: string;
+    privacy_version?: string;
+    marketing_consent?: boolean;
   }) => {
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {

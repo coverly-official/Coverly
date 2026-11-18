@@ -1,10 +1,3 @@
-if (!process.env.INSFORGE_BASE_URL) {
-  process.env.INSFORGE_BASE_URL = "https://4vwfw2w8.ap-southeast.insforge.app";
-}
-if (!process.env.INSFORGE_ANON_KEY) {
-  process.env.INSFORGE_ANON_KEY = "anon_9da4660d2d03cec83d7ea57032348bab48a951f8ddf8b2b9dccdfb4b77eefe58";
-}
-
 import fs from "node:fs";
 import path from "node:path";
 import { resolvePageMeta, injectMetaIntoHtml } from "../backend/src/lib/seo-meta.js";
@@ -71,14 +64,15 @@ export default async function handler(req: any, res: any) {
     const template = loadIndexHtmlTemplate();
     const html = injectMetaIntoHtml(template, meta);
 
+    const statusCode = meta.statusCode || 200;
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader(
       "Cache-Control",
-      meta.robots.includes("noindex")
+      statusCode === 404 || meta.robots.includes("noindex")
         ? "private, no-store, max-age=0"
         : "public, s-maxage=300, stale-while-revalidate=3600"
     );
-    return res.status(200).send(html);
+    return res.status(statusCode).send(html);
   } catch (err) {
     console.error("Metadata render fallback:", err);
     res.setHeader("Content-Type", "text/html; charset=utf-8");

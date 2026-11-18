@@ -109,4 +109,36 @@ describe("COVERLY Open Graph & WhatsApp Rich Preview System", () => {
     // Verify compressed size is WhatsApp-friendly (< 300 KB)
     assert.ok(png.length > 5_000 && png.length < 300_000, `Expected PNG between 5KB and 300KB, got ${png.length} bytes`);
   });
+
+  it("returns real HTTP 404 metadata and noindex for /404 and unknown routes", async () => {
+    const explicit404 = await resolvePageMeta("/404");
+    assert.equal(explicit404.statusCode, 404);
+    assert.equal(explicit404.robots, "noindex, follow");
+
+    const unknownRoute = await resolvePageMeta("/totally-nonexistent-page-xyz-123");
+    assert.equal(unknownRoute.statusCode, 404);
+    assert.equal(unknownRoute.robots, "noindex, follow");
+    assert.match(unknownRoute.title, /404/);
+  });
+
+  it("injects JSON-LD structured data for Homepage, SEO landing pages, Legal Center, and FAQ", async () => {
+    const home = await resolvePageMeta("/");
+    const homeHtml = injectMetaIntoHtml(SAMPLE_HTML, home);
+    assert.match(homeHtml, /application\/ld\+json/);
+    assert.match(homeHtml, /"Organization"/);
+    assert.match(homeHtml, /"WebSite"/);
+
+    const faq = await resolvePageMeta("/faq");
+    const faqHtml = injectMetaIntoHtml(SAMPLE_HTML, faq);
+    assert.equal(faq.statusCode, 200);
+    assert.match(faqHtml, /"FAQPage"/);
+
+    const landing = await resolvePageMeta("/verified-manufacturers-india");
+    assert.equal(landing.statusCode, 200);
+    assert.match(landing.title, /Verified Manufacturers in India/);
+
+    const privacy = await resolvePageMeta("/privacy-policy");
+    assert.equal(privacy.statusCode, 200);
+    assert.match(privacy.title, /Privacy Policy/);
+  });
 });

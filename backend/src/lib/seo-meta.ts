@@ -19,6 +19,8 @@ export interface PageMeta {
   siteName: string;
   twitterCard: "summary_large_image";
   robots: string;
+  statusCode: number;
+  jsonLd?: Record<string, any>[];
 }
 
 const PRIVATE_PREFIXES = [
@@ -33,13 +35,224 @@ const PRIVATE_PREFIXES = [
   "/transporter",
   "/agent",
   "/sales-agent/dashboard",
+  "/sales-agents/dashboard",
   "/raw-material-supplier",
   "/packaging-supplier",
   "/trade",
   "/services/my-requests",
+  "/manufacturer",
+  "/wholesaler",
+  "/distributor",
+  "/dashboard",
+  "/account",
+  "/settings",
+  "/notifications",
 ];
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const SEO_LANDING_PAGES: Record<
+  string,
+  { title: string; description: string; image: string; badge: string }
+> = {
+  "/verified-manufacturers-india": {
+    title: "Verified Manufacturers in India — Factory-Direct B2B Sourcing | COVERLY",
+    description:
+      "Connect directly with verified Indian manufacturers across steel, polymers, textiles, machinery, packaging & industrial goods. Compare MOQ, GST & landed costs.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-manufacturers.png`,
+    badge: "VERIFIED MANUFACTURERS INDIA",
+  },
+  "/wholesale-suppliers-india": {
+    title: "Wholesale Suppliers in India — Bulk B2B Procurement | COVERLY",
+    description:
+      "Source bulk wholesale stock from verified Indian wholesalers and distributors with transparent tiered MOQ pricing and pan-India delivery.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-wholesalers.png`,
+    badge: "WHOLESALE SUPPLIERS INDIA",
+  },
+  "/industrial-raw-material-suppliers": {
+    title: "Industrial Raw Material Suppliers India — Mill-Direct Sourcing | COVERLY",
+    description:
+      "Procure steel sheets, polymer granules, industrial chemicals, yarns & agricultural commodities directly from verified raw material suppliers.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-trade.png`,
+    badge: "RAW MATERIAL SUPPLIERS",
+  },
+  "/packaging-material-manufacturers": {
+    title: "Packaging Material Manufacturers India — Custom & Bulk Packaging | COVERLY",
+    description:
+      "Source corrugated boxes, flexible pouches, rigid cartons, labels & industrial pallets from verified Indian packaging manufacturers.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-trade.png`,
+    badge: "PACKAGING MANUFACTURERS",
+  },
+  "/b2b-procurement-platform": {
+    title: "B2B Procurement Platform India — RFQ, Quotations & Landed-Cost Comparison | COVERLY",
+    description:
+      "Streamline multi-supplier RFQs, compare true landed costs including GST & freight, manage internal approvals & track B2B purchase orders on COVERLY.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
+    badge: "B2B PROCUREMENT PLATFORM",
+  },
+  "/bulk-product-sourcing": {
+    title: "Bulk Product Sourcing for Retailers & Enterprises | COVERLY",
+    description:
+      "Post bulk sourcing requirements, receive competitive supplier quotations & manage multi-branch wholesale reorders with zero brokerage.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-products.png`,
+    badge: "BULK PRODUCT SOURCING",
+  },
+  "/indian-wholesale-marketplace": {
+    title: "Indian Wholesale Marketplace for MSMEs, Shops & Distributors | COVERLY",
+    description:
+      "Discover India's connected wholesale marketplace bridging buyers, retailers, factories, distributors, logistics & business services.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-wholesalers.png`,
+    badge: "INDIAN WHOLESALE MARKETPLACE",
+  },
+  "/business-services-for-manufacturers": {
+    title: "Business Services for Manufacturers & MSMEs — Legal, GST, CA & ERP | COVERLY",
+    description:
+      "Hire verified agencies and professionals for factory compliance, GST & statutory audit, trademark filing, packaging design & ERP software.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-services.png`,
+    badge: "BUSINESS SERVICES",
+  },
+  "/b2b-logistics-transport-services": {
+    title: "B2B Logistics & Commercial Transport Services Across India | COVERLY",
+    description:
+      "Compare pan-India freight quotes, book verified commercial fleets & track B2B consignments with electronic Proof of Delivery (e-POD).",
+    image: `${PUBLIC_SITE_URL}/og/coverly-logistics.png`,
+    badge: "B2B LOGISTICS & TRANSPORT",
+  },
+};
+
+export const LEGAL_PAGE_META: Record<string, { title: string; description: string }> = {
+  "/legal": {
+    title: "Legal Center — Policies, Terms & Compliance | COVERLY",
+    description:
+      "Access COVERLY's Privacy Policy, Terms & Conditions, Cookie Policy, Buyer & Supplier Terms, Grievance Redressal Policy and compliance documentation.",
+  },
+  "/privacy-policy": {
+    title: "Privacy Policy | COVERLY",
+    description:
+      "Understand how COVERLY collects, processes, protects and retains account, business, KYC and technical data across our B2B platform.",
+  },
+  "/terms-and-conditions": {
+    title: "Terms & Conditions | COVERLY",
+    description:
+      "Read the Terms & Conditions governing use of the COVERLY B2B discovery, sourcing, RFQ, supplier and business services marketplace.",
+  },
+  "/cookie-policy": {
+    title: "Cookie Policy | COVERLY",
+    description:
+      "Learn about essential session cookies, authentication storage and optional preference controls used on COVERLY.",
+  },
+  "/disclaimer": {
+    title: "Platform Disclaimer | COVERLY",
+    description:
+      "Important legal disclaimers regarding COVERLY's role as a B2B intermediary marketplace, indicative pricing and third-party supplier listings.",
+  },
+  "/acceptable-use-policy": {
+    title: "Acceptable Use Policy | COVERLY",
+    description:
+      "Prohibited activities, anti-spam rules, listing integrity standards and platform security obligations for COVERLY users.",
+  },
+  "/buyer-terms": {
+    title: "Buyer Terms of Use | COVERLY",
+    description:
+      "Terms governing B2B buyers, retailers and procurement teams submitting RFQs, comparing quotations and issuing purchase orders on COVERLY.",
+  },
+  "/supplier-terms": {
+    title: "Supplier Terms of Use | COVERLY",
+    description:
+      "Terms governing manufacturers, wholesalers, distributors, raw material and packaging suppliers listing products and submitting quotes on COVERLY.",
+  },
+  "/business-services-terms": {
+    title: "Business Services Terms | COVERLY",
+    description:
+      "Terms governing service providers and business clients engaging through the COVERLY Business Services Marketplace.",
+  },
+  "/shipping-and-logistics-policy": {
+    title: "Shipping & Logistics Policy | COVERLY",
+    description:
+      "Information on B2B dispatch responsibilities, freight quotation estimates, commercial transport bookings and delivery documentation on COVERLY.",
+  },
+  "/cancellation-policy": {
+    title: "Cancellation Policy | COVERLY",
+    description:
+      "Guidelines for cancelling RFQs, purchase orders, custom manufacturing orders and service bookings on COVERLY.",
+  },
+  "/returns-and-disputes-policy": {
+    title: "Returns & Disputes Policy | COVERLY",
+    description:
+      "B2B quality inspection claims, commercial return eligibility and platform dispute mediation procedures on COVERLY.",
+  },
+  "/refund-policy": {
+    title: "Refund Policy | COVERLY",
+    description:
+      "Refund terms for applicable platform service fees and buyer-supplier commercial settlement arrangements on COVERLY.",
+  },
+  "/intellectual-property-policy": {
+    title: "Intellectual Property Policy | COVERLY",
+    description:
+      "Trademark, copyright, brand authorization and IP infringement takedown procedures on COVERLY.",
+  },
+  "/account-deletion-policy": {
+    title: "Account Deletion & Data Retention Policy | COVERLY",
+    description:
+      "How to request account deletion, consent withdrawal and data erasure while meeting statutory commercial record retention obligations.",
+  },
+  "/grievance-redressal-policy": {
+    title: "Grievance Redressal Policy | COVERLY",
+    description:
+      "How to submit complaints, regulatory notices or privacy grievances and review COVERLY's resolution timelines.",
+  },
+};
+
+export const TRUST_GUIDE_META: Record<string, { title: string; description: string }> = {
+  "/buyer-guide": {
+    title: "B2B Buyer Sourcing Guide — RFQs & Landed Cost Comparison | COVERLY",
+    description:
+      "Step-by-step guide for Indian buyers, retailers and procurement teams to discover suppliers, issue RFQs and compare true landed costs on COVERLY.",
+  },
+  "/supplier-guide": {
+    title: "Supplier & Manufacturer Guide — Grow B2B Sales | COVERLY",
+    description:
+      "How verified Indian manufacturers, wholesalers and distributors list products, respond to bulk RFQs and manage purchase orders on COVERLY.",
+  },
+  "/help-center": {
+    title: "Help Center & Platform Documentation | COVERLY",
+    description:
+      "Find answers on account registration, business verification, RFQ workflows, logistics tracking, privacy requests and support tickets on COVERLY.",
+  },
+  "/faq": {
+    title: "Frequently Asked Questions (FAQ) | COVERLY",
+    description:
+      "Answers to common questions about COVERLY's B2B wholesale marketplace, landed-cost calculator, business verification and supplier onboarding.",
+  },
+  "/verification-info": {
+    title: "Business Verification Information — How COVERLY Checks Suppliers | COVERLY",
+    description:
+      "Learn what each COVERLY verification tier means, which documents are reviewed, and how to evaluate supplier trust before transacting.",
+  },
+};
+
+export const PUBLIC_FAQ_ITEMS = [
+  {
+    q: "What is COVERLY?",
+    a: "COVERLY is a B2B discovery, wholesale sourcing, and landed-cost procurement platform connecting Indian buyers, retailers, manufacturers, wholesalers, distributors, logistics partners, transporters, and business service providers.",
+  },
+  {
+    q: "How does landed-cost comparison work on COVERLY?",
+    a: "When buyers request quotations (RFQs), suppliers submit structured quotes containing unit price, minimum order quantity (MOQ), applicable GST, and estimated freight so buyers can compare total delivered cost transparently.",
+  },
+  {
+    q: "Does COVERLY manufacture or sell products directly?",
+    a: "COVERLY operates as a B2B technology platform and marketplace intermediary. Products, wholesale lots, transport services, and professional services are listed and fulfilled directly by independent third-party businesses.",
+  },
+  {
+    q: "What does a verification badge mean on COVERLY?",
+    a: "Verification tiers indicate that a business has submitted supporting registration or business documents reviewed by COVERLY's verification team. Buyers should still conduct standard commercial due diligence prior to high-value transactions.",
+  },
+  {
+    q: "How can I request account deletion or update my privacy preferences?",
+    a: "Users can manage cookie preferences from the footer, review our Privacy Policy and Account Deletion Policy in the Legal Center, or submit a formal privacy/deletion request through their account settings or Grievance Redressal channel.",
+  },
+];
 
 export function escapeHtml(input: string): string {
   return String(input || "")
@@ -60,10 +273,6 @@ export function cleanDescription(raw?: string | null, fallback = "", maxLen = 16
   return `${text.slice(0, maxLen - 1).trimEnd()}…`;
 }
 
-/**
- * Validates that an external image URL is safe, public HTTPS, and WhatsApp-compatible
- * (raster formats PNG/JPEG/WebP — not SVG, not localhost, not data URI, not signed-private).
- */
 export function resolvePublicImageUrl(candidate?: string | null): string | null {
   if (!candidate || typeof candidate !== "string") return null;
   const trimmed = candidate.trim();
@@ -92,6 +301,19 @@ export function buildDynamicOgImageUrl(params: Record<string, string | number | 
   return `${PUBLIC_SITE_URL}/api/og-image?${sp.toString()}`;
 }
 
+function buildBreadcrumbSchema(items: { name: string; url: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
 export function getHomepageMeta(): PageMeta {
   return {
     title: "COVERLY — Verified B2B Sourcing, Wholesale Marketplace & Landed-Cost Procurement",
@@ -106,10 +328,35 @@ export function getHomepageMeta(): PageMeta {
     siteName: SITE_NAME,
     twitterCard: "summary_large_image",
     robots: "index, follow",
+    statusCode: 200,
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "COVERLY",
+        url: `${PUBLIC_SITE_URL}/`,
+        logo: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
+        description:
+          "India's B2B discovery, wholesale sourcing, supplier verification & landed-cost procurement platform.",
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "COVERLY",
+        url: `${PUBLIC_SITE_URL}/`,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${PUBLIC_SITE_URL}/products?search={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
   };
 }
 
-function makeMeta(partial: Partial<PageMeta> & { title: string; description: string; url: string }): PageMeta {
+function makeMeta(
+  partial: Partial<PageMeta> & { title: string; description: string; url: string }
+): PageMeta {
   return {
     image: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
     imageAlt: partial.title,
@@ -119,8 +366,22 @@ function makeMeta(partial: Partial<PageMeta> & { title: string; description: str
     siteName: SITE_NAME,
     twitterCard: "summary_large_image",
     robots: "index, follow",
+    statusCode: 200,
     ...partial,
   };
+}
+
+export function getNotFoundMeta(url: string): PageMeta {
+  return makeMeta({
+    title: "404 — Looks like this route is out of stock | COVERLY",
+    description:
+      "The page you're looking for doesn't exist, may have moved, or is temporarily unavailable. Explore COVERLY's wholesale B2B marketplace instead.",
+    image: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
+    imageAlt: "COVERLY — Route Not Found (404)",
+    url,
+    robots: "noindex, follow",
+    statusCode: 404,
+  });
 }
 
 function formatPriceBadge(price?: number | string | null, unit?: string | null): string {
@@ -147,9 +408,8 @@ function formatBusinessTypeLabel(type?: string | null): string {
 }
 
 /**
- * Resolves Open Graph, Twitter Card & Canonical metadata for any COVERLY URL.
- * Strictly uses the unauthenticated public InsForge client (RLS enforced) and
- * never queries or leaks private/unapproved records.
+ * Resolves Open Graph, Twitter Card, Canonical, JSON-LD & HTTP status metadata for any COVERLY URL.
+ * Strictly uses the unauthenticated public InsForge client (RLS enforced).
  */
 export async function resolvePageMeta(
   rawPathname: string,
@@ -157,6 +417,11 @@ export async function resolvePageMeta(
 ): Promise<PageMeta> {
   const normalizedPath = ("/" + String(rawPathname || "/").replace(/^\/+/, "")).replace(/\/+$/, "") || "/";
   const canonicalBase = normalizedPath === "/" ? `${PUBLIC_SITE_URL}/` : `${PUBLIC_SITE_URL}${normalizedPath}`;
+
+  // 0. Explicit /404
+  if (normalizedPath === "/404") {
+    return getNotFoundMeta(`${PUBLIC_SITE_URL}/404`);
+  }
 
   // 1. Private / Authenticated routes: NEVER query DB, return safe generic metadata + noindex
   if (PRIVATE_PREFIXES.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`))) {
@@ -167,12 +432,81 @@ export async function resolvePageMeta(
       imageAlt: "COVERLY B2B Platform",
       url: canonicalBase,
       robots: "noindex, nofollow",
+      statusCode: 200,
     });
   }
 
   // 2. Homepage
   if (normalizedPath === "/") {
     return getHomepageMeta();
+  }
+
+  // 2b. Dedicated High-Intent B2B SEO Landing Pages
+  if (normalizedPath in SEO_LANDING_PAGES) {
+    const landing = SEO_LANDING_PAGES[normalizedPath];
+    return makeMeta({
+      title: landing.title,
+      description: landing.description,
+      image: landing.image,
+      imageAlt: landing.title,
+      url: canonicalBase,
+      jsonLd: [
+        buildBreadcrumbSchema([
+          { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+          { name: landing.badge, url: canonicalBase },
+        ]),
+      ],
+    });
+  }
+
+  // 2c. Dedicated Legal Center Routes
+  if (normalizedPath in LEGAL_PAGE_META) {
+    const legal = LEGAL_PAGE_META[normalizedPath];
+    return makeMeta({
+      title: legal.title,
+      description: legal.description,
+      image: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
+      url: canonicalBase,
+      jsonLd: [
+        buildBreadcrumbSchema([
+          { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+          { name: "Legal Center", url: `${PUBLIC_SITE_URL}/legal` },
+          ...(normalizedPath !== "/legal" ? [{ name: legal.title.replace(/\s*\|\s*COVERLY$/, ""), url: canonicalBase }] : []),
+        ]),
+      ],
+    });
+  }
+
+  // 2d. Dedicated Trust & Guide Pages
+  if (normalizedPath in TRUST_GUIDE_META) {
+    const guide = TRUST_GUIDE_META[normalizedPath];
+    const schemas: Record<string, any>[] = [
+      buildBreadcrumbSchema([
+        { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+        { name: guide.title.replace(/\s*\|\s*COVERLY$/, ""), url: canonicalBase },
+      ]),
+    ];
+    if (normalizedPath === "/faq") {
+      schemas.push({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: PUBLIC_FAQ_ITEMS.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.a,
+          },
+        })),
+      });
+    }
+    return makeMeta({
+      title: guide.title,
+      description: guide.description,
+      image: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
+      url: canonicalBase,
+      jsonLd: schemas,
+    });
   }
 
   const insforge = getPublicInsForgeClient();
@@ -192,7 +526,7 @@ export async function resolvePageMeta(
           .eq("is_active", true);
         q = isUuid ? q.eq("id", idOrSlug) : q.eq("slug", idOrSlug);
 
-        const { data: prod } = await q.single();
+        const { data: prod, error } = await q.single();
         if (prod) {
           const images = Array.isArray((prod as any).product_images)
             ? [...(prod as any).product_images].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
@@ -214,6 +548,25 @@ export async function resolvePageMeta(
               badge: prod.category_id ? prod.category_id.replace(/-/g, " ").toUpperCase() : "WHOLESALE PRODUCT",
             });
 
+          const productSchema: Record<string, any> = {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: prod.title,
+            description: cleanDescription(prod.description, `Wholesale B2B product ${prod.title} on COVERLY.`),
+            image: [ogImage],
+            url: canonicalBase,
+            brand: biz?.name ? { "@type": "Organization", name: biz.name } : undefined,
+          };
+          if (prod.indicative_price && !Number.isNaN(Number(prod.indicative_price))) {
+            productSchema.offers = {
+              "@type": "Offer",
+              priceCurrency: "INR",
+              price: String(Number(prod.indicative_price)),
+              availability: "https://schema.org/InStock",
+              url: canonicalBase,
+            };
+          }
+
           return makeMeta({
             title: `${prod.title} | COVERLY Wholesale`,
             description: cleanDescription(
@@ -224,7 +577,19 @@ export async function resolvePageMeta(
             imageAlt: `${prod.title} — COVERLY B2B Wholesale`,
             type: "product",
             url: canonicalBase,
+            jsonLd: [
+              productSchema,
+              buildBreadcrumbSchema([
+                { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+                { name: "Products", url: `${PUBLIC_SITE_URL}/products` },
+                { name: prod.title, url: canonicalBase },
+              ]),
+            ],
           });
+        }
+        // Explicitly return 404 when DB confirms record does not exist
+        if (error || !prod) {
+          return getNotFoundMeta(canonicalBase);
         }
       } catch {}
     }
@@ -264,6 +629,13 @@ export async function resolvePageMeta(
             }),
             imageAlt: `${cat.label} Wholesale Category — COVERLY`,
             url: canonicalWithCat,
+            jsonLd: [
+              buildBreadcrumbSchema([
+                { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+                { name: "Categories", url: `${PUBLIC_SITE_URL}/categories` },
+                { name: cat.label, url: canonicalWithCat },
+              ]),
+            ],
           });
         }
       } catch {}
@@ -279,6 +651,12 @@ export async function resolvePageMeta(
       image: `${PUBLIC_SITE_URL}/og/coverly-products.png`,
       imageAlt: "COVERLY Wholesale B2B Products Marketplace",
       url: canonicalBase,
+      jsonLd: [
+        buildBreadcrumbSchema([
+          { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+          { name: "Wholesale Products", url: canonicalBase },
+        ]),
+      ],
     });
   }
 
@@ -291,6 +669,12 @@ export async function resolvePageMeta(
       image: `${PUBLIC_SITE_URL}/og/coverly-categories.png`,
       imageAlt: "COVERLY B2B Product Categories",
       url: canonicalBase,
+      jsonLd: [
+        buildBreadcrumbSchema([
+          { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+          { name: "Categories", url: canonicalBase },
+        ]),
+      ],
     });
   }
 
@@ -309,9 +693,8 @@ export async function resolvePageMeta(
           .eq("is_active", true);
         q = isUuid ? q.eq("id", slugOrId) : q.eq("slug", slugOrId);
 
-        const { data: biz } = await q.single();
+        const { data: biz, error } = await q.single();
         if (biz) {
-          // Optionally check if this business has an approved public product photo
           let realImg: string | null = null;
           try {
             const { data: bizProd } = await insforge.database
@@ -347,6 +730,20 @@ export async function resolvePageMeta(
               badge: roleLabel.toUpperCase(),
             });
 
+          const businessSchema = {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: biz.name,
+            url: canonicalBase,
+            image: ogImage,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: biz.city || undefined,
+              addressRegion: biz.state || undefined,
+              addressCountry: "IN",
+            },
+          };
+
           return makeMeta({
             title: `${biz.name} — ${roleLabel} | COVERLY`,
             description: cleanDescription(
@@ -358,7 +755,18 @@ export async function resolvePageMeta(
             imageAlt: `${biz.name} — ${roleLabel} on COVERLY`,
             type: "profile",
             url: canonicalBase,
+            jsonLd: [
+              businessSchema,
+              buildBreadcrumbSchema([
+                { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+                { name: routeSegment.charAt(0).toUpperCase() + routeSegment.slice(1), url: `${PUBLIC_SITE_URL}/${routeSegment}` },
+                { name: biz.name, url: canonicalBase },
+              ]),
+            ],
           });
+        }
+        if (error || !biz) {
+          return getNotFoundMeta(canonicalBase);
         }
       } catch {}
     }
@@ -399,7 +807,13 @@ export async function resolvePageMeta(
   }
 
   // 8. Business Services Marketplace
-  if (normalizedPath === "/services" || normalizedPath === "/services/all" || normalizedPath === "/services/search") {
+  if (
+    normalizedPath === "/services" ||
+    normalizedPath === "/services/all" ||
+    normalizedPath === "/services/search" ||
+    normalizedPath === "/services/providers" ||
+    normalizedPath === "/services/request"
+  ) {
     return makeMeta({
       title: "Business Services Marketplace — Legal, CA, Branding, IT & Logistics | COVERLY",
       description:
@@ -413,8 +827,8 @@ export async function resolvePageMeta(
   const serviceCatMatch = normalizedPath.match(/^\/services\/category\/([^/]+)$/);
   if (serviceCatMatch) {
     const slug = decodeURIComponent(serviceCatMatch[1]);
-    let catName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-    let catDesc = `Hire verified professionals and agencies for ${catName} on COVERLY Business Services Marketplace.`;
+    let catName = "";
+    let catDesc = "";
 
     const fallbackCat = DEFAULT_SERVICE_CATEGORIES.find((c) => c.slug === slug);
     if (fallbackCat) {
@@ -429,14 +843,21 @@ export async function resolvePageMeta(
           .single();
         if (cat) {
           catName = cat.name;
-          catDesc = cat.description || catDesc;
+          catDesc = cat.description || "";
         }
       } catch {}
     }
 
+    if (!catName) {
+      return getNotFoundMeta(canonicalBase);
+    }
+
     return makeMeta({
       title: `${catName} — Business Services | COVERLY`,
-      description: cleanDescription(catDesc),
+      description: cleanDescription(
+        catDesc,
+        `Hire verified professionals and agencies for ${catName} on COVERLY Business Services Marketplace.`
+      ),
       image: buildDynamicOgImageUrl({
         type: "service",
         title: catName,
@@ -446,6 +867,13 @@ export async function resolvePageMeta(
       }),
       imageAlt: `${catName} — COVERLY Business Services`,
       url: canonicalBase,
+      jsonLd: [
+        buildBreadcrumbSchema([
+          { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+          { name: "Business Services", url: `${PUBLIC_SITE_URL}/services` },
+          { name: catName, url: canonicalBase },
+        ]),
+      ],
     });
   }
 
@@ -454,7 +882,7 @@ export async function resolvePageMeta(
     const id = decodeURIComponent(serviceProviderMatch[1]);
     if (insforge) {
       try {
-        const { data: prov } = await insforge.database
+        const { data: prov, error } = await insforge.database
           .from("service_provider_profiles")
           .select("id, company_name, headline, bio, city, state, logo_url")
           .eq("id", id)
@@ -482,12 +910,13 @@ export async function resolvePageMeta(
             url: canonicalBase,
           });
         }
+        if (error || !prov) return getNotFoundMeta(canonicalBase);
       } catch {}
     }
   }
 
   const serviceDetailMatch = normalizedPath.match(/^\/services\/([^/]+)$/);
-  if (serviceDetailMatch && !["providers", "request", "all", "search"].includes(serviceDetailMatch[1])) {
+  if (serviceDetailMatch) {
     const idOrSlug = decodeURIComponent(serviceDetailMatch[1]);
     if (insforge) {
       try {
@@ -498,7 +927,7 @@ export async function resolvePageMeta(
           .eq("is_active", true);
         q = isUuid ? q.eq("id", idOrSlug) : q.eq("slug", idOrSlug);
 
-        const { data: svc } = await q.single();
+        const { data: svc, error } = await q.single();
         if (svc) {
           const realImg =
             resolvePublicImageUrl((svc as any).cover_image_url) ||
@@ -507,26 +936,44 @@ export async function resolvePageMeta(
             ? `Starting from INR ${Number(svc.base_price).toLocaleString("en-IN")}`
             : "Request Custom Proposal";
 
+          const ogImage =
+            realImg ||
+            buildDynamicOgImageUrl({
+              type: "service",
+              title: svc.title,
+              subtitle: "Verified B2B Professional Service",
+              meta: `${priceStr} • Milestone-Protected Engagement`,
+              badge: "BUSINESS SERVICE",
+            });
+
           return makeMeta({
             title: `${svc.title} | COVERLY Business Services`,
             description: cleanDescription(
               (svc as any).short_description || svc.description,
               `${svc.title} by verified B2B professionals on COVERLY. ${priceStr}.`
             ),
-            image:
-              realImg ||
-              buildDynamicOgImageUrl({
-                type: "service",
-                title: svc.title,
-                subtitle: "Verified B2B Professional Service",
-                meta: `${priceStr} • Milestone-Protected Engagement`,
-                badge: "BUSINESS SERVICE",
-              }),
+            image: ogImage,
             imageAlt: `${svc.title} — COVERLY Business Services`,
             type: "article",
             url: canonicalBase,
+            jsonLd: [
+              {
+                "@context": "https://schema.org",
+                "@type": "Service",
+                name: svc.title,
+                description: cleanDescription((svc as any).short_description || svc.description),
+                areaServed: "IN",
+                url: canonicalBase,
+              },
+              buildBreadcrumbSchema([
+                { name: "Home", url: `${PUBLIC_SITE_URL}/` },
+                { name: "Business Services", url: `${PUBLIC_SITE_URL}/services` },
+                { name: svc.title, url: canonicalBase },
+              ]),
+            ],
           });
         }
+        if (error || !svc) return getNotFoundMeta(canonicalBase);
       } catch {}
     }
 
@@ -538,7 +985,30 @@ export async function resolvePageMeta(
     });
   }
 
-  // 9. Specialized Public Listings: Raw Materials, Packaging, Import/Export, Logistics, Transporters, Sales Agents
+  // 9. Specialized Public Listings & Hubs
+  const knownPublicPrefixes = [
+    "/raw-materials",
+    "/packaging",
+    "/import-export",
+    "/logistics",
+    "/transporters",
+    "/sales-agents",
+    "/sales-agent",
+    "/track",
+    "/about",
+    "/how-it-works",
+    "/contact",
+  ];
+
+  const isKnownPrefix = knownPublicPrefixes.some(
+    (p) => normalizedPath === p || normalizedPath.startsWith(`${p}/`)
+  );
+
+  if (!isKnownPrefix) {
+    // Unknown public route -> real HTTP 404 status code + custom animated COVERLY 404 UI
+    return getNotFoundMeta(canonicalBase);
+  }
+
   const rawMaterialMatch = normalizedPath.match(/^\/raw-materials\/products\/([^/]+)$/);
   if (rawMaterialMatch && insforge) {
     try {
@@ -563,9 +1033,10 @@ export async function resolvePageMeta(
               type: "trade",
               title: item.title,
               subtitle: item.grade ? `Grade: ${item.grade} • Industrial Raw Material` : "Industrial Raw Material",
-              meta: [formatPriceBadge(item.indicative_price, item.unit), item.moq ? `MOQ: ${item.moq} ${item.unit || ""}` : ""]
-                .filter(Boolean)
-                .join(" • ") || "Bulk Mill-Direct Sourcing on COVERLY",
+              meta:
+                [formatPriceBadge(item.indicative_price, item.unit), item.moq ? `MOQ: ${item.moq} ${item.unit || ""}` : ""]
+                  .filter(Boolean)
+                  .join(" • ") || "Bulk Mill-Direct Sourcing on COVERLY",
               badge: "RAW MATERIALS",
             }),
           type: "product",
@@ -643,110 +1114,6 @@ export async function resolvePageMeta(
     } catch {}
   }
 
-  const logisticsCompanyMatch = normalizedPath.match(/^\/logistics\/companies\/([^/]+)$/);
-  if (logisticsCompanyMatch && insforge) {
-    try {
-      const slug = decodeURIComponent(logisticsCompanyMatch[1]);
-      const { data: partner } = await insforge.database
-        .from("logistics_partners")
-        .select("id, company_name, slug, description, headquarters_city, logo_url")
-        .eq("slug", slug)
-        .single();
-      if (partner) {
-        const realImg = resolvePublicImageUrl((partner as any).logo_url);
-        return makeMeta({
-          title: `${partner.company_name} — Logistics Partner | COVERLY`,
-          description: cleanDescription(
-            partner.description,
-            `Book verified freight, warehousing & pan-India logistics with ${partner.company_name} on COVERLY.`
-          ),
-          image:
-            realImg ||
-            buildDynamicOgImageUrl({
-              type: "logistics",
-              title: partner.company_name,
-              subtitle: partner.headquarters_city
-                ? `Verified Logistics Partner • ${partner.headquarters_city}`
-                : "Verified Logistics & Freight Partner",
-              meta: "Pan-India Freight, Multi-Modal & Consignment Tracking",
-              badge: "LOGISTICS PARTNER",
-            }),
-          type: "profile",
-          url: canonicalBase,
-        });
-      }
-    } catch {}
-  }
-
-  const transporterMatch = normalizedPath.match(/^\/transporters\/([^/]+)$/);
-  if (transporterMatch && !["directory", "book", "track"].includes(transporterMatch[1]) && insforge) {
-    try {
-      const slug = decodeURIComponent(transporterMatch[1]);
-      const { data: tr } = await insforge.database
-        .from("transporter_profiles")
-        .select("id, company_name, slug, description, base_city, base_state, logo_url")
-        .eq("slug", slug)
-        .single();
-      if (tr) {
-        const realImg = resolvePublicImageUrl((tr as any).logo_url);
-        const loc = [tr.base_city, tr.base_state].filter(Boolean).join(", ");
-        return makeMeta({
-          title: `${tr.company_name} — Fleet & Transporter | COVERLY`,
-          description: cleanDescription(
-            tr.description,
-            `Book commercial trucks & verified fleet transport with ${tr.company_name}${loc ? ` (${loc})` : ""} on COVERLY.`
-          ),
-          image:
-            realImg ||
-            buildDynamicOgImageUrl({
-              type: "logistics",
-              title: tr.company_name,
-              subtitle: loc ? `Commercial Fleet Transporter • ${loc}` : "Verified Commercial Fleet Transporter",
-              meta: "Live Trip Tracking & Electronic POD on COVERLY",
-              badge: "TRANSPORTER",
-            }),
-          type: "profile",
-          url: canonicalBase,
-        });
-      }
-    } catch {}
-  }
-
-  const salesAgentMatch = normalizedPath.match(/^\/sales-agents?\/([^/]+)$/);
-  if (salesAgentMatch && salesAgentMatch[1] !== "requirement" && insforge) {
-    try {
-      const slug = decodeURIComponent(salesAgentMatch[1]);
-      const { data: agent } = await insforge.database
-        .from("sales_agents")
-        .select("id, full_name, slug, bio, city, state, specialization, avatar_url")
-        .eq("slug", slug)
-        .single();
-      if (agent) {
-        const realImg = resolvePublicImageUrl((agent as any).avatar_url);
-        const loc = [agent.city, agent.state].filter(Boolean).join(", ");
-        return makeMeta({
-          title: `${agent.full_name} — Verified B2B Sales Representative | COVERLY`,
-          description: cleanDescription(
-            agent.bio,
-            `Connect with verified B2B sourcing representative ${agent.full_name}${loc ? ` in ${loc}` : ""} on COVERLY.`
-          ),
-          image:
-            realImg ||
-            buildDynamicOgImageUrl({
-              type: "manufacturer",
-              title: agent.full_name,
-              subtitle: agent.specialization || "Verified B2B Sales & Sourcing Representative",
-              meta: loc ? `${loc} • Direct Business Sourcing on COVERLY` : "Direct Business Sourcing on COVERLY",
-              badge: "SALES REPRESENTATIVE",
-            }),
-          type: "profile",
-          url: canonicalBase,
-        });
-      }
-    } catch {}
-  }
-
-  // 10. Section Landing Hubs (Logistics, Transporters, Raw Materials, Packaging, Import/Export, Sales Agents, About, Contact)
   if (normalizedPath.startsWith("/logistics") || normalizedPath.startsWith("/transporters") || normalizedPath === "/track") {
     return makeMeta({
       title: "B2B Logistics, Freight & Commercial Transporters | COVERLY",
@@ -757,6 +1124,7 @@ export async function resolvePageMeta(
       url: canonicalBase,
     });
   }
+
   if (
     normalizedPath.startsWith("/raw-materials") ||
     normalizedPath.startsWith("/packaging") ||
@@ -776,7 +1144,8 @@ export async function resolvePageMeta(
       url: canonicalBase,
     });
   }
-  if (normalizedPath.startsWith("/sales-agents")) {
+
+  if (normalizedPath.startsWith("/sales-agents") || normalizedPath.startsWith("/sales-agent")) {
     return makeMeta({
       title: "Verified B2B Sales Representatives & Sourcing Agents | COVERLY",
       description:
@@ -785,34 +1154,21 @@ export async function resolvePageMeta(
       url: canonicalBase,
     });
   }
-  if (normalizedPath === "/about" || normalizedPath === "/how-it-works" || normalizedPath === "/contact") {
-    const titleMap: Record<string, string> = {
-      "/about": "About COVERLY — India's Connected B2B Business Ecosystem",
-      "/how-it-works": "How COVERLY Works — Landed-Cost B2B Procurement Explained",
-      "/contact": "Contact COVERLY — Enterprise Sourcing & Support Desk",
-    };
-    return makeMeta({
-      title: titleMap[normalizedPath],
-      description:
-        "Learn how COVERLY connects buyers, retailers, manufacturers, wholesalers, distributors, logistics partners & business services with zero brokerage.",
-      image: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
-      url: canonicalBase,
-    });
-  }
 
-  // Fallback for any other public URL
+  const staticTitles: Record<string, string> = {
+    "/about": "About COVERLY — India's Connected B2B Business Ecosystem",
+    "/how-it-works": "How COVERLY Works — Landed-Cost B2B Procurement Explained",
+    "/contact": "Contact COVERLY — Enterprise Sourcing & Support Desk",
+  };
   return makeMeta({
-    title: "COVERLY — Verified B2B Sourcing & Wholesale Marketplace",
+    title: staticTitles[normalizedPath] || "COVERLY — Verified B2B Sourcing & Wholesale Marketplace",
     description:
-      "Discover verified Indian manufacturers, wholesale products, raw materials, logistics & business services on COVERLY.",
+      "Learn how COVERLY connects buyers, retailers, manufacturers, wholesalers, distributors, logistics partners & business services with transparent landed costs.",
     image: `${PUBLIC_SITE_URL}/og/coverly-home.png`,
     url: canonicalBase,
   });
 }
 
-/**
- * Builds the complete Open Graph, Twitter Card, and Canonical HTML block.
- */
 export function buildMetaTagsHtml(meta: PageMeta): string {
   const t = escapeHtml(meta.title);
   const d = escapeHtml(meta.description);
@@ -822,7 +1178,7 @@ export function buildMetaTagsHtml(meta: PageMeta): string {
   const site = escapeHtml(meta.siteName);
   const robots = escapeHtml(meta.robots);
 
-  return [
+  const lines = [
     `<title>${t}</title>`,
     `<meta name="description" content="${d}" />`,
     `<meta name="robots" content="${robots}" />`,
@@ -845,13 +1201,18 @@ export function buildMetaTagsHtml(meta: PageMeta): string {
     `<meta name="twitter:description" content="${d}" />`,
     `<meta name="twitter:image" content="${img}" />`,
     `<meta name="twitter:image:alt" content="${imgAlt}" />`,
-  ].join("\n    ");
+  ];
+
+  if (Array.isArray(meta.jsonLd) && meta.jsonLd.length > 0) {
+    for (const schema of meta.jsonLd) {
+      const safeJson = JSON.stringify(schema).replace(/</g, "\\u003c");
+      lines.push(`<script type="application/ld+json">${safeJson}</script>`);
+    }
+  }
+
+  return lines.join("\n    ");
 }
 
-/**
- * Injects page-specific OG / Twitter / Canonical metadata into the compiled index.html shell,
- * cleanly replacing the default title/meta block between markers (or inside <head>).
- */
 export function injectMetaIntoHtml(htmlTemplate: string, meta: PageMeta): string {
   const metaBlock = buildMetaTagsHtml(meta);
   const markerRegex = /<!--\s*COVERLY_SEO_META_START\s*-->[\s\S]*?<!--\s*COVERLY_SEO_META_END\s*-->/i;
@@ -863,7 +1224,6 @@ export function injectMetaIntoHtml(htmlTemplate: string, meta: PageMeta): string
     );
   }
 
-  // Fallback if markers absent: replace <title> and inject before </head>
   let out = htmlTemplate.replace(/<title>[\s\S]*?<\/title>/i, "");
   out = out.replace(/<meta\s+name="description"[^>]*>/i, "");
   return out.replace(/<\/head>/i, `    ${metaBlock}\n  </head>`);

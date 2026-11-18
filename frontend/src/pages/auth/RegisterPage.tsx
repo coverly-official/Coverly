@@ -65,6 +65,9 @@ export const RegisterPage: React.FC = () => {
     phone: "",
     role: initialRole,
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  // Optional marketing consent must strictly default to false (never preselected)
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -88,10 +91,20 @@ export const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      setErrorMsg("Please review and accept the Terms & Conditions and Privacy Policy to continue.");
+      return;
+    }
     setIsSubmitting(true);
     setErrorMsg("");
 
-    const res = await register(formData);
+    const res = await register({
+      ...formData,
+      terms_accepted: true,
+      terms_version: "2026-11-18-v1",
+      privacy_version: "2026-11-18-v1",
+      marketing_consent: marketingConsent,
+    });
     if (!res.success) {
       setErrorMsg(res.error || "Registration failed.");
       setIsSubmitting(false);
@@ -301,6 +314,51 @@ export const RegisterPage: React.FC = () => {
                     />
                     <Lock className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-2.5" />
                   </div>
+                </div>
+
+                {/* Required Terms & Privacy Consent */}
+                <div className="space-y-2 pt-1">
+                  <label className="flex items-start gap-2 text-[11px] text-stone-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-0.5 h-3.5 w-3.5 rounded border-stone-300 text-stone-900 focus:ring-stone-800"
+                    />
+                    <span className="leading-snug">
+                      I agree to COVERLY&apos;s{" "}
+                      <Link
+                        to="/terms-and-conditions"
+                        target="_blank"
+                        className="font-semibold text-blue-900 underline"
+                      >
+                        Terms &amp; Conditions
+                      </Link>{" "}
+                      and{" "}
+                      <Link
+                        to="/privacy-policy"
+                        target="_blank"
+                        className="font-semibold text-blue-900 underline"
+                      >
+                        Privacy Policy
+                      </Link>
+                      . <span className="text-red-600">*</span>
+                    </span>
+                  </label>
+
+                  {/* Separate Optional Marketing Consent (Never Preselected) */}
+                  <label className="flex items-start gap-2 text-[11px] text-stone-500 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={marketingConsent}
+                      onChange={(e) => setMarketingConsent(e.target.checked)}
+                      className="mt-0.5 h-3.5 w-3.5 rounded border-stone-300 text-stone-900 focus:ring-stone-800"
+                    />
+                    <span className="leading-snug">
+                      (Optional) Send me B2B sourcing updates and platform announcements. You can withdraw consent anytime.
+                    </span>
+                  </label>
                 </div>
 
                 <div className="pt-2 flex items-center gap-2">

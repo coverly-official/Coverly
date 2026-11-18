@@ -39,7 +39,7 @@ Applying these 12 pending migrations safely and verifying all 16 business workfl
 ## 3. Remote Database Audit & Live Verification
 
 ### 3.1 Verified Live Remote Tables & Record Counts
-Direct verification was executed against `https://4vwfw2w8.ap-southeast.insforge.app` using `@insforge/sdk` admin credentials (`ik_1d1fb7f3feb4e7723e653ef844b24492486caa96de0940f2e658c2f30cd392a1`):
+Direct verification was executed against the linked InsForge project using `@insforge/sdk` admin credentials loaded from environment variables (`INSFORGE_API_KEY` — redacted):
 
 | Table Name | Live Row Count | Schema Notes & Verified Primary Keys |
 | :--- | :--- | :--- |

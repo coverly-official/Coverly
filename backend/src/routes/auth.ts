@@ -17,16 +17,39 @@ const PUBLIC_PERMITTED_ROLES = [
 
 // POST /api/auth/register
 router.post("/auth/register", async (req, res) => {
-  const { email, password, full_name, role, phone } = req.body as {
+  const {
+    email,
+    password,
+    full_name,
+    role,
+    phone,
+    terms_accepted,
+    terms_version,
+    privacy_version,
+    marketing_consent,
+  } = req.body as {
     email?: string;
     password?: string;
     full_name?: string;
     role?: string;
     phone?: string;
+    terms_accepted?: boolean;
+    terms_version?: string;
+    privacy_version?: string;
+    marketing_consent?: boolean;
   };
 
   if (!email?.trim() || !password || !full_name?.trim()) {
     return sendError(res, "Email, password, and full name are required.", 400, "VALIDATION_FAILED");
+  }
+
+  if (terms_accepted === false) {
+    return sendError(
+      res,
+      "Acceptance of the Terms & Conditions and Privacy Policy is required to register.",
+      400,
+      "CONSENT_REQUIRED"
+    );
   }
 
   // Security guard: Users cannot grant themselves administrative permissions
@@ -92,6 +115,28 @@ router.post("/auth/register", async (req, res) => {
       },
     ]);
 
+    // 5. Record legal consent version & timestamp in audit log (best-effort, non-blocking)
+    const consentRecord = {
+      terms_accepted: true,
+      terms_version: terms_version || "2026-11-18-v1",
+      privacy_version: privacy_version || "2026-11-18-v1",
+      marketing_consent: Boolean(marketing_consent),
+      accepted_at: new Date().toISOString(),
+    };
+    try {
+      await insforge.database.from("audit_logs").insert([
+        {
+          admin_id: userId,
+          action: "USER_CONSENT_RECORDED",
+          target_type: "user",
+          target_id: userId,
+          metadata: consentRecord,
+        },
+      ]);
+    } catch {
+      // Non-blocking if RLS restricts direct audit inserts for new registrants
+    }
+
     return sendSuccess(
       res,
       {
@@ -103,6 +148,7 @@ router.post("/auth/register", async (req, res) => {
           activeRole: assignedRole,
           is_active: true,
         },
+        consent: consentRecord,
         accessToken: authData.accessToken,
       },
       "Account registered successfully.",
@@ -325,6 +371,61 @@ router.post("/auth/deactivate", authenticateUser, async (req, res) => {
     return sendSuccess(res, null, "Account deactivated successfully.");
   } catch (err: any) {
     return sendError(res, err.message || "Failed to deactivate account.", 500, "SERVER_ERROR");
+  }
+});
+
+// POST /api/auth/privacy-request (Account deletion, consent withdrawal, or data export request)
+router.post("/auth/privacy-request", authenticateUser, async (req, res) => {
+  const user = req.user!;
+  const { request_type, reason } = req.body as {
+    request_type?: "account_deletion" | "data_export" | "consent_withdrawal";
+    reason?: string;
+  };
+
+  const allowedTypes = ["account_deletion", "data_export", "consent_withdrawal"];
+  if (!request_type || !allowedTypes.includes(request_type)) {
+    return sendError(
+      res,
+      "Valid request_type required: account_deletion, data_export, or consent_withdrawal.",
+      400,
+      "VALIDATION_FAILED"
+    );
+  }
+
+  const insforge = getInsForgeClient();
+  if (!insforge) {
+    return sendError(res, "Database unavailable.", 503, "SERVICE_UNAVAILABLE");
+  }
+
+  const referenceId = `PRV-${Date.now().toString(36).toUpperCase()}`;
+
+  try {
+    await insforge.database.from("support_tickets").insert([
+      {
+        user_id: user.id,
+        subject: `[PRIVACY:${request_type.toUpperCase()}] ${referenceId}`,
+        category: "privacy_request",
+        priority: request_type === "account_deletion" ? "high" : "medium",
+        status: "open",
+        description: `Automated privacy request (${request_type}) submitted by authenticated user. Reason: ${
+          reason?.trim() || "Not specified"
+        }. Reference: ${referenceId}`,
+      },
+    ]);
+
+    return sendSuccess(
+      res,
+      {
+        reference_id: referenceId,
+        request_type,
+        status: "received",
+        submitted_at: new Date().toISOString(),
+      },
+      "Your privacy request has been logged and assigned a tracking reference.",
+      201
+    );
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to submit privacy request.", 500, "SERVER_ERROR");
   }
 });
 

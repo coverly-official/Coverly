@@ -1,0 +1,63 @@
+name: COVERLY Security & Quality CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secret-scan:
+    name: Secret & Credential Leak Prevention
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject tracked environment or key files
+        run: |
+          BAD_FILES=$(git ls-files | grep -E '(^|/)\.env($|\.(local|development|production)$)|\.(pem|key|p12|pfx|dump)$' || true)
+          if [ -n "$BAD_FILES" ]; then
+            echo "ERROR: Sensitive environment or key files are tracked in Git:"
+            echo "$BAD_FILES"
+            exit 1
+          fi
+
+      - name: Scan source files for hardcoded secrets
+        run: |
+          HITS=$(git grep -n -E '(ik_[A-Za-z0-9]{12,}|sk_(live|test)_[A-Za-z0-9]{12,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|anon_[A-Za-z0-9]{20,})' -- ':!package-lock.json' || true)
+          if [ -n "$HITS" ]; then
+            echo "ERROR: Potential hardcoded credentials detected (values redacted):"
+            echo "$HITS" | cut -d: -f1,2
+            exit 1
+          fi
+          echo "Secret scan passed with 0 matches."
+
+  build-and-test:
+    name: Typecheck, Build & Automated Test Suites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backend tests
+        run: npm --prefix backend test
+
+      - name: Run frontend tests
+        run: npm --prefix frontend test -- --run
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Verify compiled frontend bundle contains no privileged secrets
+        run: |
+          if grep -rnE '(ik_[A-Za-z0-9]{12,}|INSFORGE_API_KEY|SERVICE_ROLE)' frontend/dist/assets/; then
+            echo "ERROR: Privileged secret pattern found in frontend build output!"
+            exit 1
+          fi
+          echo "Frontend bundle secret check passed."

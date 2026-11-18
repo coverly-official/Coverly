@@ -156,9 +156,9 @@ Verify or create `backend/.env` (see `backend/.env.example`):
 ```env
 PORT=5000
 CORS_ORIGIN=http://localhost:5173
-INSFORGE_BASE_URL=https://4vwfw2w8.ap-southeast.insforge.app
-INSFORGE_ANON_KEY=anon_9da4660d2d03cec83d7ea57032348bab48a951f8ddf8b2b9dccdfb4b77eefe58
-INSFORGE_API_KEY=ik_1d1fb7f3feb4e7723e653ef844b24492486caa96de0940f2e658c2f30cd392a1
+INSFORGE_BASE_URL=https://your-project-id.ap-southeast.insforge.app
+INSFORGE_ANON_KEY=<YOUR_INSFORGE_ANON_KEY>
+INSFORGE_API_KEY=<YOUR_INSFORGE_API_KEY_SERVER_ONLY>
 ```
 
 For the frontend, configure `frontend/.env` (optional for local development since Vite proxies `/api` to port 5000):

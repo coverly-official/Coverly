@@ -1,7 +1,10 @@
 import { createAdminClient } from "@insforge/sdk";
 
-const baseUrl = process.env.INSFORGE_BASE_URL || "https://4vwfw2w8.ap-southeast.insforge.app";
-const apiKey = process.env.INSFORGE_API_KEY || "ik_1d1fb7f3feb4e7723e653ef844b24492486caa96de0940f2e658c2f30cd392a1";
+const baseUrl = process.env.INSFORGE_BASE_URL || "";
+const apiKey = process.env.INSFORGE_API_KEY || "";
+if (!baseUrl || !apiKey) {
+  throw new Error("INSFORGE_BASE_URL and INSFORGE_API_KEY environment variables are required.");
+}
 
 const insforge = createAdminClient({ baseUrl, apiKey });
 

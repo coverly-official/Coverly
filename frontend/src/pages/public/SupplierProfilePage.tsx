@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
+import { NotFoundPage } from "@/pages/shared/NotFoundPage";
 import type { Business, Product } from "@/types";
 import {
   Building2,
@@ -52,15 +53,7 @@ export const SupplierProfilePage: React.FC = () => {
   }
 
   if (!profile) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-xl font-bold text-stone-900 mb-2">Business Profile Not Found</h2>
-        <p className="text-xs text-stone-500 mb-6">The requested business profile is unavailable or inactive.</p>
-        <Link to="/manufacturers" className="text-xs font-semibold px-4 py-2 bg-stone-900 text-white rounded-lg">
-          Browse Directory
-        </Link>
-      </div>
-    );
+    return <NotFoundPage resourceLabel="business profile" />;
   }
 
   const supplierProfile = profile.supplier_profile;

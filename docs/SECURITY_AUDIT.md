@@ -1,52 +1,41 @@
-# COVERLY Backend Security Audit & Hardening Report
-**Date:** November 13, 2026  
-**Auditor:** Principal API Security Engineer  
-**Scope:** Express.js Backend Services & InsForge PostgreSQL Database Integration  
-**Status:** HARDENED & PRODUCTION-VERIFIED  
+# COVERLY — Security Audit Report
+
+> **Audit Date:** 2026-11-18  
+> **Scope:** Frontend SPA, Express REST API, Vercel Serverless Functions, RBAC, Authentication, HTTP Security Headers & InsForge RLS
 
 ---
 
-## 1. Threat Modeling & Mitigation Summary
+## 1. Authentication & Session Architecture
 
-| Security Domain | Prior Risk / Vulnerability | Remediation Applied | Verification Status |
-|---|---|---|---|
-| **Authentication** | Session spoofing via unverified `x-user-id` header | Implemented `authenticateUser` verifying JWT or active database user profile with account suspension checks. | **VERIFIED HARDENED** |
-| **Privilege Escalation** | Public registration allowed arbitrary roles including `admin` | Restricted registration to `PUBLIC_PERMITTED_ROLES`. Admin roles can only be granted by authenticated admins. | **VERIFIED HARDENED** |
-| **IDOR (Quotation Acceptance)** | Buyer could accept competitor's quotation | Added mandatory verification: `quote.rfqs.buyer_id === req.user.id`. Competing quotes automatically rejected. | **VERIFIED HARDENED** |
-| **IDOR (RFQ Detail Access)** | Unrestricted public view of private RFQ items | Verified viewer is RFQ buyer, dispatched supplier member, or admin. Rejects unauthorized requests with 403. | **VERIFIED HARDENED** |
-| **Admin Route Protection** | Open administrative endpoints | Enforced `requireAdmin` across all `/api/admin/*` routes. Blocks non-admin callers with 403 Forbidden. | **VERIFIED HARDENED** |
-| **Financial Integrity** | Floating-point rounding errors | Integrated `roundToTwoDecimals` with `Number.EPSILON` precision in Landed Cost Engine. Recalculated server-side. | **VERIFIED HARDENED** |
-| **Race Conditions** | Duplicate order creation on double-click quote accept | Checked existing order presence per quotation ID before insertion; sequential lifecycle state-machine. | **VERIFIED HARDENED** |
-| **Injection Attacks** | SQL / NoSQL Injection | All database operations execute through parameterized `@insforge/sdk` ORM queries. Zero raw string concatenation. | **VERIFIED HARDENED** |
-| **DDoS & Brute Force** | Unthrottled API endpoint abuse | Configured `express-rate-limit` (1,000 requests per 15-minute window) across all `/api` routes. | **VERIFIED HARDENED** |
-| **Header Security** | Missing security headers | Integrated `helmet` with XSS filters, frameguard, and MIME sniffing prevention. | **VERIFIED HARDENED** |
+- **Identity Provider**: Existing linked InsForge Auth (`signUp`, `signInWithPassword`, `signOut`) backed by `public.users` and `public.user_roles`.
+- **Role Resolution**: Primary and secondary roles resolved server-side from `public.user_roles` in `backend/src/middleware/auth.ts` (`authenticateUser`). Public registration (`POST /api/auth/register`) strictly allowlists `PUBLIC_PERMITTED_ROLES` and prevents self-assignment of administrative roles.
+- **Admin Login Enforcement**: `AdminLoginPage.tsx` verifies returned account roles against `isAdminRole(...)` before allowing navigation into `/admin/dashboard`; non-admin credentials are immediately logged out and rejected.
+- **Known Architectural Note**: Client session persistence currently relies on `localStorage` (`coverly_user_id`, `coverly_user_profile`, `coverly_active_role`) passed via `x-user-id` / Bearer headers rather than `HttpOnly` server-issued JWT cookies. Migrating to signed `HttpOnly; Secure; SameSite=Lax` JWT session cookies with server-side signature verification in `authenticateUser` is recommended as a high-priority hardening follow-up before handling direct online payment/escrow settlements.
 
 ---
 
-## 2. Row Level Security (RLS) Verification
+## 2. Authorization & Fine-Grained RBAC
 
-RLS is enabled on all 35 relational tables in PostgreSQL:
-```sql
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.rfqs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.quotations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.supplier_verifications ENABLE ROW LEVEL SECURITY;
-```
-Public read access is strictly restricted to active catalog listings (`categories`, `active products`, `public businesses`). Private operational tables (`rfqs`, `quotations`, `orders`, `notifications`, `support_tickets`) enforce member and ownership scoping.
+- **Platform Admin RBAC**: Implemented synchronized frontend (`frontend/src/lib/admin-permissions.ts` + `AdminModuleGuard.tsx`) and backend (`backend/src/middleware/adminPermissions.ts` + `requireAdminModule(...)`) across all 11+ operational admin roles (`super_admin`, `admin`, `verification_manager`, `marketplace_manager`, `procurement_operations_manager`, `order_operations_manager`, `logistics_operations_manager`, `finance_accounts_staff`/`finance_admin`, `support_executive`, `compliance_manager`, `quality_operations_manager`).
+- **Business Membership & Branch Isolation**: Enforced via `requireBusinessMember(...)` in `backend/src/middleware/auth.ts` and verified across Buyer, Retailer, and Employee Role Management test suites.
+- **Public Metadata Isolation**: `api/render.ts` and `api/sitemap.ts` use `getPublicInsForgeClient()` (unauthenticated anon client subject to InsForge PostgreSQL RLS) and never query private tables (`users`, `orders`, `quotations`, `rfqs`, `supplier_verifications`, `audit_logs`).
 
 ---
 
-## 3. Administrative Audit Trail
+## 3. HTTP Security, Rate Limiting & Error Handling
 
-Every sensitive administrative action is immutably logged into `admin_audit_logs`:
-- `USER_ACTIVATED` / `USER_SUSPENDED`
-- `USER_ROLES_UPDATED`
-- `PRODUCT_APPROVED` / `PRODUCT_SUSPENDED`
-- `VERIFICATION_APPROVED` / `VERIFICATION_REJECTED`
-- `SERVICE_APPROVED` / `SERVICE_SUSPENDED`
-- `REPORT_RESOLVED` / `REPORT_DISMISSED`
+- **Security Headers**:
+  - Express: `helmet()` active in `backend/src/app.ts`.
+  - Vercel Edge (`vercel.json`): `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+- **Rate Limiting**: `express-rate-limit` mounted on `/api` (`windowMs: 15 min`).
+- **CORS**: Configurable via `CORS_ORIGIN` environment variable.
+- **Sanitized Error Responses**: Global Express error handler in `backend/src/app.ts` strips raw stack traces and internal DB errors on `5xx` responses. Unknown `/api/*` endpoints return structured JSON `404` (`{ success: false, code: "NOT_FOUND" }`).
+- **Frontend Error Boundary**: `AppErrorBoundary.tsx` catches unexpected React runtime errors and displays a clean branded `500` state with zero stack-trace exposure.
 
-Each record captures: `admin_id`, `action`, `target_type`, `target_id`, `metadata`, and timestamp.
+---
+
+## 4. InsForge RLS & Storage Verification
+
+- Existing InsForge PostgreSQL RLS policies across all 45 tables were preserved intact — RLS was **never** disabled globally or bypassed for public previews.
+- Public OG image URL validator (`resolvePublicImageUrl`) explicitly rejects `http://`, `localhost`, `.svg`, and signed private URLs containing `?token=` or `?signature=`.
+- Sensitive KYC documents and verification attachments remain isolated behind authenticated verification workflows.
