@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import {
   canAccessAdminModule,
   formatAdminRoleLabel,
@@ -622,10 +622,8 @@ export const AdminLayout: React.FC = () => {
       <aside className="w-68 border-r border-stone-200 bg-[#F4F1EA] flex-col justify-between hidden lg:flex shrink-0 h-screen sticky top-0">
         <div className="flex flex-col h-full overflow-hidden">
           {/* Admin Brand Header */}
-          <div className="h-16 flex items-center px-4 border-b border-stone-200/90 gap-2.5 shrink-0 bg-white/80">
-            <Link to="/admin/dashboard" className="flex items-center min-w-0 hover:opacity-90 transition">
-              <CoverlyLogo variant="horizontal" size="sm" subtitle="Admin Center" />
-            </Link>
+          <div className="h-16 flex items-center px-4 border-b border-stone-200/90 gap-2 shrink-0 bg-white/60">
+            <BrandLogo linkTo="/admin/dashboard" size="sm" subtitle="Control Center" badge="Admin" />
             <span className="ml-auto text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-900 text-emerald-400 font-mono shrink-0">
               Live
             </span>
@@ -795,7 +793,7 @@ export const AdminLayout: React.FC = () => {
           />
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#FAF9F5] shadow-2xl border-r border-stone-200">
             <div className="h-16 flex items-center justify-between px-4 border-b border-stone-200 bg-white">
-              <CoverlyLogo variant="horizontal" size="sm" subtitle="Admin Center" />
+              <BrandLogo linkTo="/admin/dashboard" size="sm" subtitle="Admin Center" badge="Admin" />
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(false)}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,13 +20,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full bg-surface/90 backdrop-blur-md border-b border-[rgba(34,37,42,0.06)] transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <a
-          href="/"
-          className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral rounded-md py-1"
-          aria-label="Coverly Home"
-        >
-          <CoverlyLogo variant="horizontal" size="md" />
-        </a>
+        <BrandLogo linkTo="/" size="md" subtitle="B2B Sourcing" />
 
         {/* Desktop Nav Links */}
         <nav

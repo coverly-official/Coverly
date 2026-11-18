@@ -4,7 +4,7 @@ import { ArrowLeft, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { WORKSPACE_REGISTRY } from "@/lib/role-routing";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
-import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import { VerificationCenterPage } from "./VerificationCenterPage";
 
 export const AccountVerificationShell: React.FC = () => {
@@ -23,7 +23,7 @@ export const AccountVerificationShell: React.FC = () => {
             <span>Back to Workspace</span>
           </Link>
           <span className="text-stone-300">|</span>
-          <CoverlyLogo variant="horizontal" size="sm" subtitle="Verification Center" />
+          <BrandLogo linkTo="/" size="xs" subtitle="Verification Center" badge="KYC" />
         </div>
         <div className="flex items-center gap-3">
           <WorkspaceSwitcher />

@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { GuestEnquiryModal } from "@/components/modals/GuestEnquiryModal";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
 import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
-import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import { getWorkspaceRoute, isAdminRole } from "@/lib/role-routing";
 import {
   Search,
@@ -139,9 +139,7 @@ export const PublicLayout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between gap-4 md:gap-6">
             {/* Logo */}
-            <Link to="/" className="flex items-center shrink-0 group hover:opacity-95 transition">
-              <CoverlyLogo variant="horizontal" size="md" subtitle="B2B Sourcing" />
-            </Link>
+            <BrandLogo linkTo="/" size="md" subtitle="B2B Sourcing" />
 
             {/* Universal Search Bar (IndiaMART / Justdial Inspired) */}
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-3xl items-center border-2 border-blue-900 rounded-xl overflow-hidden shadow-xs">
@@ -394,9 +392,9 @@ export const PublicLayout: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 pb-10 border-b border-stone-800">
             {/* Brand column */}
             <div className="md:col-span-2 pr-4">
-              <Link to="/" className="inline-block mb-3.5 hover:opacity-95 transition">
-                <CoverlyLogo variant="stacked" theme="dark" size="md" />
-              </Link>
+              <div className="mb-4">
+                <BrandLogo linkTo="/" size="md" theme="dark" subtitle="B2B Wholesale & Landed-Cost" />
+              </div>
               <p className="text-xs text-stone-400 leading-relaxed mb-4 max-w-sm">
                 India's wholesale discovery, supplier verification & transparent landed-cost procurement marketplace. Connecting MSMEs, manufacturers, and bulk buyers with zero brokerage.
               </p>

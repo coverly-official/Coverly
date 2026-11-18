@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import {
   Lock,
   ShieldAlert,
@@ -118,7 +119,10 @@ export const ErrorStateView: React.FC<ErrorStateViewProps> = ({
   const Icon = cfg.icon;
 
   return (
-    <div className="min-h-[50vh] flex items-center justify-center px-4 py-12 font-sans">
+    <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 py-12 font-sans">
+      <div className="mb-4">
+        <BrandLogo linkTo="/" size="sm" />
+      </div>
       <div className="w-full max-w-lg bg-white border border-stone-200 rounded-2xl p-8 shadow-sm text-center">
         <div
           className={`w-14 h-14 rounded-2xl border mx-auto mb-4 flex items-center justify-center ${cfg.accentBg} ${cfg.accentText}`}

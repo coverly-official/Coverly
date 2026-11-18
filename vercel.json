@@ -11,7 +11,7 @@
   },
   "headers": [
     {
-      "source": "/brand/(.*)",
+      "source": "/categories/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -20,11 +20,15 @@
       ]
     },
     {
-      "source": "/categories/(.*)",
+      "source": "/brand/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400, s-maxage=604800, immutable"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
         }
       ]
     },
@@ -89,7 +93,7 @@
       "destination": "/api"
     },
     {
-      "source": "/((?!api(?:/|$)|assets(?:/|$)|og(?:/|$)|brand(?:/|$)|categories/[^/]+\\.(?:jpg|jpeg|png|webp|svg)$|robots\\.txt$|sitemap\\.xml$|[^/]+\\.[^/]+$).*)",
+      "source": "/((?!api(?:/|$)|assets(?:/|$)|brand(?:/|$)|og(?:/|$)|categories/[^/]+\\.(?:jpg|jpeg|png|webp|svg)$|robots\\.txt$|sitemap\\.xml$|[^/]+\\.[^/]+$).*)",
       "destination": "/api/render?__path=/$1"
     }
   ]

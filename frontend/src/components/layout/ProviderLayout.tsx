@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { WorkspaceSwitcher } from "@/components/navigation/WorkspaceSwitcher";
 import { VerificationBanner } from "@/components/verification/VerificationBanner";
-import { CoverlyLogo } from "@/components/brand/CoverlyLogo";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import {
   LayoutDashboard,
   Briefcase,
@@ -38,13 +38,8 @@ export const ProviderLayout: React.FC = () => {
       {/* Sidebar */}
       <aside className="w-64 border-r border-stone-200 bg-[#F4F1EA]/70 flex flex-col justify-between hidden md:flex shrink-0">
         <div>
-          <div className="h-16 flex items-center justify-between px-4 border-b border-stone-200/80 gap-2">
-            <Link to="/" className="flex items-center hover:opacity-90 transition">
-              <CoverlyLogo variant="horizontal" size="sm" />
-            </Link>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 shrink-0">
-              Provider
-            </span>
+          <div className="h-16 flex items-center px-4 border-b border-stone-200/80 sticky top-0 bg-[#F4F1EA] z-10">
+            <BrandLogo linkTo="/provider/dashboard" size="sm" subtitle="Services Hub" badge="Provider" />
           </div>
 
           {business && (
