@@ -33,6 +33,7 @@ import importExportRoutes from "./routes/import-export.js";
 import buyerRoutes from "./routes/buyers.js";
 import retailerRoutes from "./routes/retailers.js";
 import kycRoutes from "./routes/kyc.js";
+import paymentRoutes from "./modules/payments/payment.routes.js";
 
 const currentDir = typeof import.meta !== "undefined" && import.meta.url
   ? path.dirname(fileURLToPath(import.meta.url))
@@ -71,7 +72,21 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf.toString("utf8");
+    },
+  })
+);
+app.use(
+  express.urlencoded({
+    extended: true,
+    verify: (req: any, _res, buf) => {
+      if (!req.rawBody) req.rawBody = buf.toString("utf8");
+    },
+  })
+);
 
 // Mount modular REST APIs
 app.use("/api", healthRoutes);
@@ -101,6 +116,7 @@ app.use("/api", importExportRoutes);
 app.use("/api", buyerRoutes);
 app.use("/api", retailerRoutes);
 app.use("/api", kycRoutes);
+app.use("/api", paymentRoutes);
 
 // Standardized JSON 404 for unknown API endpoints (never return HTML for APIs)
 app.use("/api", (_req, res) => {

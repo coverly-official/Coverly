@@ -40,6 +40,7 @@ import { RfqDetailPage } from "@/pages/buyer/RfqDetailPage";
 import { QuotationComparePage } from "@/pages/buyer/QuotationComparePage";
 import { BuyerOrdersPage } from "@/pages/buyer/BuyerOrdersPage";
 import { BuyerOrderDetailPage } from "@/pages/buyer/BuyerOrderDetailPage";
+import { BuyerOrderCheckoutPage } from "@/pages/buyer/BuyerOrderCheckoutPage";
 import { SavedSuppliersPage } from "@/pages/buyer/SavedSuppliersPage";
 import { SavedProductsPage } from "@/pages/buyer/SavedProductsPage";
 import { SourcingListsPage } from "@/pages/buyer/SourcingListsPage";
@@ -105,6 +106,8 @@ import { AdminEmployeesPage } from "@/pages/admin/AdminEmployeesPage";
 import { AdminOrdersPage } from "@/pages/admin/AdminOrdersPage";
 import { AdminQuotationsPage } from "@/pages/admin/AdminQuotationsPage";
 import { AdminFinancePage } from "@/pages/admin/AdminFinancePage";
+import { AdminPaymentGatewaysPage } from "@/pages/admin/AdminPaymentGatewaysPage";
+import { AdminPaymentsDashboardPage } from "@/pages/admin/AdminPaymentsDashboardPage";
 import { AdminAnalyticsPage } from "@/pages/admin/AdminAnalyticsPage";
 import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
 import { AdminReviewsPage } from "@/pages/admin/AdminReviewsPage";
@@ -402,6 +405,7 @@ export const AppRouter: React.FC = () => {
             <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
             <Route path="orders" element={<BuyerOrdersPage />} />
             <Route path="orders/:id" element={<BuyerOrderDetailPage />} />
+            <Route path="orders/:id/checkout" element={<BuyerOrderCheckoutPage />} />
             <Route path="logistics" element={<BuyerOrdersPage />} />
             <Route path="inventory" element={<SourcingListsPage />} />
             <Route path="saved" element={<SavedSuppliersPage />} />
@@ -440,6 +444,7 @@ export const AppRouter: React.FC = () => {
             <Route path="wholesale" element={<RetailerWholesaleCatalogPage />} />
             <Route path="products" element={<RetailerWholesaleCatalogPage />} />
             <Route path="orders" element={<RetailerOrdersPage />} />
+            <Route path="orders/:id/checkout" element={<BuyerOrderCheckoutPage />} />
             <Route path="rfqs" element={<BuyerRfqsPage />} />
             <Route path="saved-products" element={<SavedProductsPage />} />
             <Route path="saved-suppliers" element={<SavedSuppliersPage />} />
@@ -800,6 +805,22 @@ export const AppRouter: React.FC = () => {
               element={
                 <AdminModuleGuard module="finance">
                   <AdminFinancePage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="payments"
+              element={
+                <AdminModuleGuard module="finance">
+                  <AdminPaymentsDashboardPage />
+                </AdminModuleGuard>
+              }
+            />
+            <Route
+              path="payment-gateways"
+              element={
+                <AdminModuleGuard module="finance">
+                  <AdminPaymentGatewaysPage />
                 </AdminModuleGuard>
               }
             />

@@ -331,6 +331,8 @@ const OPERATIONS_GROUPS: ExpandableGroup[] = [
     basePath: "/admin/finance",
     children: [
       { label: "Financial Records", href: "/admin/finance" },
+      { label: "Payments Dashboard", href: "/admin/payments" },
+      { label: "Payment Gateways", href: "/admin/payment-gateways" },
       { label: "Invoices", href: "/admin/finance?tab=invoices" },
       { label: "Expenses", href: "/admin/finance?tab=expenses" },
       { label: "Transaction Status", href: "/admin/finance?tab=transactions" },

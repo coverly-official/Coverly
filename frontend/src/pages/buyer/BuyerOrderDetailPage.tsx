@@ -9,6 +9,7 @@ import {
   Building2,
   Clock,
   FileCheck,
+  CreditCard,
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
@@ -111,6 +112,16 @@ export const BuyerOrderDetailPage: React.FC = () => {
             Supplier: {order.businesses?.name} • City: {order.businesses?.city}
           </p>
         </div>
+
+        {order.status === "pending_deposit" && (
+          <Link
+            to={`/buyer/orders/${order.id}/checkout`}
+            className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-semibold hover:bg-emerald-800 transition flex items-center gap-2 self-start"
+          >
+            <CreditCard className="w-4 h-4" />
+            Proceed to Payment Checkout
+          </Link>
+        )}
 
         {order.status === "shipped" && (
           <button
