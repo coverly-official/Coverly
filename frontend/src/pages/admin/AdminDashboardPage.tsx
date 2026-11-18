@@ -25,26 +25,52 @@ import {
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const SUMMARY_CACHE_KEY = "coverly_admin_dash_summary_v1";
+const ACTIVITY_CACHE_KEY = "coverly_admin_dash_activity_v1";
+
+function readSessionCache(key: string) {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 export const AdminDashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const [metrics, setMetrics] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [summary, setSummary] = useState<any>(() => readSessionCache(SUMMARY_CACHE_KEY));
+  const [activity, setActivity] = useState<any>(() => readSessionCache(ACTIVITY_CACHE_KEY));
+  const [isSummaryLoading, setIsSummaryLoading] = useState<boolean>(() => !readSessionCache(SUMMARY_CACHE_KEY));
+  const [isActivityLoading, setIsActivityLoading] = useState<boolean>(() => !readSessionCache(ACTIVITY_CACHE_KEY));
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const loadMetrics = () => {
-    setIsLoading(true);
-    setErrorMsg(null);
-    const authHeaders = {
-      "Content-Type": "application/json",
-      "x-user-id": user?.id || localStorage.getItem("coverly_user_id") || "",
-    };
+  const isLoading = isSummaryLoading || isActivityLoading;
+  const metrics = { ...(summary || {}), ...(activity || {}) };
 
-    fetch(`${API_BASE}/admin/metrics`, { headers: authHeaders })
+  const loadDashboard = (forceRefresh = false) => {
+    setErrorMsg(null);
+    if (forceRefresh || !summary) setIsSummaryLoading(true);
+    if (forceRefresh || !activity) setIsActivityLoading(true);
+
+    const userId = user?.id || localStorage.getItem("coverly_user_id") || "";
+    const token = localStorage.getItem("auth_token") || "";
+    const authHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+      "x-user-id": userId,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    const qs = forceRefresh ? "?refresh=1" : "";
+
+    // Stream 1: Ultra-Fast KPI Summary, Charts & Pending Actions
+    fetch(`${API_BASE}/admin/metrics/summary${qs}`, { headers: authHeaders })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          setMetrics(data.data);
+          setSummary(data.data);
+          try {
+            sessionStorage.setItem(SUMMARY_CACHE_KEY, JSON.stringify(data.data));
+          } catch {}
         } else {
           setErrorMsg(data.error || "Unable to load live platform metrics.");
         }
@@ -52,12 +78,26 @@ export const AdminDashboardPage: React.FC = () => {
       .catch((err) => {
         setErrorMsg(err.message || "Failed to connect to Admin API.");
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsSummaryLoading(false));
+
+    // Stream 2: Independent Verification Queue & Recent Admin Activities
+    fetch(`${API_BASE}/admin/metrics/activity${qs}`, { headers: authHeaders })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setActivity(data.data);
+          try {
+            sessionStorage.setItem(ACTIVITY_CACHE_KEY, JSON.stringify(data.data));
+          } catch {}
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsActivityLoading(false));
   };
 
   useEffect(() => {
-    loadMetrics();
-  }, [user]);
+    loadDashboard(false);
+  }, [user?.id]);
 
   const kpiCards = [
     { label: "Total Users", value: metrics?.totalUsers ?? 0, href: "/admin/users", icon: Users, accent: "text-blue-600" },
@@ -137,9 +177,9 @@ export const AdminDashboardPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={loadMetrics}
+            onClick={() => loadDashboard(true)}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold rounded-lg transition shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold rounded-lg transition shadow-2xs cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
             Refresh Live Metrics
@@ -178,7 +218,11 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
               <div className="mt-2 flex items-baseline justify-between">
                 <span className="text-2xl font-extrabold text-stone-950 font-mono">
-                  {isLoading ? "—" : card.value.toLocaleString("en-IN")}
+                  {isSummaryLoading && !summary ? (
+                    <span className="inline-block h-6 w-12 rounded bg-stone-100 animate-pulse align-middle" />
+                  ) : (
+                    card.value.toLocaleString("en-IN")
+                  )}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-stone-300 group-hover:text-stone-700 transition" />
               </div>
@@ -355,7 +399,13 @@ export const AdminDashboardPage: React.FC = () => {
             </Link>
           </div>
           <div className="divide-y divide-stone-100">
-            {verificationQueue.length === 0 ? (
+            {isActivityLoading && !activity ? (
+              <div className="p-5 space-y-2.5">
+                <div className="h-10 rounded-lg bg-stone-100 animate-pulse" />
+                <div className="h-10 rounded-lg bg-stone-100 animate-pulse" />
+                <div className="h-10 rounded-lg bg-stone-100 animate-pulse" />
+              </div>
+            ) : verificationQueue.length === 0 ? (
               <div className="p-8 text-center text-xs text-stone-500">
                 No pending business verifications in queue.
               </div>
@@ -395,7 +445,13 @@ export const AdminDashboardPage: React.FC = () => {
             </Link>
           </div>
           <div className="divide-y divide-stone-100">
-            {recentActivities.length === 0 ? (
+            {isActivityLoading && !activity ? (
+              <div className="p-5 space-y-2.5">
+                <div className="h-10 rounded-lg bg-stone-100 animate-pulse" />
+                <div className="h-10 rounded-lg bg-stone-100 animate-pulse" />
+                <div className="h-10 rounded-lg bg-stone-100 animate-pulse" />
+              </div>
+            ) : recentActivities.length === 0 ? (
               <div className="p-8 text-center text-xs text-stone-500">
                 No administrative audit events recorded yet.
               </div>

@@ -21,6 +21,13 @@ declare global {
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const AUTH_CACHE_TTL_MS = 15_000;
+const AUTH_USER_CACHE = new Map<string, { user: AuthenticatedUser; expiresAt: number }>();
+
+export function invalidateAuthCache(userId?: string) {
+  if (userId) AUTH_USER_CACHE.delete(userId);
+  else AUTH_USER_CACHE.clear();
+}
 
 function extractUserIdFromTokenOrHeader(authHeader?: string, xUserId?: string): string | null {
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -63,35 +70,51 @@ export async function authenticateUser(req: Request, res: Response, next: NextFu
     return sendError(res, "Authentication required. Please provide a valid session or token.", 401, "UNAUTHORIZED");
   }
 
+  // Fast-path: serve recently verified active user from short 15s TTL memory cache
+  const cached = AUTH_USER_CACHE.get(userId);
+  if (cached && cached.expiresAt > Date.now()) {
+    if (!cached.user.is_active) {
+      return sendError(res, "Account has been suspended. Please contact customer support.", 403, "ACCOUNT_SUSPENDED");
+    }
+    req.user = cached.user;
+    return next();
+  }
+
   const insforge = getInsForgeClient();
   if (!insforge) {
     return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
   }
 
   try {
-    const { data: userProfile, error: userError } = await insforge.database
-      .from("users")
-      .select("id, email, full_name, phone, is_active")
-      .eq("id", userId)
-      .single();
+    // Run user profile + roles lookup in a single parallel network round-trip
+    const [profileRes, rolesRes] = await Promise.all([
+      insforge.database
+        .from("users")
+        .select("id, email, full_name, phone, is_active")
+        .eq("id", userId)
+        .single(),
+      insforge.database
+        .from("user_roles")
+        .select("role, is_primary")
+        .eq("user_id", userId),
+    ]);
 
+    const { data: userProfile, error: userError } = profileRes;
     if (userError || !userProfile) {
+      AUTH_USER_CACHE.delete(userId);
       return sendError(res, "User profile not found or invalid session.", 401, "INVALID_SESSION");
     }
 
     if (!userProfile.is_active) {
+      AUTH_USER_CACHE.delete(userId);
       return sendError(res, "Account has been suspended. Please contact customer support.", 403, "ACCOUNT_SUSPENDED");
     }
 
-    const { data: roles } = await insforge.database
-      .from("user_roles")
-      .select("role, is_primary")
-      .eq("user_id", userId);
+    const roles = rolesRes.data || [];
+    const userRoles = roles.map((r: any) => r.role);
+    const activeRole = roles.find((r: any) => r.is_primary)?.role || userRoles[0] || "buyer";
 
-    const userRoles = (roles || []).map((r: any) => r.role);
-    const activeRole = roles?.find((r: any) => r.is_primary)?.role || userRoles[0] || "buyer";
-
-    req.user = {
+    const authenticated: AuthenticatedUser = {
       id: userProfile.id,
       email: userProfile.email,
       full_name: userProfile.full_name,
@@ -100,6 +123,9 @@ export async function authenticateUser(req: Request, res: Response, next: NextFu
       roles: userRoles.length > 0 ? userRoles : [activeRole],
       activeRole,
     };
+
+    AUTH_USER_CACHE.set(userId, { user: authenticated, expiresAt: Date.now() + AUTH_CACHE_TTL_MS });
+    req.user = authenticated;
 
     return next();
   } catch (err: any) {

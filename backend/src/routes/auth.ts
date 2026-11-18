@@ -257,33 +257,34 @@ router.post("/auth/login", async (req, res) => {
 
     const userId = authData.user.id;
 
-    // 2. Fetch User Profile & Account Status
-    const { data: userProfile } = await insforge.database
-      .from("users")
-      .select("id, email, full_name, phone, avatar_url, is_active")
-      .eq("id", userId)
-      .single();
+    // 2. Fetch User Profile, Roles & Business in a single parallel round-trip
+    const [profileRes, rolesRes, memberRes] = await Promise.all([
+      insforge.database
+        .from("users")
+        .select("id, email, full_name, phone, avatar_url, is_active")
+        .eq("id", userId)
+        .single(),
+      insforge.database
+        .from("user_roles")
+        .select("role, is_primary")
+        .eq("user_id", userId),
+      insforge.database
+        .from("business_members")
+        .select("business_id, role_in_business, businesses(*)")
+        .eq("user_id", userId)
+        .limit(1)
+        .single(),
+    ]);
 
+    const userProfile = profileRes.data;
     if (userProfile && !userProfile.is_active) {
       return sendError(res, "Your account has been suspended. Please contact support.", 403, "ACCOUNT_SUSPENDED");
     }
 
-    // 3. Fetch User Roles
-    const { data: roles } = await insforge.database
-      .from("user_roles")
-      .select("role, is_primary")
-      .eq("user_id", userId);
-
-    const userRoles = (roles || []).map((r: any) => r.role);
-    const activeRole = roles?.find((r: any) => r.is_primary)?.role || userRoles[0] || "buyer";
-
-    // 4. Fetch User Business (if any)
-    const { data: memberRecord } = await insforge.database
-      .from("business_members")
-      .select("business_id, role_in_business, businesses(*)")
-      .eq("user_id", userId)
-      .limit(1)
-      .single();
+    const roles = rolesRes.data || [];
+    const userRoles = roles.map((r: any) => r.role);
+    const activeRole = roles.find((r: any) => r.is_primary)?.role || userRoles[0] || "buyer";
+    const memberRecord = memberRes.data;
 
     return sendSuccess(
       res,

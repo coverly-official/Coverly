@@ -23,379 +23,357 @@ router.use("/admin/transporters", requireAdminModule("transporters", "logistics"
 router.use("/admin/warehouse", requireAdminModule("warehouse", "orders", "logistics"));
 
 // ====================================================================
-// 1. ADMIN METRICS & DASHBOARD
+// 1. ADMIN METRICS & DASHBOARD (PARALLELIZED + DIVIDED + CACHED)
 // ====================================================================
 
-// GET /api/admin/metrics & GET /api/admin/dashboard (Comprehensive Platform Metrics from Real DB)
-const handleAdminMetrics = async (_req: any, res: any) => {
-  const insforge = getInsForgeClient();
-  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
+const SUMMARY_CACHE_TTL_MS = 20_000;
+const ACTIVITY_CACHE_TTL_MS = 15_000;
+let summaryCache: { data: any; expiresAt: number } | null = null;
+let activityCache: { data: any; expiresAt: number } | null = null;
 
+async function safeQuery<T>(promise: PromiseLike<{ data?: T | null; count?: number | null }>, fallback: { data: T | null; count: number | null } = { data: null, count: 0 }) {
   try {
-    // 1. Products Metrics
-    const { count: totalProducts } = await insforge.database
-      .from("products")
-      .select("*", { count: "exact", head: true });
+    const res = await promise;
+    return { data: (res?.data ?? fallback.data) as T | null, count: res?.count ?? fallback.count ?? 0 };
+  } catch {
+    return fallback;
+  }
+}
 
-    const { count: activeProducts } = await insforge.database
-      .from("products")
-      .select("*", { count: "exact", head: true })
-      .eq("is_active", true);
+function buildLastSixMonthsBuckets() {
+  const buckets: { key: string; label: string; count: number }[] = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" });
+    buckets.push({ key, label, count: 0 });
+  }
+  return buckets;
+}
 
-    const archivedProducts = (totalProducts || 0) - (activeProducts || 0);
+// Phase 1: Ultra-Fast KPI Summary, Growth Charts, Orders & RFQ Breakdown (1 parallel RTT!)
+async function fetchAdminSummaryData(insforge: any, forceRefresh = false) {
+  if (!forceRefresh && summaryCache && summaryCache.expiresAt > Date.now()) {
+    return summaryCache.data;
+  }
 
-    // 2. Business Metrics
-    const { count: totalBusinesses } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true });
+  // Collapse ~32 serial count queries into 1 single parallel burst of lightweight column reads
+  const [
+    productsRes,
+    businessesRes,
+    usersRes,
+    userRolesRes,
+    ordersRes,
+    rfqsRes,
+    quotationsRes,
+    distOffersRes,
+    territoriesRes,
+    pendingVerifRes,
+    pendingKycRes,
+    conciergeRes,
+    categoriesRes,
+    bizServicesRes,
+    serviceReqRes,
+    openTicketsRes,
+    spProfilesRes,
+    lpProfilesRes,
+    trProfilesRes,
+    logBookingsRes,
+    tripsRes,
+  ] = await Promise.all([
+    safeQuery<any[]>(insforge.database.from("products").select("is_active, moderation_status").limit(5000), { data: [], count: 0 }),
+    safeQuery<any[]>(insforge.database.from("businesses").select("business_type, verification_level, created_at").limit(5000), { data: [], count: 0 }),
+    safeQuery<any[]>(insforge.database.from("users").select("created_at").limit(5000), { data: [], count: 0 }),
+    safeQuery<any[]>(insforge.database.from("user_roles").select("role").limit(5000), { data: [], count: 0 }),
+    safeQuery<any[]>(insforge.database.from("orders").select("total_amount, status").limit(5000), { data: [], count: 0 }),
+    safeQuery<any[]>(insforge.database.from("rfqs").select("status").limit(5000), { data: [], count: 0 }),
+    safeQuery<any[]>(insforge.database.from("quotations").select("status").limit(5000), { data: [], count: 0 }),
+    safeQuery<any[]>(insforge.database.from("distributor_product_offers").select("moderation_status, is_active").limit(5000), { data: [], count: 0 }),
+    safeQuery(insforge.database.from("distributor_territories").select("*", { count: "exact", head: true }).eq("is_active", true)),
+    safeQuery(insforge.database.from("supplier_verifications").select("*", { count: "exact", head: true }).eq("status", "pending")),
+    safeQuery(insforge.database.from("verification_submissions").select("*", { count: "exact", head: true }).in("status", ["submitted", "pending_verification", "under_review"])),
+    safeQuery(insforge.database.from("concierge_leads").select("*", { count: "exact", head: true })),
+    safeQuery(insforge.database.from("product_categories").select("*", { count: "exact", head: true })),
+    safeQuery(insforge.database.from("business_services").select("*", { count: "exact", head: true })),
+    safeQuery(insforge.database.from("service_requests").select("*", { count: "exact", head: true })),
+    safeQuery(insforge.database.from("support_tickets").select("*", { count: "exact", head: true }).eq("status", "open")),
+    safeQuery(insforge.database.from("service_provider_profiles").select("*", { count: "exact", head: true })),
+    safeQuery(insforge.database.from("logistics_partners").select("*", { count: "exact", head: true })),
+    safeQuery(insforge.database.from("transporter_profiles").select("*", { count: "exact", head: true })),
+    safeQuery(insforge.database.from("logistics_bookings").select("*", { count: "exact", head: true }).not("status", "in", '("delivered","completed","cancelled")')),
+    safeQuery(insforge.database.from("transport_trips").select("*", { count: "exact", head: true }).not("status", "in", '("delivered","completed","cancelled")')),
+  ]);
 
-    const { count: totalSuppliers } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true })
-      .in("business_type", ["manufacturer", "wholesaler", "distributor"]);
+  const products = productsRes.data || [];
+  const businesses = businessesRes.data || [];
+  const users = usersRes.data || [];
+  const roles = userRolesRes.data || [];
+  const orders = ordersRes.data || [];
+  const rfqs = rfqsRes.data || [];
+  const quotations = quotationsRes.data || [];
+  const distOffers = distOffersRes.data || [];
 
-    const { count: totalManufacturers } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true })
-      .eq("business_type", "manufacturer");
+  // Products
+  const totalProducts = products.length;
+  const activeProducts = products.filter((p: any) => p.is_active === true).length;
+  const archivedProducts = Math.max(0, totalProducts - activeProducts);
+  const pendingProductsCount = products.filter((p: any) => p.moderation_status === "pending").length;
 
-    const { count: verifiedSuppliers } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true })
-      .neq("verification_level", "unverified");
+  // Businesses
+  const totalBusinesses = businesses.length;
+  const supplierTypes = new Set(["manufacturer", "wholesaler", "distributor"]);
+  let totalSuppliers = 0;
+  let totalManufacturers = 0;
+  let totalWholesalers = 0;
+  let totalDistributors = 0;
+  let retailerBizCount = 0;
+  let verifiedSuppliers = 0;
+  let verifiedManufacturers = 0;
+  let verifiedDistributors = 0;
 
-    const { count: verifiedManufacturers } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true })
-      .eq("business_type", "manufacturer")
-      .neq("verification_level", "unverified");
+  const bizBuckets = buildLastSixMonthsBuckets();
+  const bizBucketMap = new Map(bizBuckets.map((b) => [b.key, b]));
 
-    const { count: totalDistributors } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true })
-      .eq("business_type", "distributor");
+  for (const b of businesses) {
+    const bt = b.business_type;
+    const isVerified = b.verification_level && b.verification_level !== "unverified";
+    if (supplierTypes.has(bt)) totalSuppliers++;
+    if (bt === "manufacturer") {
+      totalManufacturers++;
+      if (isVerified) verifiedManufacturers++;
+    } else if (bt === "wholesaler") {
+      totalWholesalers++;
+    } else if (bt === "distributor") {
+      totalDistributors++;
+      if (isVerified) verifiedDistributors++;
+    } else if (bt === "retailer") {
+      retailerBizCount++;
+    }
+    if (isVerified) verifiedSuppliers++;
+    if (b.created_at) {
+      const bucket = bizBucketMap.get(String(b.created_at).slice(0, 7));
+      if (bucket) bucket.count += 1;
+    }
+  }
 
-    const { count: verifiedDistributors } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true })
-      .eq("business_type", "distributor")
-      .neq("verification_level", "unverified");
+  // Users & 6-month registrations
+  const totalUsers = users.length;
+  const userBuckets = buildLastSixMonthsBuckets();
+  const userBucketMap = new Map(userBuckets.map((b) => [b.key, b]));
+  for (const u of users) {
+    if (u.created_at) {
+      const bucket = userBucketMap.get(String(u.created_at).slice(0, 7));
+      if (bucket) bucket.count += 1;
+    }
+  }
 
-    let activeDistributorOffers = 0;
-    let pendingDistributorOffers = 0;
-    try {
-      const { count: aOffers } = await insforge.database
-        .from("distributor_product_offers")
-        .select("*", { count: "exact", head: true })
-        .eq("moderation_status", "approved")
-        .eq("is_active", true);
-      activeDistributorOffers = aOffers || 0;
+  // Roles aggregation
+  let activeBuyers = 0;
+  let retailerRoleCount = 0;
+  let spRoleCount = 0;
+  let lpRoleCount = 0;
+  let trRoleCount = 0;
+  for (const r of roles) {
+    if (r.role === "buyer" || r.role === "buyer_supplier") activeBuyers++;
+    else if (r.role === "retailer") retailerRoleCount++;
+    else if (r.role === "service_provider") spRoleCount++;
+    else if (r.role === "logistics_partner") lpRoleCount++;
+    else if (r.role === "transporter") trRoleCount++;
+  }
 
-      const { count: pOffers } = await insforge.database
-        .from("distributor_product_offers")
-        .select("*", { count: "exact", head: true })
-        .eq("moderation_status", "pending");
-      pendingDistributorOffers = pOffers || 0;
-    } catch (e) {}
+  const activeRetailers = Math.max(retailerBizCount, retailerRoleCount);
+  const totalServiceProviders = Math.max(spProfilesRes.count || 0, spRoleCount);
+  const totalLogisticsPartners = Math.max(lpProfilesRes.count || 0, lpRoleCount);
+  const totalTransporters = Math.max(trProfilesRes.count || 0, trRoleCount);
 
-    let activeTerritories = 0;
-    try {
-      const { count: terrCount } = await insforge.database
-        .from("distributor_territories")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true);
-      activeTerritories = terrCount || 0;
-    } catch (e) {}
+  // Orders & GMV
+  const totalOrders = orders.length;
+  let activeOrders = 0;
+  let totalGmv = 0;
+  const ordersOverview: Record<string, number> = {};
+  for (const o of orders) {
+    const st = o.status || "pending";
+    ordersOverview[st] = (ordersOverview[st] || 0) + 1;
+    if (!["completed", "cancelled", "delivered"].includes(st)) activeOrders++;
+    totalGmv += Number(o.total_amount) || 0;
+  }
 
-    // 3. User Metrics
-    const { count: totalUsers } = await insforge.database
-      .from("users")
-      .select("*", { count: "exact", head: true });
+  // RFQs & Quotations
+  const totalRfqs = rfqs.length;
+  let activeRfqs = 0;
+  const rfqActivity: Record<string, number> = {};
+  for (const r of rfqs) {
+    const st = r.status || "submitted";
+    rfqActivity[st] = (rfqActivity[st] || 0) + 1;
+    if (["submitted", "in_review", "matched", "quotes_received"].includes(st)) activeRfqs++;
+  }
+  const quotationsSubmitted = quotations.length;
+  const pendingQuotations = quotations.filter((q: any) =>
+    ["pending", "submitted", "under_review"].includes(q.status)
+  ).length;
 
-    // 4. Verifications Queue
-    const { count: pendingVerifications } = await insforge.database
-      .from("supplier_verifications")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "pending");
+  // Distributor Offers & Shipments
+  const activeDistributorOffers = distOffers.filter(
+    (o: any) => o.moderation_status === "approved" && o.is_active === true
+  ).length;
+  const pendingDistributorOffers = distOffers.filter((o: any) => o.moderation_status === "pending").length;
+  const activeShipments = (logBookingsRes.count || 0) + (tripsRes.count || 0);
+  const pendingVerifications = (pendingVerifRes.count || 0) + (pendingKycRes.count || 0);
+  const totalConciergeLeads = conciergeRes.count || 0;
+  const openTickets = openTicketsRes.count || 0;
 
-    // 5. RFQs & Enquiries & Quotations
-    const { count: totalRfqs } = await insforge.database
-      .from("rfqs")
-      .select("*", { count: "exact", head: true });
+  const data = {
+    totalGmv,
+    totalOrders,
+    activeOrders,
+    totalRfqs,
+    activeRfqs,
+    totalConciergeLeads,
+    totalEnquiries: totalRfqs + totalConciergeLeads,
+    quotationsSubmitted,
+    totalQuotations: quotationsSubmitted,
+    pendingQuotations,
+    totalBusinesses,
+    totalSuppliers,
+    totalManufacturers,
+    totalWholesalers,
+    totalDistributors,
+    totalBuyers: activeBuyers,
+    activeBuyers,
+    totalRetailers: activeRetailers,
+    activeRetailers,
+    totalServiceProviders,
+    totalLogisticsPartners,
+    totalTransporters,
+    activeShipments,
+    verifiedSuppliers,
+    verifiedManufacturers,
+    verifiedDistributors,
+    activeDistributorOffers,
+    pendingDistributorOffers,
+    activeTerritories: territoriesRes.count || 0,
+    totalUsers,
+    totalProducts,
+    publishedProducts: activeProducts,
+    activeProducts,
+    archivedProducts,
+    pendingProductApprovals: pendingProductsCount,
+    pendingProducts: pendingProductsCount,
+    pendingVerifications,
+    activeCategories: categoriesRes.count || 0,
+    totalBusinessServices: bizServicesRes.count || 0,
+    totalServiceRequests: serviceReqRes.count || 0,
+    openTickets,
+    openComplaints: openTickets,
+    pendingComplaints: openTickets,
+    businessGrowth: bizBuckets.map((b) => ({ month: b.label, count: b.count })),
+    userRegistrations: userBuckets.map((b) => ({ month: b.label, count: b.count })),
+    ordersOverview,
+    rfqActivity,
+  };
 
-    const { count: activeRfqs } = await insforge.database
-      .from("rfqs")
-      .select("*", { count: "exact", head: true })
-      .in("status", ["submitted", "in_review", "matched", "quotes_received"]);
+  summaryCache = { data, expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS };
+  return data;
+}
 
-    const { count: totalConciergeLeads } = await insforge.database
-      .from("concierge_leads")
-      .select("*", { count: "exact", head: true });
+// Phase 2: Independent Live Verification Queue & Recent Audit Logs (1 parallel RTT!)
+async function fetchAdminActivityData(insforge: any, forceRefresh = false) {
+  if (!forceRefresh && activityCache && activityCache.expiresAt > Date.now()) {
+    return activityCache.data;
+  }
 
-    const { count: quotationsSubmitted } = await insforge.database
-      .from("quotations")
-      .select("*", { count: "exact", head: true });
-
-    const { count: pendingProductsCount } = await insforge.database
-      .from("products")
-      .select("*", { count: "exact", head: true })
-      .eq("moderation_status", "pending");
-
-    // 6. Categories & Services
-    const { count: activeCategories } = await insforge.database
-      .from("product_categories")
-      .select("*", { count: "exact", head: true });
-
-    const { count: totalBusinessServices } = await insforge.database
-      .from("business_services")
-      .select("*", { count: "exact", head: true });
-
-    const { count: totalServiceRequests } = await insforge.database
-      .from("service_requests")
-      .select("*", { count: "exact", head: true });
-
-    // 7. Orders, Ecosystem Participants, Shipments & Recent Activities
-    const { data: orders } = await insforge.database
-      .from("orders")
-      .select("total_amount, status");
-
-    const totalOrders = orders?.length || 0;
-    const activeOrders =
-      orders?.filter((o: any) => !["completed", "cancelled", "delivered"].includes(o.status)).length || 0;
-    const totalGmv = orders?.reduce((acc: number, curr: any) => acc + (Number(curr.total_amount) || 0), 0) || 0;
-
-    const { count: openTickets } = await insforge.database
-      .from("support_tickets")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "open");
-
-    const { count: totalWholesalers } = await insforge.database
-      .from("businesses")
-      .select("*", { count: "exact", head: true })
-      .eq("business_type", "wholesaler");
-
-    let activeBuyers = 0;
-    let activeRetailers = 0;
-    let totalServiceProviders = 0;
-    let totalLogisticsPartners = 0;
-    let totalTransporters = 0;
-    let pendingQuotations = 0;
-    let activeShipments = 0;
-    let recentActivities: any[] = [];
-    let verificationQueue: any[] = [];
-    let businessGrowth: { month: string; count: number }[] = [];
-    let userRegistrations: { month: string; count: number }[] = [];
-    let ordersOverview: Record<string, number> = {};
-    let rfqActivity: Record<string, number> = {};
-
-    try {
-      const { count: buyerRoles } = await insforge.database
-        .from("user_roles")
-        .select("*", { count: "exact", head: true })
-        .in("role", ["buyer", "buyer_supplier"]);
-      activeBuyers = buyerRoles || 0;
-    } catch {}
-
-    try {
-      const { count: retailerBiz } = await insforge.database
-        .from("businesses")
-        .select("*", { count: "exact", head: true })
-        .eq("business_type", "retailer");
-      const { count: retailerRoles } = await insforge.database
-        .from("user_roles")
-        .select("*", { count: "exact", head: true })
-        .eq("role", "retailer");
-      activeRetailers = Math.max(retailerBiz || 0, retailerRoles || 0);
-    } catch {}
-
-    try {
-      const { count: spCount } = await insforge.database
-        .from("service_provider_profiles")
-        .select("*", { count: "exact", head: true });
-      const { count: spRoles } = await insforge.database
-        .from("user_roles")
-        .select("*", { count: "exact", head: true })
-        .eq("role", "service_provider");
-      totalServiceProviders = Math.max(spCount || 0, spRoles || 0);
-    } catch {}
-
-    try {
-      const { count: lpCount } = await insforge.database
-        .from("logistics_partners")
-        .select("*", { count: "exact", head: true });
-      const { count: lpRoles } = await insforge.database
-        .from("user_roles")
-        .select("*", { count: "exact", head: true })
-        .eq("role", "logistics_partner");
-      totalLogisticsPartners = Math.max(lpCount || 0, lpRoles || 0);
-    } catch {}
-
-    try {
-      const { count: pqCount } = await insforge.database
-        .from("quotations")
-        .select("*", { count: "exact", head: true })
-        .in("status", ["pending", "submitted", "under_review"]);
-      pendingQuotations = pqCount || 0;
-    } catch {}
-
-    try {
-      const { count: trCount } = await insforge.database
-        .from("transporter_profiles")
-        .select("*", { count: "exact", head: true });
-      const { count: trRoles } = await insforge.database
-        .from("user_roles")
-        .select("*", { count: "exact", head: true })
-        .eq("role", "transporter");
-      totalTransporters = Math.max(trCount || 0, trRoles || 0);
-    } catch {}
-
-    try {
-      const { count: logBookings } = await insforge.database
-        .from("logistics_bookings")
-        .select("*", { count: "exact", head: true })
-        .not("status", "in", '("delivered","completed","cancelled")');
-      const { count: trips } = await insforge.database
-        .from("transport_trips")
-        .select("*", { count: "exact", head: true })
-        .not("status", "in", '("delivered","completed","cancelled")');
-      activeShipments = (logBookings || 0) + (trips || 0);
-    } catch {}
-
-    try {
-      const { data: logs } = await insforge.database
+  const [logsRes, legacyVerifRes, kycVerifRes] = await Promise.all([
+    safeQuery<any[]>(
+      insforge.database
         .from("audit_logs")
         .select("id, action, target_type, target_id, metadata, created_at, admin_id, users!admin_id(full_name, email)")
         .order("created_at", { ascending: false })
-        .limit(10);
-      recentActivities = logs || [];
-    } catch {}
-
-    try {
-      const { data: vQueue } = await insforge.database
+        .limit(10),
+      { data: [], count: 0 }
+    ),
+    safeQuery<any[]>(
+      insforge.database
         .from("supplier_verifications")
         .select("id, business_id, document_type, status, created_at, businesses(id, name, business_type, city, state)")
         .eq("status", "pending")
         .order("created_at", { ascending: false })
-        .limit(6);
-      verificationQueue = vQueue || [];
-    } catch {}
-
-    // Real 6-month time-series aggregation from database timestamps
-    const buildLastSixMonthsBuckets = () => {
-      const buckets: { key: string; label: string; count: number }[] = [];
-      const now = new Date();
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" });
-        buckets.push({ key, label, count: 0 });
-      }
-      return buckets;
-    };
-
-    try {
-      const bizBuckets = buildLastSixMonthsBuckets();
-      const { data: bizDates } = await insforge.database
-        .from("businesses")
-        .select("created_at")
+        .limit(6),
+      { data: [], count: 0 }
+    ),
+    safeQuery<any[]>(
+      insforge.database
+        .from("verification_submissions")
+        .select("id, business_id, role_code, document_type, status, created_at, users!verification_submissions_user_id_fkey(full_name), businesses(id, name, business_type, city, state)")
+        .in("status", ["submitted", "pending_verification", "under_review"])
         .order("created_at", { ascending: false })
-        .limit(2000);
-      (bizDates || []).forEach((b: any) => {
-        if (!b.created_at) return;
-        const k = String(b.created_at).slice(0, 7);
-        const bucket = bizBuckets.find((x) => x.key === k);
-        if (bucket) bucket.count += 1;
-      });
-      businessGrowth = bizBuckets.map((b) => ({ month: b.label, count: b.count }));
-    } catch {}
+        .limit(6),
+      { data: [], count: 0 }
+    ),
+  ]);
 
-    try {
-      const userBuckets = buildLastSixMonthsBuckets();
-      const { data: userDates } = await insforge.database
-        .from("users")
-        .select("created_at")
-        .order("created_at", { ascending: false })
-        .limit(2000);
-      (userDates || []).forEach((u: any) => {
-        if (!u.created_at) return;
-        const k = String(u.created_at).slice(0, 7);
-        const bucket = userBuckets.find((x) => x.key === k);
-        if (bucket) bucket.count += 1;
-      });
-      userRegistrations = userBuckets.map((b) => ({ month: b.label, count: b.count }));
-    } catch {}
+  const mergedQueue = [
+    ...(kycVerifRes.data || []).map((k: any) => ({
+      id: k.id,
+      business_id: k.business_id,
+      document_type: k.document_type,
+      status: k.status,
+      created_at: k.created_at,
+      businesses: k.businesses || { name: k.users?.full_name || "Account KYC", business_type: k.role_code },
+    })),
+    ...(legacyVerifRes.data || []),
+  ].slice(0, 8);
 
-    // Orders breakdown by status
-    ordersOverview = (orders || []).reduce((acc: Record<string, number>, o: any) => {
-      const st = o.status || "pending";
-      acc[st] = (acc[st] || 0) + 1;
-      return acc;
-    }, {});
+  const data = {
+    verificationQueue: mergedQueue,
+    recentActivities: logsRes.data || [],
+  };
 
-    // RFQ breakdown by status
-    try {
-      const { data: rfqStatuses } = await insforge.database
-        .from("rfqs")
-        .select("status")
-        .limit(2000);
-      rfqActivity = (rfqStatuses || []).reduce((acc: Record<string, number>, r: any) => {
-        const st = r.status || "submitted";
-        acc[st] = (acc[st] || 0) + 1;
-        return acc;
-      }, {});
-    } catch {}
+  activityCache = { data, expiresAt: Date.now() + ACTIVITY_CACHE_TTL_MS };
+  return data;
+}
 
-    return sendSuccess(res, {
-      totalGmv,
-      totalOrders,
-      activeOrders,
-      totalRfqs: totalRfqs || 0,
-      activeRfqs: activeRfqs || 0,
-      totalConciergeLeads: totalConciergeLeads || 0,
-      totalEnquiries: (totalRfqs || 0) + (totalConciergeLeads || 0),
-      quotationsSubmitted: quotationsSubmitted || 0,
-      totalQuotations: quotationsSubmitted || 0,
-      pendingQuotations,
-      totalBusinesses: totalBusinesses || 0,
-      totalSuppliers: totalSuppliers || 0,
-      totalManufacturers: totalManufacturers || 0,
-      totalWholesalers: totalWholesalers || 0,
-      totalDistributors: totalDistributors || 0,
-      totalBuyers: activeBuyers,
-      activeBuyers,
-      totalRetailers: activeRetailers,
-      activeRetailers,
-      totalServiceProviders,
-      totalLogisticsPartners,
-      totalTransporters,
-      activeShipments,
-      verifiedSuppliers: verifiedSuppliers || 0,
-      verifiedManufacturers: verifiedManufacturers || 0,
-      verifiedDistributors: verifiedDistributors || 0,
-      activeDistributorOffers: activeDistributorOffers || 0,
-      pendingDistributorOffers: pendingDistributorOffers || 0,
-      activeTerritories: activeTerritories || 0,
-      totalUsers: totalUsers || 0,
-      totalProducts: totalProducts || 0,
-      publishedProducts: activeProducts || 0,
-      activeProducts: activeProducts || 0,
-      archivedProducts: archivedProducts >= 0 ? archivedProducts : 0,
-      pendingProductApprovals: pendingProductsCount || 0,
-      pendingProducts: pendingProductsCount || 0,
-      pendingVerifications: pendingVerifications || 0,
-      activeCategories: activeCategories || 0,
-      totalBusinessServices: totalBusinessServices || 0,
-      totalServiceRequests: totalServiceRequests || 0,
-      openTickets: openTickets || 0,
-      openComplaints: openTickets || 0,
-      pendingComplaints: openTickets || 0,
-      businessGrowth,
-      userRegistrations,
-      ordersOverview,
-      rfqActivity,
-      verificationQueue,
-      recentActivities,
-    });
+// Divided Endpoint 1: Fast KPI Summary + Charts
+router.get("/admin/metrics/summary", async (req, res) => {
+  const insforge = getInsForgeClient();
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
+  try {
+    const force = req.query.refresh === "1" || req.query.refresh === "true";
+    const summary = await fetchAdminSummaryData(insforge, force);
+    res.setHeader("Cache-Control", "private, max-age=15");
+    return sendSuccess(res, summary);
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to load admin summary metrics.", 500, "SERVER_ERROR");
+  }
+});
+
+// Divided Endpoint 2: Live Verification Queue + Recent Admin Activities
+router.get("/admin/metrics/activity", async (req, res) => {
+  const insforge = getInsForgeClient();
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
+  try {
+    const force = req.query.refresh === "1" || req.query.refresh === "true";
+    const activity = await fetchAdminActivityData(insforge, force);
+    res.setHeader("Cache-Control", "private, max-age=10");
+    return sendSuccess(res, activity);
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to load admin activity feed.", 500, "SERVER_ERROR");
+  }
+});
+
+// Combined Backwards-Compatible Endpoint (executes Phase 1 & Phase 2 in parallel!)
+const handleAdminMetrics = async (req: any, res: any) => {
+  const insforge = getInsForgeClient();
+  if (!insforge) return sendError(res, "Database client unavailable.", 503, "SERVICE_UNAVAILABLE");
+
+  try {
+    const force = req.query?.refresh === "1" || req.query?.refresh === "true";
+    const [summary, activity] = await Promise.all([
+      fetchAdminSummaryData(insforge, force),
+      fetchAdminActivityData(insforge, force),
+    ]);
+    res.setHeader("Cache-Control", "private, max-age=15");
+    return sendSuccess(res, { ...summary, ...activity });
   } catch (err: any) {
     return sendError(res, err.message || "Failed to aggregate admin metrics.", 500, "SERVER_ERROR");
   }
