@@ -23,7 +23,7 @@ async function seed() {
 
   const demoUsers = [
     {
-      email: "admin@coverly.com",
+      email: "coverlly01@gmail.com",
       password: "Password@123",
       full_name: "Coverly System Administrator",
       phone: "+919999900001",
