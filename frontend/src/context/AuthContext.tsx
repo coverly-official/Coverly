@@ -8,10 +8,18 @@ interface AuthContextType {
   business: Business | null;
   isLoading: boolean;
   activeRole: UserRole;
+  emailVerified: boolean;
   login: (
     email: string,
     password: string
-  ) => Promise<{ success: boolean; error?: string; user?: UserProfile; activeRole?: UserRole }>;
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    user?: UserProfile;
+    activeRole?: UserRole;
+    requiresOtp?: boolean;
+    maskedEmail?: string;
+  }>;
   register: (payload: {
     email: string;
     password: string;
@@ -30,7 +38,43 @@ interface AuthContextType {
     privacy_version?: string;
     marketing_consent?: boolean;
     website_url_hp?: string;
-  }) => Promise<{ success: boolean; error?: string }>;
+  }) => Promise<{
+    success: boolean;
+    error?: string;
+    requiresOtp?: boolean;
+    maskedEmail?: string;
+    user?: Partial<UserProfile>;
+  }>;
+  verifyEmailOtp: (
+    email: string,
+    otp: string,
+    purpose?: string
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    user?: UserProfile;
+    activeRole?: UserRole;
+  }>;
+  resendEmailOtp: (
+    email: string,
+    purpose?: string
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    resendCooldownSeconds?: number;
+    retryAfterSeconds?: number;
+    maskedEmail?: string;
+  }>;
+  googleSignIn: (
+    idToken: string
+  ) => Promise<{
+    success: boolean;
+    error?: string;
+    user?: UserProfile;
+    activeRole?: UserRole;
+    requiresOtp?: boolean;
+    maskedEmail?: string;
+  }>;
   logout: () => void;
   setActiveRole: (role: UserRole) => void;
   refreshUser: () => Promise<void>;
@@ -63,7 +107,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(() => {
     const hasStoredProfile = Boolean(localStorage.getItem("coverly_user_profile"));
     const hasStoredId = Boolean(localStorage.getItem("coverly_user_id"));
-    // Only show loading on initial mount if there is an ID to verify but no profile cached
     return !hasStoredProfile && hasStoredId;
   });
 
@@ -79,6 +122,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {}
     return "guest";
   });
+
+  const emailVerified = Boolean(user && user.email_verified !== false);
 
   const loadSession = async () => {
     try {
@@ -118,7 +163,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } else if (res.status === 401) {
-        // Only clear credentials if backend explicitly rejects the session as unauthorized
         localStorage.removeItem("coverly_user_id");
         localStorage.removeItem("coverly_user_profile");
         localStorage.removeItem("coverly_business_profile");
@@ -128,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setActiveRoleState("guest");
       }
     } catch {
-      // Keep cached session on network errors or serverless wakeup delays
+      // Keep cached session on network errors
     } finally {
       setIsLoading(false);
     }
@@ -157,6 +201,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const loggedUser = body.data.user as UserProfile;
+      const requiresOtp = Boolean(body.data.requiresOtp);
+      const maskedEmail = body.data.maskedEmail;
+
       const adminRoleInList = loggedUser.roles?.find((r) => isAdminRole(r)) as UserRole | undefined;
       const role = (adminRoleInList || loggedUser.activeRole || loggedUser.roles?.[0] || "buyer") as UserRole;
       const normalizedUser: UserProfile = {
@@ -164,6 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         roles: loggedUser.roles?.length ? loggedUser.roles : [role],
         activeRole: role,
         is_active: loggedUser.is_active ?? true,
+        email_verified: loggedUser.email_verified ?? !requiresOtp,
       };
 
       const biz = (body.data.business as Business) || null;
@@ -180,7 +228,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem("coverly_business_profile", JSON.stringify(biz));
       }
 
-      return { success: true, user: normalizedUser, activeRole: role };
+      return {
+        success: true,
+        user: normalizedUser,
+        activeRole: role,
+        requiresOtp,
+        maskedEmail,
+      };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
     }
@@ -217,7 +271,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: body.error || "Registration failed" };
       }
 
-      const registeredUser = body.data.user as Partial<UserProfile> & { role?: UserRole };
+      const registeredUser = body.data?.user || {};
+      const requiresOtp = Boolean(body.data?.requiresOtp ?? true);
+      const maskedEmail = body.data?.maskedEmail;
       const role = (registeredUser.activeRole || registeredUser.role || payload.role || "buyer") as UserRole;
       const normalizedUser: UserProfile = {
         id: registeredUser.id || "",
@@ -227,6 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         roles: Array.isArray(registeredUser.roles) && registeredUser.roles.length ? registeredUser.roles : [role],
         activeRole: role,
         is_active: registeredUser.is_active ?? true,
+        email_verified: false,
       };
 
       setUser(normalizedUser);
@@ -234,10 +291,128 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveRole(role);
 
       localStorage.setItem("coverly_user_id", normalizedUser.id);
+      localStorage.setItem("auth_token", body.data?.accessToken || normalizedUser.id);
       localStorage.setItem("coverly_user_profile", JSON.stringify(normalizedUser));
       localStorage.setItem("coverly_active_role", role);
 
-      return { success: true };
+      return {
+        success: true,
+        user: normalizedUser,
+        requiresOtp,
+        maskedEmail,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || "An unexpected error occurred." };
+    }
+  };
+
+  const verifyEmailOtp = async (email: string, otp: string, purpose = "email_verification") => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/verify-email-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, purpose }),
+      });
+
+      const body = await res.json();
+      if (!res.ok || !body.success) {
+        return { success: false, error: body.error || "Verification failed." };
+      }
+
+      const verifiedUser = body.data.user as UserProfile;
+      const adminRoleInList = verifiedUser.roles?.find((r) => isAdminRole(r)) as UserRole | undefined;
+      const role = (adminRoleInList || verifiedUser.activeRole || verifiedUser.roles?.[0] || "buyer") as UserRole;
+      const normalizedUser: UserProfile = {
+        ...verifiedUser,
+        roles: verifiedUser.roles?.length ? verifiedUser.roles : [role],
+        activeRole: role,
+        is_active: verifiedUser.is_active ?? true,
+        email_verified: true,
+      };
+
+      setUser(normalizedUser);
+      setActiveRole(role);
+
+      localStorage.setItem("coverly_user_id", normalizedUser.id);
+      localStorage.setItem("auth_token", body.data.accessToken || normalizedUser.id);
+      localStorage.setItem("coverly_user_profile", JSON.stringify(normalizedUser));
+      localStorage.setItem("coverly_active_role", role);
+
+      return { success: true, user: normalizedUser, activeRole: role };
+    } catch (err: any) {
+      return { success: false, error: err.message || "An unexpected error occurred." };
+    }
+  };
+
+  const resendEmailOtp = async (email: string, purpose = "email_verification") => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/resend-email-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, purpose }),
+      });
+
+      const body = await res.json();
+      if (!res.ok || !body.success) {
+        return {
+          success: false,
+          error: body.error || "Failed to resend verification code.",
+          retryAfterSeconds: body.retryAfterSeconds,
+        };
+      }
+
+      return {
+        success: true,
+        resendCooldownSeconds: body.data?.resendCooldownSeconds ?? 30,
+        maskedEmail: body.data?.maskedEmail,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Failed to resend code." };
+    }
+  };
+
+  const googleSignIn = async (idToken: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const body = await res.json();
+      if (!res.ok || !body.success) {
+        return { success: false, error: body.error || "Google sign-in failed." };
+      }
+
+      const loggedUser = body.data.user as UserProfile;
+      const requiresOtp = Boolean(body.data.requiresOtp);
+      const maskedEmail = body.data.maskedEmail;
+
+      const adminRoleInList = loggedUser.roles?.find((r) => isAdminRole(r)) as UserRole | undefined;
+      const role = (adminRoleInList || loggedUser.activeRole || loggedUser.roles?.[0] || "buyer") as UserRole;
+      const normalizedUser: UserProfile = {
+        ...loggedUser,
+        roles: loggedUser.roles?.length ? loggedUser.roles : [role],
+        activeRole: role,
+        is_active: loggedUser.is_active ?? true,
+        email_verified: loggedUser.email_verified ?? !requiresOtp,
+      };
+
+      setUser(normalizedUser);
+      setActiveRole(role);
+
+      localStorage.setItem("coverly_user_id", normalizedUser.id);
+      localStorage.setItem("auth_token", body.data.accessToken || normalizedUser.id);
+      localStorage.setItem("coverly_user_profile", JSON.stringify(normalizedUser));
+      localStorage.setItem("coverly_active_role", role);
+
+      return {
+        success: true,
+        user: normalizedUser,
+        activeRole: role,
+        requiresOtp,
+        maskedEmail,
+      };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
     }
@@ -268,8 +443,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         business,
         isLoading,
         activeRole,
+        emailVerified,
         login,
         register,
+        verifyEmailOtp,
+        resendEmailOtp,
+        googleSignIn,
         logout,
         setActiveRole,
         refreshUser,

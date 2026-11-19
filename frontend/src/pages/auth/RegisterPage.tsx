@@ -172,13 +172,26 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
+    let targetPath = `/auth/onboarding?role=${formData.role}`;
     if (formData.role === "service_provider") {
-      navigate("/provider/onboarding");
+      targetPath = "/provider/onboarding";
     } else if (["buyer", "sales_agent"].includes(formData.role)) {
-      navigate("/account/verification");
-    } else {
-      navigate(`/auth/onboarding?role=${formData.role}`);
+      targetPath = "/account/verification";
     }
+
+    // Mandatory COVERLY verification requirement:
+    // Every newly registered account must complete 6-digit email OTP verification before accessing workspaces.
+    if (res.requiresOtp || res.user?.email_verified === false) {
+      navigate(
+        `/auth/verify-email?email=${encodeURIComponent(formData.email)}&role=${encodeURIComponent(
+          formData.role
+        )}&purpose=email_verification&redirect=${encodeURIComponent(targetPath)}`,
+        { replace: true }
+      );
+      return;
+    }
+
+    navigate(targetPath, { replace: true });
   };
 
   return (

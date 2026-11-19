@@ -49,6 +49,8 @@ export interface UserProfile {
   roles: UserRole[];
   activeRole: UserRole;
   is_active: boolean;
+  email_verified?: boolean;
+  auth_provider?: string;
 }
 
 export interface Business {

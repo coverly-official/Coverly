@@ -18,5 +18,17 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
     return <Navigate to={`/auth/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
+  // Mandatory COVERLY Application-Level Verification Enforcement:
+  // If user account is unverified and not already on the verification page,
+  // securely route them to complete 6-digit email OTP verification.
+  if (user.email_verified === false && location.pathname !== "/auth/verify-email") {
+    return (
+      <Navigate
+        to={`/auth/verify-email?email=${encodeURIComponent(user.email)}&redirect=${encodeURIComponent(location.pathname)}`}
+        replace
+      />
+    );
+  }
+
   return <>{children}</>;
 };

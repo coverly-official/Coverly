@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   full_name: string;
   phone?: string | null;
   is_active: boolean;
+  email_verified: boolean;
   roles: string[];
   activeRole: string;
 }
@@ -90,7 +91,7 @@ export async function authenticateUser(req: Request, res: Response, next: NextFu
     const [profileRes, rolesRes] = await Promise.all([
       insforge.database
         .from("users")
-        .select("id, email, full_name, phone, is_active")
+        .select("id, email, full_name, phone, is_active, email_verified")
         .eq("id", userId)
         .single(),
       insforge.database
@@ -120,6 +121,7 @@ export async function authenticateUser(req: Request, res: Response, next: NextFu
       full_name: userProfile.full_name,
       phone: userProfile.phone,
       is_active: userProfile.is_active,
+      email_verified: Boolean(userProfile.email_verified),
       roles: userRoles.length > 0 ? userRoles : [activeRole],
       activeRole,
     };
@@ -150,7 +152,7 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
   try {
     const { data: userProfile } = await insforge.database
       .from("users")
-      .select("id, email, full_name, phone, is_active")
+      .select("id, email, full_name, phone, is_active, email_verified")
       .eq("id", userId)
       .single();
 
@@ -169,6 +171,7 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
         full_name: userProfile.full_name,
         phone: userProfile.phone,
         is_active: userProfile.is_active,
+        email_verified: Boolean(userProfile.email_verified),
         roles: userRoles,
         activeRole,
       };

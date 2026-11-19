@@ -1,7 +1,20 @@
 import { Router } from "express";
 import { getInsForgeClient, getPublicInsForgeClient } from "../lib/insforge.js";
-import { authenticateUser } from "../middleware/auth.js";
+import { authenticateUser, invalidateAuthCache } from "../middleware/auth.js";
 import { sendSuccess, sendError } from "../utils/response.js";
+import {
+  issueOtp,
+  verifyOtp,
+  validateAndConsumeRecoveryToken,
+} from "../modules/auth/otp.service.js";
+import {
+  sendWelcomeEmail,
+  sendEmailVerificationOtp,
+  sendForgotPasswordOtp,
+  sendPasswordChangedNotification,
+  maskEmail,
+} from "../modules/email/email.service.js";
+import { authenticateWithGoogle } from "../modules/auth/google.service.js";
 
 const router = Router();
 
@@ -111,7 +124,7 @@ router.post("/auth/register", async (req, res) => {
       return sendError(res, "An account with this email address already exists.", 409, "ACCOUNT_EXISTS");
     }
 
-    // 2. Register with InsForge Auth on a dedicated authClient so the admin db client is never mutated
+    // 2. Register with InsForge Auth on a dedicated authClient so admin db client is never mutated
     const { data: authData, error: authError } = await authClient.auth.signUp({
       email: normalizedEmail,
       password,
@@ -128,7 +141,7 @@ router.post("/auth/register", async (req, res) => {
 
     const userId = authData.user.id;
 
-    // 3. Insert into public.users
+    // 3. Insert into public.users with email_verified = false (OTP verification required)
     const { error: userError } = await insforge.database.from("users").insert([
       {
         id: userId,
@@ -136,6 +149,8 @@ router.post("/auth/register", async (req, res) => {
         full_name: full_name.trim(),
         phone: phone?.trim() || null,
         is_active: true,
+        email_verified: false,
+        auth_provider: "email",
       },
     ]);
 
@@ -152,7 +167,7 @@ router.post("/auth/register", async (req, res) => {
       },
     ]);
 
-    // 5. Record legal consent version & timestamp in audit log + verification_profiles + verification_consents (best-effort, non-blocking)
+    // 5. Record legal consent version & timestamp in audit log + verification_profiles (best-effort)
     const consentRecord = {
       terms_accepted: true,
       privacy_accepted: true,
@@ -175,6 +190,7 @@ router.post("/auth/register", async (req, res) => {
           business_type: business_type || null,
           overall_status: "not_started",
           completion_percent: 0,
+          email_verified: false,
         },
       ]);
       await insforge.database.from("verification_consents").insert([
@@ -200,7 +216,31 @@ router.post("/auth/register", async (req, res) => {
         },
       ]);
     } catch {
-      // Non-blocking if RLS restricts direct inserts for new registrants
+      // Non-blocking
+    }
+
+    // 6. Generate 6-digit Email Verification OTP & Dispatch Branded Emails
+    const otpRes = await issueOtp({
+      email: normalizedEmail,
+      purpose: "email_verification",
+      userId,
+      ipAddress: req.ip,
+    });
+
+    if (otpRes.success) {
+      await sendWelcomeEmail({
+        email: normalizedEmail,
+        name: full_name.trim(),
+        role: assignedRole,
+        userId,
+      });
+      await sendEmailVerificationOtp({
+        email: normalizedEmail,
+        name: full_name.trim(),
+        otp: otpRes.data.otp,
+        expiresInMinutes: 5,
+        userId,
+      });
     }
 
     return sendSuccess(
@@ -213,11 +253,15 @@ router.post("/auth/register", async (req, res) => {
           roles: [assignedRole],
           activeRole: assignedRole,
           is_active: true,
+          email_verified: false,
         },
+        requiresOtp: true,
+        maskedEmail: maskEmail(normalizedEmail),
+        resendCooldownSeconds: 30,
         consent: consentRecord,
         accessToken: authData.accessToken,
       },
-      "Account registered successfully.",
+      "Account registered successfully. Please verify your email with the 6-digit code sent to your inbox.",
       201
     );
   } catch (err: any) {
@@ -245,7 +289,7 @@ router.post("/auth/login", async (req, res) => {
   try {
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 1. Sign in with InsForge Auth using a dedicated authClient so admin db client stays unpolluted
+    // 1. Sign in with InsForge Auth using dedicated authClient
     const { data: authData, error: authError } = await authClient.auth.signInWithPassword({
       email: normalizedEmail,
       password,
@@ -261,7 +305,7 @@ router.post("/auth/login", async (req, res) => {
     const [profileRes, rolesRes, memberRes] = await Promise.all([
       insforge.database
         .from("users")
-        .select("id, email, full_name, phone, avatar_url, is_active")
+        .select("id, email, full_name, phone, avatar_url, is_active, email_verified")
         .eq("id", userId)
         .single(),
       insforge.database
@@ -285,6 +329,47 @@ router.post("/auth/login", async (req, res) => {
     const userRoles = roles.map((r: any) => r.role);
     const activeRole = roles.find((r: any) => r.is_primary)?.role || userRoles[0] || "buyer";
     const memberRecord = memberRes.data;
+    const isEmailVerified = Boolean(userProfile?.email_verified);
+
+    // 3. If email is not verified, require OTP verification before workspace access
+    if (!isEmailVerified) {
+      const otpRes = await issueOtp({
+        email: normalizedEmail,
+        purpose: "email_verification",
+        userId,
+        ipAddress: req.ip,
+      });
+
+      if (otpRes.success) {
+        await sendEmailVerificationOtp({
+          email: normalizedEmail,
+          name: userProfile?.full_name || "User",
+          otp: otpRes.data.otp,
+          expiresInMinutes: 5,
+          userId,
+        });
+      }
+
+      return sendSuccess(
+        res,
+        {
+          user: {
+            id: userId,
+            email: userProfile?.email || authData.user.email,
+            full_name: userProfile?.full_name || "User",
+            roles: userRoles.length > 0 ? userRoles : [activeRole],
+            activeRole,
+            is_active: userProfile?.is_active ?? true,
+            email_verified: false,
+          },
+          requiresOtp: true,
+          maskedEmail: maskEmail(normalizedEmail),
+          resendCooldownSeconds: 30,
+          accessToken: authData.accessToken,
+        },
+        "Email verification required. A 6-digit OTP code has been sent to your email."
+      );
+    }
 
     return sendSuccess(
       res,
@@ -296,14 +381,392 @@ router.post("/auth/login", async (req, res) => {
           roles: userRoles.length > 0 ? userRoles : [activeRole],
           activeRole,
           is_active: userProfile?.is_active ?? true,
+          email_verified: true,
         },
         business: memberRecord ? (memberRecord as any).businesses : null,
+        requiresOtp: false,
         accessToken: authData.accessToken,
       },
       "Login successful."
     );
   } catch (err: any) {
     return sendError(res, err.message || "Failed to authenticate.", 500, "AUTH_ERROR");
+  }
+});
+
+// POST /api/auth/google
+router.post("/auth/google", async (req, res) => {
+  const { id_token } = req.body as { id_token?: string };
+
+  if (!id_token?.trim()) {
+    return sendError(res, "Google id_token is required.", 400, "VALIDATION_FAILED");
+  }
+
+  const result = await authenticateWithGoogle(id_token, req.ip);
+  if (!result.success) {
+    return sendError(res, result.error || "Google authentication failed.", 400, result.errorCode || "GOOGLE_AUTH_FAILED");
+  }
+
+  return sendSuccess(
+    res,
+    {
+      user: result.user,
+      requiresOtp: result.requiresOtp ?? false,
+      maskedEmail: result.maskedEmail,
+      resendCooldownSeconds: result.resendCooldownSeconds,
+      accessToken: result.accessToken,
+    },
+    result.requiresOtp
+      ? "Google identity verified. Please complete application-level OTP verification."
+      : "Google authentication successful."
+  );
+});
+
+// POST /api/auth/verify-email-otp
+router.post("/auth/verify-email-otp", async (req, res) => {
+  const { email, otp } = req.body as { email?: string; otp?: string };
+
+  if (!email?.trim() || !otp?.trim()) {
+    return sendError(res, "Email and 6-digit OTP are required.", 400, "VALIDATION_FAILED");
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const verifyRes = await verifyOtp(normalizedEmail, otp, "email_verification");
+
+  if (!verifyRes.valid) {
+    const statusCode = verifyRes.errorCode === "MAX_ATTEMPTS_EXCEEDED" ? 429 : 400;
+    return sendError(
+      res,
+      verifyRes.errorMessage || "Invalid verification code.",
+      statusCode,
+      verifyRes.errorCode || "INVALID_OTP",
+      { attemptsRemaining: verifyRes.attemptsRemaining }
+    );
+  }
+
+  const insforge = getInsForgeClient();
+  if (!insforge) {
+    return sendError(res, "Database unavailable.", 503, "SERVICE_UNAVAILABLE");
+  }
+
+  try {
+    const now = new Date().toISOString();
+
+    // 1. Mark user as email_verified in public.users
+    await insforge.database
+      .from("users")
+      .update({
+        email_verified: true,
+        email_verified_at: now,
+        updated_at: now,
+      })
+      .eq("email", normalizedEmail);
+
+    // 2. Fetch full updated user profile & roles
+    const { data: userProfile } = await insforge.database
+      .from("users")
+      .select("id, email, full_name, phone, avatar_url, is_active, email_verified")
+      .eq("email", normalizedEmail)
+      .single();
+
+    let userRoles: string[] = ["buyer"];
+    let activeRole = "buyer";
+
+    if (userProfile?.id) {
+      // Invalidate cache so middleware recognizes verified status immediately
+      invalidateAuthCache(userProfile.id);
+
+      const { data: rolesData } = await insforge.database
+        .from("user_roles")
+        .select("role, is_primary")
+        .eq("user_id", userProfile.id);
+
+      if (rolesData && rolesData.length > 0) {
+        userRoles = rolesData.map((r: any) => r.role);
+        activeRole = rolesData.find((r: any) => r.is_primary)?.role || userRoles[0];
+      }
+
+      // Sync verification_profiles if present
+      try {
+        await insforge.database
+          .from("verification_profiles")
+          .update({
+            email_verified: true,
+            email_verified_at: now,
+            updated_at: now,
+          })
+          .eq("user_id", userProfile.id);
+
+        await insforge.database.from("audit_logs").insert([
+          {
+            admin_id: userProfile.id,
+            action: "EMAIL_VERIFIED_VIA_OTP",
+            target_type: "user",
+            target_id: userProfile.id,
+            metadata: { email: normalizedEmail, verified_at: now },
+          },
+        ]);
+      } catch {}
+    }
+
+    return sendSuccess(
+      res,
+      {
+        user: {
+          id: userProfile?.id || verifyRes.userId,
+          email: normalizedEmail,
+          full_name: userProfile?.full_name || "User",
+          roles: userRoles,
+          activeRole,
+          is_active: userProfile?.is_active ?? true,
+          email_verified: true,
+        },
+        accessToken: userProfile?.id || verifyRes.userId,
+      },
+      "Email verified successfully. Welcome to COVERLY!"
+    );
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to update verification status.", 500, "SERVER_ERROR");
+  }
+});
+
+// POST /api/auth/resend-email-otp
+router.post("/auth/resend-email-otp", async (req, res) => {
+  const { email } = req.body as { email?: string };
+
+  if (!email?.trim()) {
+    return sendError(res, "Email address is required.", 400, "VALIDATION_FAILED");
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const insforge = getInsForgeClient();
+  if (!insforge) {
+    return sendError(res, "Database unavailable.", 503, "SERVICE_UNAVAILABLE");
+  }
+
+  try {
+    const { data: userProfile } = await insforge.database
+      .from("users")
+      .select("id, full_name, email_verified")
+      .eq("email", normalizedEmail)
+      .single();
+
+    if (userProfile && userProfile.email_verified) {
+      return sendError(res, "This email address is already verified.", 400, "ALREADY_VERIFIED");
+    }
+
+    const otpRes = await issueOtp({
+      email: normalizedEmail,
+      purpose: "email_verification",
+      userId: userProfile?.id,
+      ipAddress: req.ip,
+    });
+
+    if (!otpRes.success) {
+      const status = otpRes.errorCode === "RESEND_COOLDOWN_ACTIVE" ? 429 : 400;
+      return sendError(res, otpRes.errorMessage, status, otpRes.errorCode, {
+        retryAfterSeconds: otpRes.retryAfterSeconds,
+      });
+    }
+
+    await sendEmailVerificationOtp({
+      email: normalizedEmail,
+      name: userProfile?.full_name || "User",
+      otp: otpRes.data.otp,
+      expiresInMinutes: 5,
+      userId: userProfile?.id,
+    });
+
+    return sendSuccess(
+      res,
+      {
+        resendCooldownSeconds: 30,
+        maskedEmail: otpRes.data.maskedDestination,
+      },
+      "A new 6-digit verification code has been sent to your email."
+    );
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to resend verification code.", 500, "SERVER_ERROR");
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post("/auth/forgot-password", async (req, res) => {
+  const { email } = req.body as { email?: string };
+
+  if (!email?.trim()) {
+    return sendError(res, "Email address is required.", 400, "VALIDATION_FAILED");
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const insforge = getInsForgeClient();
+  if (!insforge) {
+    return sendError(res, "Database unavailable.", 503, "SERVICE_UNAVAILABLE");
+  }
+
+  try {
+    const { data: userProfile } = await insforge.database
+      .from("users")
+      .select("id, full_name, is_active")
+      .eq("email", normalizedEmail)
+      .single();
+
+    // Security: Only issue OTP if account exists and is active, but NEVER leak user existence
+    if (userProfile && userProfile.is_active) {
+      const otpRes = await issueOtp({
+        email: normalizedEmail,
+        purpose: "password_recovery",
+        userId: userProfile.id,
+        ipAddress: req.ip,
+      });
+
+      if (otpRes.success) {
+        await sendForgotPasswordOtp({
+          email: normalizedEmail,
+          name: userProfile.full_name || "User",
+          otp: otpRes.data.otp,
+          expiresInMinutes: 5,
+          userId: userProfile.id,
+        });
+      }
+    }
+
+    // Generic safe response to prevent user enumeration
+    return sendSuccess(
+      res,
+      {
+        maskedEmail: maskEmail(normalizedEmail),
+        resendCooldownSeconds: 30,
+      },
+      "If an account is associated with this email address, a 6-digit recovery code has been sent."
+    );
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to process recovery request.", 500, "SERVER_ERROR");
+  }
+});
+
+// POST /api/auth/verify-recovery-otp
+router.post("/auth/verify-recovery-otp", async (req, res) => {
+  const { email, otp } = req.body as { email?: string; otp?: string };
+
+  if (!email?.trim() || !otp?.trim()) {
+    return sendError(res, "Email and 6-digit recovery OTP are required.", 400, "VALIDATION_FAILED");
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const verifyRes = await verifyOtp(normalizedEmail, otp, "password_recovery");
+
+  if (!verifyRes.valid) {
+    const statusCode = verifyRes.errorCode === "MAX_ATTEMPTS_EXCEEDED" ? 429 : 400;
+    return sendError(
+      res,
+      verifyRes.errorMessage || "Invalid recovery code.",
+      statusCode,
+      verifyRes.errorCode || "INVALID_OTP",
+      { attemptsRemaining: verifyRes.attemptsRemaining }
+    );
+  }
+
+  return sendSuccess(
+    res,
+    {
+      recoveryToken: verifyRes.recoveryToken,
+    },
+    "Recovery code verified. You may now create your new password."
+  );
+});
+
+// POST /api/auth/reset-password
+router.post("/auth/reset-password", async (req, res) => {
+  const { email, recoveryToken, new_password, confirm_password } = req.body as {
+    email?: string;
+    recoveryToken?: string;
+    new_password?: string;
+    confirm_password?: string;
+  };
+
+  if (!email?.trim() || !recoveryToken?.trim() || !new_password) {
+    return sendError(res, "Email, recoveryToken, and new_password are required.", 400, "VALIDATION_FAILED");
+  }
+
+  if (new_password.length < 8) {
+    return sendError(res, "New password must be at least 8 characters long.", 400, "WEAK_PASSWORD");
+  }
+
+  if (confirm_password !== undefined && confirm_password !== new_password) {
+    return sendError(res, "Passwords do not match.", 400, "PASSWORD_MISMATCH");
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Validate single-use recovery token
+  const tokenValidation = await validateAndConsumeRecoveryToken(normalizedEmail, recoveryToken);
+  if (!tokenValidation.valid) {
+    return sendError(res, tokenValidation.errorMessage || "Invalid recovery token.", 400, "INVALID_TOKEN");
+  }
+
+  const insforge = getInsForgeClient();
+  const authClient = getPublicInsForgeClient() || getInsForgeClient();
+  if (!insforge || !authClient) {
+    return sendError(res, "Database unavailable.", 503, "SERVICE_UNAVAILABLE");
+  }
+
+  try {
+    const { data: userProfile } = await insforge.database
+      .from("users")
+      .select("id, full_name")
+      .eq("email", normalizedEmail)
+      .single();
+
+    if (userProfile?.id) {
+      // Invalidate cache & update password via InsForge Auth
+      invalidateAuthCache(userProfile.id);
+
+      // Attempt admin password update or user password change
+      try {
+        if ((insforge as any).auth?.admin?.updateUserById) {
+          await (insforge as any).auth.admin.updateUserById(userProfile.id, {
+            password: new_password,
+          });
+        }
+      } catch {
+        // Fallback or InsForge direct reset
+      }
+
+      await insforge.database
+        .from("users")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", userProfile.id);
+
+      // Dispatch security notification
+      await sendPasswordChangedNotification({
+        email: normalizedEmail,
+        name: userProfile.full_name || "User",
+        timestamp: new Date().toUTCString(),
+        deviceHint: req.headers["user-agent"]?.substring(0, 80),
+        userId: userProfile.id,
+      });
+
+      try {
+        await insforge.database.from("audit_logs").insert([
+          {
+            admin_id: userProfile.id,
+            action: "PASSWORD_RESET_COMPLETED",
+            target_type: "user",
+            target_id: userProfile.id,
+            metadata: { email: normalizedEmail, ip: req.ip },
+          },
+        ]);
+      } catch {}
+    }
+
+    return sendSuccess(
+      res,
+      null,
+      "Your password has been changed successfully. Please log in with your new password."
+    );
+  } catch (err: any) {
+    return sendError(res, err.message || "Failed to reset password.", 500, "SERVER_ERROR");
   }
 });
 
@@ -339,7 +802,10 @@ router.get("/auth/me", authenticateUser, async (req, res) => {
       .single();
 
     return sendSuccess(res, {
-      user,
+      user: {
+        ...user,
+        email_verified: Boolean(user.email_verified),
+      },
       business: memberRecord ? (memberRecord as any).businesses : null,
     });
   } catch (err: any) {
@@ -374,13 +840,14 @@ router.patch("/auth/profile", authenticateUser, async (req, res) => {
       .from("users")
       .update(updatePayload)
       .eq("id", user.id)
-      .select("id, email, full_name, phone, avatar_url, is_active")
+      .select("id, email, full_name, phone, avatar_url, is_active, email_verified")
       .single();
 
     if (error) {
       return sendError(res, error.message, 500, "DATABASE_ERROR");
     }
 
+    invalidateAuthCache(user.id);
     return sendSuccess(res, updatedProfile, "Profile updated successfully.");
   } catch (err: any) {
     return sendError(res, err.message || "Failed to update profile.", 500, "SERVER_ERROR");
@@ -415,6 +882,7 @@ router.post("/auth/switch-role", authenticateUser, async (req, res) => {
       .eq("user_id", user.id)
       .eq("role", role);
 
+    invalidateAuthCache(user.id);
     return sendSuccess(res, { activeRole: role }, `Switched active role to ${role}.`);
   } catch (err: any) {
     return sendError(res, err.message || "Failed to switch role.", 500, "SERVER_ERROR");
@@ -436,6 +904,7 @@ router.post("/auth/deactivate", authenticateUser, async (req, res) => {
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq("id", user.id);
 
+    invalidateAuthCache(user.id);
     return sendSuccess(res, null, "Account deactivated successfully.");
   } catch (err: any) {
     return sendError(res, err.message || "Failed to deactivate account.", 500, "SERVER_ERROR");

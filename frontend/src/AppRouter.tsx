@@ -30,6 +30,7 @@ import { RegisterPage } from "@/pages/auth/RegisterPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 import { EmailVerificationPage } from "@/pages/auth/EmailVerificationPage";
+import { AuthCallbackPage } from "@/pages/auth/AuthCallbackPage";
 import { OnboardingPage } from "@/pages/auth/OnboardingPage";
 
 // Buyer Pages
@@ -367,6 +368,7 @@ export const AppRouter: React.FC = () => {
             <Route path="forgot-password" element={<ForgotPasswordPage />} />
             <Route path="reset-password" element={<ResetPasswordPage />} />
             <Route path="verify-email" element={<EmailVerificationPage />} />
+            <Route path="callback" element={<AuthCallbackPage />} />
             <Route
               path="onboarding"
               element={
