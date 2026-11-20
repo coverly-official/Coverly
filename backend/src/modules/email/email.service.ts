@@ -66,13 +66,13 @@ export function hashDestination(email: string): string {
 let cachedSmtpTransport: Transporter | null = null;
 
 function getSmtpTransport(): Transporter | null {
-  const host = process.env.SMTP_HOST;
   const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD;
+  const host = process.env.SMTP_HOST || (user && user.includes("@gmail.com") ? "smtp.gmail.com" : undefined);
   if (!host || !user || !pass) return null;
 
   if (!cachedSmtpTransport) {
-    const port = Number(process.env.SMTP_PORT || "587");
+    const port = Number(process.env.SMTP_PORT || (host === "smtp.gmail.com" ? "465" : "587"));
     const secure = process.env.SMTP_SECURE === "true" || port === 465;
     cachedSmtpTransport = nodemailer.createTransport({
       host,
@@ -86,7 +86,11 @@ function getSmtpTransport(): Transporter | null {
 }
 
 const DEFAULT_SENDER_NAME = "COVERLY";
-const DEFAULT_SENDER_EMAIL = process.env.SMTP_FROM || process.env.INSFORGE_EMAIL_FROM || "noreply@coverly-indol.vercel.app";
+const DEFAULT_SENDER_EMAIL =
+  process.env.SMTP_FROM ||
+  process.env.SMTP_USER ||
+  process.env.INSFORGE_EMAIL_FROM ||
+  "coverlly01@gmail.com";
 const DEFAULT_SENDER = `"${DEFAULT_SENDER_NAME}" <${DEFAULT_SENDER_EMAIL}>`;
 
 /**

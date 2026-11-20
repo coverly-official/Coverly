@@ -19,6 +19,7 @@ interface AuthContextType {
     activeRole?: UserRole;
     requiresOtp?: boolean;
     maskedEmail?: string;
+    previewOtp?: string;
   }>;
   register: (payload: {
     email: string;
@@ -43,6 +44,7 @@ interface AuthContextType {
     error?: string;
     requiresOtp?: boolean;
     maskedEmail?: string;
+    previewOtp?: string;
     user?: Partial<UserProfile>;
   }>;
   verifyEmailOtp: (
@@ -64,6 +66,7 @@ interface AuthContextType {
     resendCooldownSeconds?: number;
     retryAfterSeconds?: number;
     maskedEmail?: string;
+    previewOtp?: string;
   }>;
   googleSignIn: (
     idToken: string
@@ -234,6 +237,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeRole: role,
         requiresOtp,
         maskedEmail,
+        previewOtp: body.data?.previewOtp,
       };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
@@ -274,6 +278,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const registeredUser = body.data?.user || {};
       const requiresOtp = Boolean(body.data?.requiresOtp ?? true);
       const maskedEmail = body.data?.maskedEmail;
+      const previewOtp = body.data?.previewOtp;
       const role = (registeredUser.activeRole || registeredUser.role || payload.role || "buyer") as UserRole;
       const normalizedUser: UserProfile = {
         id: registeredUser.id || "",
@@ -300,6 +305,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user: normalizedUser,
         requiresOtp,
         maskedEmail,
+        previewOtp,
       };
     } catch (err: any) {
       return { success: false, error: err.message || "An unexpected error occurred." };
@@ -365,6 +371,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         success: true,
         resendCooldownSeconds: body.data?.resendCooldownSeconds ?? 30,
         maskedEmail: body.data?.maskedEmail,
+        previewOtp: body.data?.previewOtp,
       };
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to resend code." };

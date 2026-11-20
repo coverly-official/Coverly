@@ -22,6 +22,7 @@ export const ForgotPasswordPage: React.FC = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Email, 2: OTP, 3: New Password
   const [email, setEmail] = useState(searchParams.get("email") || "");
   const [maskedEmail, setMaskedEmail] = useState("");
+  const [previewOtp, setPreviewOtp] = useState("");
   const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [recoveryToken, setRecoveryToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -80,6 +81,9 @@ export const ForgotPasswordPage: React.FC = () => {
 
       setMaskedEmail(body.data?.maskedEmail || cleanEmail);
       setCooldownSeconds(body.data?.resendCooldownSeconds ?? 30);
+      if (body.data?.previewOtp) {
+        setPreviewOtp(body.data.previewOtp);
+      }
       setSuccessMsg("If an account exists, a 6-digit recovery code has been dispatched.");
       setStep(2);
     } catch {
@@ -183,6 +187,9 @@ export const ForgotPasswordPage: React.FC = () => {
 
       if (res.ok && body.success) {
         setCooldownSeconds(body.data?.resendCooldownSeconds ?? 30);
+        if (body.data?.previewOtp) {
+          setPreviewOtp(body.data.previewOtp);
+        }
         setSuccessMsg("A fresh 6-digit recovery code has been sent.");
         setOtpDigits(["", "", "", "", "", ""]);
         inputRefs.current[0]?.focus();
@@ -327,6 +334,26 @@ export const ForgotPasswordPage: React.FC = () => {
       {/* STEP 2: 6-DIGIT RECOVERY OTP */}
       {step === 2 && (
         <div className="space-y-5">
+          {previewOtp && (
+            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between shadow-xs">
+              <div>
+                <span className="font-semibold text-amber-900">Dev / Testing Code:</span>{" "}
+                <span className="font-mono font-bold tracking-widest text-sm text-amber-950 ml-1">{previewOtp}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const digits = previewOtp.split("");
+                  setOtpDigits(digits);
+                  executeVerifyOtp(previewOtp);
+                }}
+                className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-2.5 py-1 rounded cursor-pointer transition"
+              >
+                Auto-Fill
+              </button>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-semibold text-stone-700 text-center mb-3">
               Enter 6-Digit Recovery Code

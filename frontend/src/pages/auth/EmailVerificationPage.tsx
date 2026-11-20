@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { getWorkspaceRoute, isAdminRole } from "@/lib/role-routing";
 import {
@@ -15,6 +15,7 @@ import type { UserRole } from "@/types";
 
 export const EmailVerificationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, verifyEmailOtp, resendEmailOtp, activeRole } = useAuth();
 
@@ -23,6 +24,9 @@ export const EmailVerificationPage: React.FC = () => {
   const redirectTarget = searchParams.get("redirect") || "";
   const initialRole = searchParams.get("role") || activeRole || "buyer";
 
+  const [previewOtp, setPreviewOtp] = useState<string>(
+    (location.state as any)?.previewOtp || ""
+  );
   const [email, setEmail] = useState(queryEmail);
   const [isEditingEmail, setIsEditingEmail] = useState(!queryEmail);
   const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
@@ -169,6 +173,9 @@ export const EmailVerificationPage: React.FC = () => {
       return;
     }
 
+    if (res.previewOtp) {
+      setPreviewOtp(res.previewOtp);
+    }
     setCooldownSeconds(res.resendCooldownSeconds ?? 30);
     setSuccessMsg("A fresh 6-digit verification code has been dispatched to your email.");
     setOtpDigits(["", "", "", "", "", ""]);
@@ -229,6 +236,27 @@ export const EmailVerificationPage: React.FC = () => {
         <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
           <span>{successMsg}</span>
+        </div>
+      )}
+
+      {/* Dev / Preview OTP banner if available */}
+      {previewOtp && (
+        <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between shadow-xs">
+          <div>
+            <span className="font-semibold text-amber-900">Dev / Testing Code:</span>{" "}
+            <span className="font-mono font-bold tracking-widest text-sm text-amber-950 ml-1">{previewOtp}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const digits = previewOtp.split("");
+              setOtpDigits(digits);
+              executeVerification(previewOtp);
+            }}
+            className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-2.5 py-1 rounded cursor-pointer transition"
+          >
+            Auto-Fill
+          </button>
         </div>
       )}
 

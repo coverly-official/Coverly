@@ -186,7 +186,10 @@ export const RegisterPage: React.FC = () => {
         `/auth/verify-email?email=${encodeURIComponent(formData.email)}&role=${encodeURIComponent(
           formData.role
         )}&purpose=email_verification&redirect=${encodeURIComponent(targetPath)}`,
-        { replace: true }
+        {
+          replace: true,
+          state: { previewOtp: res.previewOtp },
+        }
       );
       return;
     }
@@ -217,7 +220,23 @@ export const RegisterPage: React.FC = () => {
 
       {errorMsg && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
-          {errorMsg}
+          <div>{errorMsg}</div>
+          {errorMsg.toLowerCase().includes("already exists") && (
+            <div className="mt-2 pt-2 border-t border-red-200/80 flex items-center gap-3">
+              <Link
+                to={`/auth/login?email=${encodeURIComponent(formData.email)}`}
+                className="font-bold underline text-red-800 hover:text-red-950"
+              >
+                Sign In to Account &rarr;
+              </Link>
+              <Link
+                to={`/auth/forgot-password?email=${encodeURIComponent(formData.email)}`}
+                className="underline text-red-700 hover:text-red-900"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+          )}
         </div>
       )}
 

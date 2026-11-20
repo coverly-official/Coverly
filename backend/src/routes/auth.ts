@@ -260,6 +260,7 @@ router.post("/auth/register", async (req, res) => {
         resendCooldownSeconds: 30,
         consent: consentRecord,
         accessToken: authData.accessToken,
+        previewOtp: otpRes.success ? otpRes.data.otp : undefined,
       },
       "Account registered successfully. Please verify your email with the 6-digit code sent to your inbox.",
       201
@@ -366,6 +367,7 @@ router.post("/auth/login", async (req, res) => {
           maskedEmail: maskEmail(normalizedEmail),
           resendCooldownSeconds: 30,
           accessToken: authData.accessToken,
+          previewOtp: otpRes.success ? otpRes.data.otp : undefined,
         },
         "Email verification required. A 6-digit OTP code has been sent to your email."
       );
@@ -582,6 +584,7 @@ router.post("/auth/resend-email-otp", async (req, res) => {
       {
         resendCooldownSeconds: 30,
         maskedEmail: otpRes.data.maskedDestination,
+        previewOtp: otpRes.data.otp,
       },
       "A new 6-digit verification code has been sent to your email."
     );
@@ -611,6 +614,8 @@ router.post("/auth/forgot-password", async (req, res) => {
       .eq("email", normalizedEmail)
       .single();
 
+    let previewOtp: string | undefined;
+
     // Security: Only issue OTP if account exists and is active, but NEVER leak user existence
     if (userProfile && userProfile.is_active) {
       const otpRes = await issueOtp({
@@ -621,6 +626,7 @@ router.post("/auth/forgot-password", async (req, res) => {
       });
 
       if (otpRes.success) {
+        previewOtp = otpRes.data.otp;
         await sendForgotPasswordOtp({
           email: normalizedEmail,
           name: userProfile.full_name || "User",
@@ -637,6 +643,7 @@ router.post("/auth/forgot-password", async (req, res) => {
       {
         maskedEmail: maskEmail(normalizedEmail),
         resendCooldownSeconds: 30,
+        previewOtp,
       },
       "If an account is associated with this email address, a 6-digit recovery code has been sent."
     );
@@ -722,15 +729,17 @@ router.post("/auth/reset-password", async (req, res) => {
       // Invalidate cache & update password via InsForge Auth
       invalidateAuthCache(userProfile.id);
 
-      // Attempt admin password update or user password change
+      // Secure password update in auth.users via database RPC
       try {
-        if ((insforge as any).auth?.admin?.updateUserById) {
-          await (insforge as any).auth.admin.updateUserById(userProfile.id, {
-            password: new_password,
-          });
+        const { error: rpcError } = await insforge.database.rpc("set_user_password", {
+          target_email: normalizedEmail,
+          new_password,
+        });
+        if (rpcError) {
+          console.error("Failed to update auth password via RPC:", rpcError);
         }
-      } catch {
-        // Fallback or InsForge direct reset
+      } catch (err) {
+        console.error("Exception calling set_user_password RPC:", err);
       }
 
       await insforge.database
