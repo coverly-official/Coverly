@@ -132,8 +132,10 @@ export async function sendEmail(payload: EmailPayload): Promise<EmailSendResult>
       providerUsed = "smtp";
       messageId = info.messageId;
       isSuccess = true;
+      console.log(`[EmailService] Dispatched email via SMTP to ${maskedDest} (messageId: ${messageId})`);
     } catch (err: any) {
       errorMsg = err?.message || "SMTP dispatch failed";
+      console.error("[EmailService] SMTP dispatch failed:", err);
       // Fallback to InsForge or dev_mock
     }
   }

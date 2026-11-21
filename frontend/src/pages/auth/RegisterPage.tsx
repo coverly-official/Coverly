@@ -186,10 +186,7 @@ export const RegisterPage: React.FC = () => {
         `/auth/verify-email?email=${encodeURIComponent(formData.email)}&role=${encodeURIComponent(
           formData.role
         )}&purpose=email_verification&redirect=${encodeURIComponent(targetPath)}`,
-        {
-          replace: true,
-          state: { previewOtp: res.previewOtp },
-        }
+        { replace: true }
       );
       return;
     }
