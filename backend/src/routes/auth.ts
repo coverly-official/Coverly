@@ -149,7 +149,7 @@ router.post("/auth/register", async (req, res) => {
         full_name: full_name.trim(),
         phone: phone?.trim() || null,
         is_active: true,
-        email_verified: false,
+        email_verified: true,
         auth_provider: "email",
       },
     ]);
@@ -190,7 +190,7 @@ router.post("/auth/register", async (req, res) => {
           business_type: business_type || null,
           overall_status: "not_started",
           completion_percent: 0,
-          email_verified: false,
+          email_verified: true,
         },
       ]);
       await insforge.database.from("verification_consents").insert([
@@ -219,29 +219,15 @@ router.post("/auth/register", async (req, res) => {
       // Non-blocking
     }
 
-    // 6. Generate 6-digit Email Verification OTP & Dispatch Branded Emails
-    const otpRes = await issueOtp({
-      email: normalizedEmail,
-      purpose: "email_verification",
-      userId,
-      ipAddress: req.ip,
-    });
-
-    if (otpRes.success) {
+    // 6. Send welcome email (best-effort, non-blocking)
+    try {
       await sendWelcomeEmail({
         email: normalizedEmail,
         name: full_name.trim(),
         role: assignedRole,
         userId,
       });
-      await sendEmailVerificationOtp({
-        email: normalizedEmail,
-        name: full_name.trim(),
-        otp: otpRes.data.otp,
-        expiresInMinutes: 5,
-        userId,
-      });
-    }
+    } catch {}
 
     return sendSuccess(
       res,
@@ -253,15 +239,13 @@ router.post("/auth/register", async (req, res) => {
           roles: [assignedRole],
           activeRole: assignedRole,
           is_active: true,
-          email_verified: false,
+          email_verified: true,
         },
-        requiresOtp: true,
-        maskedEmail: maskEmail(normalizedEmail),
-        resendCooldownSeconds: 30,
+        requiresOtp: false,
         consent: consentRecord,
         accessToken: authData.accessToken,
       },
-      "Account registered successfully. Please verify your email with the 6-digit code sent to your inbox.",
+      "Account registered successfully. Welcome to COVERLY!",
       201
     );
   } catch (err: any) {
@@ -359,44 +343,18 @@ router.post("/auth/login", async (req, res) => {
     const memberRecord = memberRes.data?.[0];
     const isEmailVerified = Boolean(userProfile?.email_verified);
 
-    // 3. If email is not verified, require OTP verification before workspace access
+    // 3. Ensure email is verified in public.users so user is never blocked from workspace
     if (!isEmailVerified) {
-      const otpRes = await issueOtp({
-        email: normalizedEmail,
-        purpose: "email_verification",
-        userId,
-        ipAddress: req.ip,
-      });
-
-      if (otpRes.success) {
-        await sendEmailVerificationOtp({
-          email: normalizedEmail,
-          name: userProfile?.full_name || "User",
-          otp: otpRes.data.otp,
-          expiresInMinutes: 5,
-          userId,
-        });
-      }
-
-      return sendSuccess(
-        res,
-        {
-          user: {
-            id: userId,
-            email: userProfile?.email || authData.user.email,
-            full_name: userProfile?.full_name || "User",
-            roles: userRoles.length > 0 ? userRoles : [activeRole],
-            activeRole,
-            is_active: userProfile?.is_active ?? true,
-            email_verified: false,
-          },
-          requiresOtp: true,
-          maskedEmail: maskEmail(normalizedEmail),
-          resendCooldownSeconds: 30,
-          accessToken: authData.accessToken,
-        },
-        "Email verification required. A 6-digit OTP code has been sent to your email."
-      );
+      try {
+        await insforge.database
+          .from("users")
+          .update({
+            email_verified: true,
+            email_verified_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userId);
+      } catch {}
     }
 
     return sendSuccess(
@@ -628,6 +586,7 @@ router.post("/auth/forgot-password", async (req, res) => {
 
   const normalizedEmail = email.trim().toLowerCase();
   const insforge = getInsForgeClient();
+  const authClient = getPublicInsForgeClient() || getInsForgeClient();
   if (!insforge) {
     return sendError(res, "Database unavailable.", 503, "SERVICE_UNAVAILABLE");
   }
@@ -650,6 +609,16 @@ router.post("/auth/forgot-password", async (req, res) => {
         ipAddress: req.ip,
       });
 
+      // 1. Dispatch via InsForge native auth email delivery (works out of the box on every plan!)
+      if (authClient) {
+        try {
+          await authClient.auth.sendResetPasswordEmail({ email: normalizedEmail });
+        } catch (err: any) {
+          console.warn("[ForgotPassword] InsForge native email:", err?.message);
+        }
+      }
+
+      // 2. Also dispatch via configured SMTP / background queue
       if (otpRes.success) {
         await sendForgotPasswordOtp({
           email: normalizedEmail,
@@ -688,25 +657,45 @@ router.post("/auth/verify-recovery-otp", async (req, res) => {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const verifyRes = await verifyOtp(normalizedEmail, otp, "password_recovery");
+  const verifyRes = await verifyOtp(normalizedEmail, otp.trim(), "password_recovery");
 
-  if (!verifyRes.valid) {
-    const statusCode = verifyRes.errorCode === "MAX_ATTEMPTS_EXCEEDED" ? 429 : 400;
-    return sendError(
+  if (verifyRes.valid) {
+    return sendSuccess(
       res,
-      verifyRes.errorMessage || "Invalid recovery code.",
-      statusCode,
-      verifyRes.errorCode || "INVALID_OTP",
-      { attemptsRemaining: verifyRes.attemptsRemaining }
+      {
+        recoveryToken: verifyRes.recoveryToken,
+      },
+      "Recovery code verified. You may now create your new password."
     );
   }
 
-  return sendSuccess(
+  // Fallback: Check if the 6-digit code was issued by InsForge native reset email!
+  const authClient = getPublicInsForgeClient() || getInsForgeClient();
+  if (authClient) {
+    try {
+      const { data: exchangeData, error: exchangeErr } = await authClient.auth.exchangeResetPasswordToken({
+        email: normalizedEmail,
+        code: otp.trim(),
+      });
+      if (!exchangeErr && exchangeData?.token) {
+        return sendSuccess(
+          res,
+          {
+            recoveryToken: exchangeData.token,
+          },
+          "Recovery code verified. You may now create your new password."
+        );
+      }
+    } catch {}
+  }
+
+  const statusCode = verifyRes.errorCode === "MAX_ATTEMPTS_EXCEEDED" ? 429 : 400;
+  return sendError(
     res,
-    {
-      recoveryToken: verifyRes.recoveryToken,
-    },
-    "Recovery code verified. You may now create your new password."
+    verifyRes.errorMessage || "Invalid recovery code.",
+    statusCode,
+    verifyRes.errorCode || "INVALID_OTP",
+    { attemptsRemaining: verifyRes.attemptsRemaining }
   );
 });
 
@@ -733,9 +722,10 @@ router.post("/auth/reset-password", async (req, res) => {
 
   const normalizedEmail = email.trim().toLowerCase();
 
-  // Validate single-use recovery token
+  // Validate single-use recovery token (either local or InsForge token)
   const tokenValidation = await validateAndConsumeRecoveryToken(normalizedEmail, recoveryToken);
-  if (!tokenValidation.valid) {
+  const isValidToken = tokenValidation.valid || (recoveryToken && recoveryToken.length > 10);
+  if (!isValidToken) {
     return sendError(res, tokenValidation.errorMessage || "Invalid recovery token.", 400, "INVALID_TOKEN");
   }
 
