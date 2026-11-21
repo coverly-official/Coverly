@@ -257,15 +257,15 @@ export async function verifyOtp(
   const insforge = getInsForgeClient();
   if (!challenge && insforge) {
     try {
-      const { data } = await insforge.database
+      const { data: rows } = await insforge.database
         .from("otp_challenges")
         .select("*")
         .eq("destination_hash", destHash)
         .eq("purpose", purpose)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
 
+      const data = rows?.[0];
       if (data) {
         challenge = {
           id: data.id,
@@ -431,15 +431,15 @@ export async function validateAndConsumeRecoveryToken(
   const insforge = getInsForgeClient();
   if (!challenge && insforge) {
     try {
-      const { data } = await insforge.database
+      const { data: rows } = await insforge.database
         .from("otp_challenges")
         .select("*")
         .eq("destination_hash", destHash)
         .eq("recovery_token_hash", tokenHash)
         .gte("recovery_token_expires_at", new Date(now).toISOString())
-        .limit(1)
-        .single();
+        .limit(1);
 
+      const data = rows?.[0];
       if (data) {
         challenge = {
           id: data.id,

@@ -149,7 +149,18 @@ export const LoginPage: React.FC = () => {
 
       {errorMsg && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
-          {errorMsg}
+          <div>{errorMsg}</div>
+          {errorMsg.toLowerCase().includes("invalid") && (
+            <div className="mt-2 pt-2 border-t border-red-200/80 flex items-center justify-between">
+              <span className="text-[11px] text-red-600">Forgot your password?</span>
+              <Link
+                to={`/auth/forgot-password?email=${encodeURIComponent(email)}`}
+                className="font-bold underline text-red-800 hover:text-red-950"
+              >
+                Reset Password &rarr;
+              </Link>
+            </div>
+          )}
         </div>
       )}
 

@@ -308,7 +308,7 @@ router.post("/auth/login", async (req, res) => {
         .from("users")
         .select("id, email, full_name, phone, avatar_url, is_active, email_verified")
         .eq("id", userId)
-        .single(),
+        .limit(1),
       insforge.database
         .from("user_roles")
         .select("role, is_primary")
@@ -317,19 +317,47 @@ router.post("/auth/login", async (req, res) => {
         .from("business_members")
         .select("business_id, role_in_business, businesses(*)")
         .eq("user_id", userId)
-        .limit(1)
-        .single(),
+        .limit(1),
     ]);
 
-    const userProfile = profileRes.data;
+    let userProfile = profileRes.data?.[0];
+    if (!userProfile) {
+      // Auto-heal missing public.users record
+      try {
+        const { data: createdUsers } = await insforge.database
+          .from("users")
+          .insert([
+            {
+              id: userId,
+              email: normalizedEmail,
+              full_name: normalizedEmail.split("@")[0],
+              is_active: true,
+              email_verified: true,
+              auth_provider: "email",
+            },
+          ])
+          .select("id, email, full_name, phone, avatar_url, is_active, email_verified")
+          .limit(1);
+        userProfile = createdUsers?.[0];
+      } catch {}
+    }
+
     if (userProfile && !userProfile.is_active) {
       return sendError(res, "Your account has been suspended. Please contact support.", 403, "ACCOUNT_SUSPENDED");
     }
 
-    const roles = rolesRes.data || [];
+    let roles = rolesRes.data || [];
+    if (roles.length === 0) {
+      try {
+        await insforge.database.from("user_roles").insert([
+          { user_id: userId, role: "buyer", is_primary: true }
+        ]);
+        roles = [{ role: "buyer", is_primary: true }];
+      } catch {}
+    }
     const userRoles = roles.map((r: any) => r.role);
     const activeRole = roles.find((r: any) => r.is_primary)?.role || userRoles[0] || "buyer";
-    const memberRecord = memberRes.data;
+    const memberRecord = memberRes.data?.[0];
     const isEmailVerified = Boolean(userProfile?.email_verified);
 
     // 3. If email is not verified, require OTP verification before workspace access
@@ -608,12 +636,13 @@ router.post("/auth/forgot-password", async (req, res) => {
   }
 
   try {
-    const { data: userProfile } = await insforge.database
+    const { data: usersList } = await insforge.database
       .from("users")
       .select("id, full_name, is_active")
       .eq("email", normalizedEmail)
-      .single();
+      .limit(1);
 
+    const userProfile = usersList?.[0];
     let previewOtp: string | undefined;
 
     // Security: Only issue OTP if account exists and is active, but NEVER leak user existence
@@ -633,6 +662,10 @@ router.post("/auth/forgot-password", async (req, res) => {
           otp: otpRes.data.otp,
           expiresInMinutes: 5,
           userId: userProfile.id,
+        });
+      } else if (otpRes.errorCode === "RESEND_COOLDOWN_ACTIVE") {
+        return sendError(res, otpRes.errorMessage, 429, otpRes.errorCode, {
+          retryAfterSeconds: otpRes.retryAfterSeconds,
         });
       }
     }
@@ -719,11 +752,13 @@ router.post("/auth/reset-password", async (req, res) => {
   }
 
   try {
-    const { data: userProfile } = await insforge.database
+    const { data: usersList } = await insforge.database
       .from("users")
       .select("id, full_name")
       .eq("email", normalizedEmail)
-      .single();
+      .limit(1);
+
+    const userProfile = usersList?.[0];
 
     if (userProfile?.id) {
       // Invalidate cache & update password via InsForge Auth
