@@ -157,7 +157,7 @@ export const ForgotPasswordPage: React.FC = () => {
         return;
       }
 
-      setRecoveryToken(body.data.recoveryToken);
+      setRecoveryToken(body.data?.recoveryToken || body.data?.recovery_token || "");
       setSuccessMsg("Code verified! You may now set a new password.");
       setStep(3);
     } catch {
@@ -218,8 +218,11 @@ export const ForgotPasswordPage: React.FC = () => {
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           recoveryToken,
+          recovery_token: recoveryToken,
           newPassword,
+          new_password: newPassword,
           confirmPassword,
+          confirm_password: confirmPassword,
         }),
       });
 

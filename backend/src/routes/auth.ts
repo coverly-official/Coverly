@@ -701,14 +701,13 @@ router.post("/auth/verify-recovery-otp", async (req, res) => {
 
 // POST /api/auth/reset-password
 router.post("/auth/reset-password", async (req, res) => {
-  const { email, recoveryToken, new_password, confirm_password } = req.body as {
-    email?: string;
-    recoveryToken?: string;
-    new_password?: string;
-    confirm_password?: string;
-  };
+  const body = req.body || {};
+  const email = (body.email || "").trim().toLowerCase();
+  const recoveryToken = (body.recoveryToken || body.recovery_token || "").trim();
+  const new_password = (body.new_password || body.newPassword || "").trim();
+  const confirm_password = (body.confirm_password || body.confirmPassword || "").trim();
 
-  if (!email?.trim() || !recoveryToken?.trim() || !new_password) {
+  if (!email || !recoveryToken || !new_password) {
     return sendError(res, "Email, recoveryToken, and new_password are required.", 400, "VALIDATION_FAILED");
   }
 
@@ -716,11 +715,11 @@ router.post("/auth/reset-password", async (req, res) => {
     return sendError(res, "New password must be at least 8 characters long.", 400, "WEAK_PASSWORD");
   }
 
-  if (confirm_password !== undefined && confirm_password !== new_password) {
+  if (confirm_password && confirm_password !== new_password) {
     return sendError(res, "Passwords do not match.", 400, "PASSWORD_MISMATCH");
   }
 
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedEmail = email;
 
   // Validate single-use recovery token (either local or InsForge token)
   const tokenValidation = await validateAndConsumeRecoveryToken(normalizedEmail, recoveryToken);
